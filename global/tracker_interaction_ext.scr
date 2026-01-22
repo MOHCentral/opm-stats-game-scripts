@@ -1,0 +1,42 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Interaction Extensions
+// ============================================================================
+
+on_player_use_object_start local.player local.object:
+    local.payload = tracker_common.scr::build_base_payload "player_use_object_start"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = local.payload + "&object=" + local.object
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_player_use_object_finish local.player local.object:
+    local.payload = tracker_common.scr::build_base_payload "player_use_object_finish"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = local.payload + "&object=" + local.object
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_player_say local.player local.text:
+    local.payload = tracker_common.scr::build_base_payload "chat"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = local.payload + "&message=" + local.text
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_player_spectate local.player:
+    local.payload = tracker_common.scr::build_base_payload "player_spectate"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_player_freeze local.player local.frozen_state:
+    local.payload = tracker_common.scr::build_base_payload "player_freeze"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = local.payload + "&frozen_state=" + local.frozen_state
+
+    thread tracker_common.scr::queue_event local.payload
+end

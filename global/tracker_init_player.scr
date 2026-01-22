@@ -1,0 +1,105 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Player Initialization
+// Subscribes to Player, Combat, Movement, Interaction, Item, Vehicle, Client, and Score events
+// ============================================================================
+
+init:
+    println "Initializing Player Event Subscriptions..."
+
+    // ========================================================================
+    // COMBAT EVENTS (23 events)
+    // ========================================================================
+    event_subscribe "player_kill" "tracker.scr::on_player_kill"
+    event_subscribe "player_death" "tracker.scr::on_player_death"
+    event_subscribe "player_damage" "tracker.scr::on_player_damage"
+    event_subscribe "player_pain" "tracker.scr::on_player_pain"
+    event_subscribe "player_headshot" "tracker.scr::on_player_headshot"
+    event_subscribe "player_suicide" "tracker_combat_ext.scr::on_player_suicide"
+    event_subscribe "player_crushed" "tracker_combat_ext.scr::on_player_crushed"
+    event_subscribe "player_telefragged" "tracker_combat_ext.scr::on_player_telefragged"
+    event_subscribe "player_roadkill" "tracker_combat_ext.scr::on_player_roadkill"
+    event_subscribe "player_bash" "tracker_combat_ext.scr::on_player_bash"
+    event_subscribe "player_teamkill" "tracker_combat_ext.scr::on_player_teamkill"
+    event_subscribe "weapon_fire" "tracker.scr::on_weapon_fire"
+    event_subscribe "weapon_hit" "tracker.scr::on_weapon_hit"
+    event_subscribe "weapon_reload" "tracker.scr::on_weapon_reload"
+    event_subscribe "weapon_reload_done" "tracker_combat_ext.scr::on_weapon_reload_done"
+    event_subscribe "weapon_change" "tracker.scr::on_weapon_change"
+    event_subscribe "weapon_ready" "tracker_combat_ext.scr::on_weapon_ready"
+    event_subscribe "weapon_no_ammo" "tracker_combat_ext.scr::on_weapon_no_ammo"
+    event_subscribe "weapon_holster" "tracker_combat_ext.scr::on_weapon_holster"
+    event_subscribe "weapon_raise" "tracker_combat_ext.scr::on_weapon_raise"
+    event_subscribe "weapon_drop" "tracker_combat_ext.scr::on_weapon_drop"
+    event_subscribe "grenade_throw" "tracker.scr::on_grenade_throw"
+    event_subscribe "grenade_explode" "tracker.scr::on_grenade_explode"
+
+    // ========================================================================
+    // MOVEMENT EVENTS (10 events)
+    // ========================================================================
+    event_subscribe "player_spawn" "tracker_movement_ext.scr::on_player_spawn"
+    event_subscribe "player_respawn" "tracker_movement_ext.scr::on_player_respawn"
+    event_subscribe "player_jump" "tracker.scr::on_player_jump"
+    event_subscribe "player_land" "tracker.scr::on_player_land"
+    event_subscribe "player_crouch" "tracker.scr::on_player_crouch"
+    event_subscribe "player_prone" "tracker.scr::on_player_prone"
+    event_subscribe "player_stand" "tracker_movement_ext.scr::on_player_stand"
+    event_subscribe "player_distance" "tracker.scr::on_player_distance"
+    event_subscribe "ladder_mount" "tracker.scr::on_ladder_mount"
+    event_subscribe "ladder_dismount" "tracker.scr::on_ladder_dismount"
+
+    // ========================================================================
+    // INTERACTION EVENTS (6 events)
+    // ========================================================================
+    event_subscribe "player_use" "tracker.scr::on_player_use"
+    event_subscribe "player_use_object_start" "tracker_interaction_ext.scr::on_player_use_object_start"
+    event_subscribe "player_use_object_finish" "tracker_interaction_ext.scr::on_player_use_object_finish"
+    event_subscribe "player_spectate" "tracker_interaction_ext.scr::on_player_spectate"
+    event_subscribe "player_freeze" "tracker_interaction_ext.scr::on_player_freeze"
+    event_subscribe "player_say" "tracker_interaction_ext.scr::on_player_say"
+
+    // ========================================================================
+    // ITEM EVENTS (5 events)
+    // ========================================================================
+    event_subscribe "item_pickup" "tracker.scr::on_item_pickup"
+    event_subscribe "item_drop" "tracker.scr::on_item_drop"
+    event_subscribe "item_respawn" "tracker_items_ext.scr::on_item_respawn"
+    event_subscribe "health_pickup" "tracker_items_ext.scr::on_health_pickup"
+    event_subscribe "ammo_pickup" "tracker_items_ext.scr::on_ammo_pickup"
+    // armor_pickup might not be in base game events, check list (not in user list, but was in code)
+
+    // ========================================================================
+    // VEHICLE/TURRET EVENTS (6 events)
+    // ========================================================================
+    event_subscribe "vehicle_enter" "tracker_vehicle_ext.scr::on_vehicle_enter"
+    event_subscribe "vehicle_exit" "tracker_vehicle_ext.scr::on_vehicle_exit"
+    event_subscribe "vehicle_death" "tracker_vehicle_ext.scr::on_vehicle_death"
+    event_subscribe "vehicle_collision" "tracker_vehicle_ext.scr::on_vehicle_collision"
+    event_subscribe "turret_enter" "tracker_vehicle_ext.scr::on_turret_enter"
+    event_subscribe "turret_exit" "tracker_vehicle_ext.scr::on_turret_exit"
+
+    // ========================================================================
+    // CLIENT EVENTS (5 events)
+    // ========================================================================
+    event_subscribe "client_connect" "tracker.scr::on_client_connect"
+    event_subscribe "client_begin" "tracker.scr::on_client_begin"
+    event_subscribe "client_userinfo_changed" "tracker_client_ext.scr::on_client_userinfo_changed"
+    event_subscribe "client_disconnect" "tracker.scr::on_client_disconnect"
+    event_subscribe "player_inactivity_drop" "tracker_client_ext.scr::on_player_inactivity_drop"
+
+    // ========================================================================
+    // TEAM/VOTE EVENTS (5 events)
+    // ========================================================================
+    event_subscribe "team_join" "tracker.scr::on_team_join"
+    event_subscribe "vote_start" "tracker_client_ext.scr::on_vote_start"
+    event_subscribe "vote_passed" "tracker_client_ext.scr::on_vote_passed"
+    event_subscribe "vote_failed" "tracker_client_ext.scr::on_vote_failed"
+    event_subscribe "objective_capture" "tracker_gameflow_ext.scr::on_objective_capture"
+
+    // ========================================================================
+    // SCORE EVENTS (2 events)
+    // ========================================================================
+    event_subscribe "score_change" "tracker_score_ext.scr::on_score_change"
+    event_subscribe "teamkill_kick" "tracker_score_ext.scr::on_teamkill_kick"
+
+    println "Player Event Subscriptions Complete."
+end

@@ -1,0 +1,60 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Server Initialization
+// Subscribes to Server, Map, Game Flow, World, and Bot/Actor events
+// ============================================================================
+
+init:
+    println "Initializing Server Event Subscriptions..."
+
+    // ========================================================================
+    // GAME FLOW (11 events)
+    // ========================================================================
+    event_subscribe "game_init" "tracker_gameflow_ext.scr::on_game_init"
+    event_subscribe "game_start" "tracker_gameflow_ext.scr::on_game_start"
+    event_subscribe "game_end" "tracker_gameflow_ext.scr::on_game_end"
+    event_subscribe "round_start" "tracker_gameflow_ext.scr::on_round_start"
+    event_subscribe "round_end" "tracker_gameflow_ext.scr::on_round_end"
+    event_subscribe "team_win" "tracker_gameflow_ext.scr::on_team_win"
+    event_subscribe "match_end" "tracker_gameflow_ext.scr::on_match_end"
+    event_subscribe "intermission_start" "tracker_gameflow_ext.scr::on_intermission_start"
+    event_subscribe "warmup_start" "tracker_gameflow_ext.scr::on_warmup_start"
+    event_subscribe "warmup_end" "tracker_gameflow_ext.scr::on_warmup_end"
+    event_subscribe "objective_update" "tracker_gameflow_ext.scr::on_objective_update"
+
+    // ========================================================================
+    // SERVER EVENTS (5 events)
+    // ========================================================================
+    event_subscribe "server_init" "tracker_gameflow_ext.scr::on_server_init"
+    event_subscribe "server_start" "tracker_gameflow_ext.scr::on_server_start"
+    event_subscribe "server_shutdown" "tracker_gameflow_ext.scr::on_server_shutdown"
+    event_subscribe "server_spawned" "tracker_gameflow_ext.scr::on_server_spawned"
+    event_subscribe "server_console_command" "tracker_gameflow_ext.scr::on_server_console_command"
+
+    // ========================================================================
+    // MAP EVENTS (4 events)
+    // ========================================================================
+    event_subscribe "map_load_start" "tracker_gameflow_ext.scr::on_map_load_start"
+    event_subscribe "map_load_end" "tracker_gameflow_ext.scr::on_map_load_end"
+    event_subscribe "map_change_start" "tracker_gameflow_ext.scr::on_map_change_start"
+    event_subscribe "map_restart" "tracker_gameflow_ext.scr::on_map_restart"
+
+    // ========================================================================
+    // WORLD EVENTS (3 events)
+    // ========================================================================
+    event_subscribe "door_open" "tracker_world_ext.scr::on_door_open"
+    event_subscribe "door_close" "tracker_world_ext.scr::on_door_close"
+    event_subscribe "explosion" "tracker_world_ext.scr::on_explosion"
+
+    // ========================================================================
+    // AI/ACTOR EVENTS (7 events)
+    // ========================================================================
+    event_subscribe "actor_spawn" "tracker_bot_ext.scr::on_actor_spawn"
+    event_subscribe "actor_killed" "tracker_bot_ext.scr::on_actor_killed"
+    event_subscribe "bot_spawn" "tracker_bot_ext.scr::on_bot_spawn"
+    event_subscribe "bot_killed" "tracker_bot_ext.scr::on_bot_killed"
+    event_subscribe "bot_roam" "tracker_bot_ext.scr::on_bot_roam"
+    event_subscribe "bot_curious" "tracker_bot_ext.scr::on_bot_curious"
+    event_subscribe "bot_attack" "tracker_bot_ext.scr::on_bot_attack"
+
+    println "Server Event Subscriptions Complete."
+end

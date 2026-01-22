@@ -1,0 +1,26 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - World Extensions
+// ============================================================================
+
+on_explosion local.entity local.attacker local.damage:
+    local.payload = tracker_common.scr::build_base_payload "explosion"
+    local.payload = local.payload + "&damage=" + local.damage
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.attacker "attacker"
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_door_open local.door local.activator:
+    local.payload = tracker_common.scr::build_base_payload "door_open"
+    local.payload = local.payload + "&entity=" + local.door
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.activator "player"
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_door_close local.door:
+    local.payload = tracker_common.scr::build_base_payload "door_close"
+    local.payload = local.payload + "&entity=" + local.door
+
+    thread tracker_common.scr::queue_event local.payload
+end

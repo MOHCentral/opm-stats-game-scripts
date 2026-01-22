@@ -1,0 +1,51 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Vehicle/Turret Extensions
+// ============================================================================
+
+on_vehicle_enter local.player local.vehicle:
+    local.payload = tracker_common.scr::build_base_payload "vehicle_enter"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = local.payload + "&entity=" + local.vehicle
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_vehicle_exit local.player local.vehicle:
+    local.payload = tracker_common.scr::build_base_payload "vehicle_exit"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = local.payload + "&entity=" + local.vehicle
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_vehicle_death local.vehicle local.attacker:
+    local.payload = tracker_common.scr::build_base_payload "vehicle_death"
+    local.payload = local.payload + "&entity=" + local.vehicle
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.attacker "attacker"
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_vehicle_collision local.vehicle local.other:
+    local.payload = tracker_common.scr::build_base_payload "vehicle_collision"
+    local.payload = local.payload + "&entity=" + local.vehicle
+    local.payload = local.payload + "&other=" + local.other
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_turret_enter local.player local.turret:
+    local.payload = tracker_common.scr::build_base_payload "turret_enter"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = local.payload + "&entity=" + local.turret
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_turret_exit local.player local.turret:
+    local.payload = tracker_common.scr::build_base_payload "turret_exit"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = local.payload + "&entity=" + local.turret
+
+    thread tracker_common.scr::queue_event local.payload
+end

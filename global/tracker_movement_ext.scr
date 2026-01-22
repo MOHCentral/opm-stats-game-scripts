@@ -1,0 +1,28 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Movement Extensions
+// Additional movement events
+// ============================================================================
+
+on_player_respawn local.player:
+    local.player.tracker_stance = "stand"
+    local.payload = tracker_common.scr::build_base_payload "player_respawn"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_player_stand local.dummy:
+    self.tracker_stance = "stand"
+    local.payload = tracker_common.scr::build_base_payload "player_stand"
+    local.payload = local.payload + tracker_common.scr::build_player_payload self "player"
+
+    thread tracker_common.scr::queue_event local.payload
+end
+
+on_player_spawn local.player:
+    local.player.tracker_stance = "stand"
+    local.payload = tracker_common.scr::build_base_payload "player_spawn"
+    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+
+    thread tracker_common.scr::queue_event local.payload
+end
