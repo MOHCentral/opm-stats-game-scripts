@@ -3,44 +3,44 @@
 // ============================================================================
 
 on_client_userinfo_changed local.player:
-    local.payload = tracker_common.scr::build_base_payload "client_userinfo_changed"
-    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = global/tracker_common.scr::build_base_payload "client_userinfo_changed"
+    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_player_inactivity_drop local.player:
-    local.payload = tracker_common.scr::build_base_payload "player_inactivity_drop"
-    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = global/tracker_common.scr::build_base_payload "player_inactivity_drop"
+    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_vote_start local.player local.vote_name local.vote_string:
-    local.payload = tracker_common.scr::build_base_payload "vote_start"
-    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = global/tracker_common.scr::build_base_payload "vote_start"
+    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&vote_name=" + local.vote_name
     local.payload = local.payload + "&vote_string=" + local.vote_string
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
-    local.payload = tracker_common.scr::build_base_payload "vote_passed"
+    local.payload = global/tracker_common.scr::build_base_payload "vote_passed"
     local.payload = local.payload + "&vote_name=" + local.vote_name
     local.payload = local.payload + "&vote_string=" + local.vote_string
     local.payload = local.payload + "&yes_count=" + local.yes_count
     local.payload = local.payload + "&no_count=" + local.no_count
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count:
-    local.payload = tracker_common.scr::build_base_payload "vote_failed"
+    local.payload = global/tracker_common.scr::build_base_payload "vote_failed"
     local.payload = local.payload + "&vote_name=" + local.vote_name
     local.payload = local.payload + "&fail_reason=" + local.fail_reason
     local.payload = local.payload + "&yes_count=" + local.yes_count
     local.payload = local.payload + "&no_count=" + local.no_count
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end

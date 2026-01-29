@@ -1,0 +1,112 @@
+// ============================================================================
+// OpenMOHAA Server Auto-Registration v1.0
+// ============================================================================
+// Handles automatic registration of the game server with the Stats API.
+// Detects missing CVars and populates them from API response.
+// ============================================================================
+
+check_registration:
+    local.token = getcvar "opm_server_token"
+    
+    // First, check if we have a saved config
+    if (local.token == "" || local.token == "MISSING_TOKEN") {
+        // Try to load from main/opm_registration.cfg
+        exec opm_registration.cfg
+        
+        // Re-check after exec
+        local.token = getcvar "opm_server_token"
+    }
+
+    local.id = getcvar "opm_server_id"
+
+    if (local.token == "" || local.token == "MISSING_TOKEN") {
+        println "------------------------------------------------"
+        println "OPM TRACKER: Missing server token. Registering..."
+        println "------------------------------------------------"
+        thread register_server
+    } else {
+        // Ensure level variables are populated even if loaded from config
+        level.server_id = local.id
+        level.server_token = local.token
+        
+        if (level.tracker_debug) {
+            println ("OPM TRACKER: Server identifies as: " + local.id)
+        }
+    }
+end
+
+register_server:
+// Build registration payload
+    local.name = getcvar "sv_hostname"
+    if (local.name == "") {
+        local.name = "OpenMOHAA Server"
+    }
+
+    local.ip = getcvar "net_ip"
+    if (local.ip == "" || local.ip == "localhost") {
+        local.ip = "127.0.0.1"
+    }
+
+    local.port = getcvar "net_port"
+    if (local.port == "") {
+        local.port = "12203"
+    }
+
+    local.data = "name=" + local.name
+    local.data = local.data + "&ip_address=" + local.ip
+    local.data = local.data + "&port=" + local.port
+
+    local.url = level.api_base_url + "/api/v1/servers/register"
+
+    // Use JSON payload
+    local.json = "{\"name\":\"" + local.name + "\",\"ip_address\":\"" + local.ip + "\",\"port\":" + local.port + "}"
+    
+    curl_post local.url local.json "global/register.scr::on_register_response"
+end
+
+on_register_response local.success local.response local.http_code:
+    if (local.success && local.http_code == 200) {
+        println "------------------------------------------------"
+        println "OPM TRACKER: Registration Successful!"
+        
+        local.id = waitthread global/tracker_common.scr::json_get_string local.response "server_id"
+        local.token = waitthread global/tracker_common.scr::json_get_string local.response "token"
+
+        if (local.id != "" && local.token != "") {
+            setcvar "opm_server_id" local.id
+            setcvar "opm_server_token" local.token
+            
+            // Update local level variables immediately
+            level.server_id = local.id
+            level.server_token = local.token
+
+            println ("OPM TRACKER: Assigned ID: " + local.id)
+            println "OPM TRACKER: Credentials saved in memory."
+            
+            // Save to file for persistence
+            thread save_registration local.id local.token
+        } else {
+            println "OPM TRACKER: Error parsing registration response."
+            println ("Response: " + local.response)
+        }
+        println "------------------------------------------------"
+    } else {
+        println "------------------------------------------------"
+        println ("OPM TRACKER: Registration Failed! (HTTP " + local.http_code + ")")
+        println ("Response: " + local.response)
+        println "------------------------------------------------"
+    }
+end
+
+save_registration local.id local.token:
+// Build config content
+    local.content = "// Automatically generated OPM Stats Registration\n"
+    local.content = local.content + "set opm_server_id \"" + local.id + "\"\n"
+    local.content = local.content + "set opm_server_token \"" + local.token + "\"\n"
+    
+    // OPM paths are relative to the executable or the game directory.
+    // main/ is the typical location for configs.
+    fs_write_content "main/opm_registration.cfg" local.content
+    
+    println "OPM TRACKER: Credentials persisted to main/opm_registration.cfg"
+end

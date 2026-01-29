@@ -3,34 +3,52 @@
 // ============================================================================
 
 on_health_pickup local.player local.amount:
-    local.payload = tracker_common.scr::build_base_payload "health_pickup"
-    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = global/tracker_common.scr::build_base_payload "health_pickup"
+    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&count=" + local.amount
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_ammo_pickup local.player local.item_name local.amount:
-    local.payload = tracker_common.scr::build_base_payload "ammo_pickup"
-    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&item=" + local.item_name
+    local.payload = global/tracker_common.scr::build_base_payload "ammo_pickup"
+    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
+    local.payload = local.payload + "&item_name=" + local.item_name
     local.payload = local.payload + "&count=" + local.amount
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_armor_pickup local.player local.amount:
-    local.payload = tracker_common.scr::build_base_payload "armor_pickup"
-    local.payload = local.payload + tracker_common.scr::build_player_payload local.player "player"
+    local.payload = global/tracker_common.scr::build_base_payload "armor_pickup"
+    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&count=" + local.amount
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_item_respawn local.entity local.item_name:
-    local.payload = tracker_common.scr::build_base_payload "item_respawn"
+    local.payload = global/tracker_common.scr::build_base_payload "item_respawn"
     local.payload = local.payload + "&entity=" + local.entity
-    local.payload = local.payload + "&item=" + local.item_name
+    local.payload = local.payload + "&item_name=" + local.item_name
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
+
+on_item_pickup local.item local.count:
+    local.payload = global/tracker_common.scr::build_base_payload "item_pickup"
+    local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+    local.payload = local.payload + "&item_name=" + local.item
+    local.payload = local.payload + "&count=" + local.count
+
+    thread global/tracker_common.scr::queue_event local.payload
+end
+
+on_item_drop local.item:
+    local.payload = global/tracker_common.scr::build_base_payload "item_drop"
+    local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+    local.payload = local.payload + "&item_name=" + local.item
+
+    thread global/tracker_common.scr::queue_event local.payload
+end
+

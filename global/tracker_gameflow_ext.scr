@@ -3,139 +3,139 @@
 // ============================================================================
 
 on_intermission_start local.type:
-    local.payload = tracker_common.scr::build_base_payload "intermission_start"
+    local.payload = global/tracker_common.scr::build_base_payload "intermission_start"
     local.payload = local.payload + "&gametype=" + local.type
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_warmup_start:
-    local.payload = tracker_common.scr::build_base_payload "warmup_start"
+    local.payload = global/tracker_common.scr::build_base_payload "warmup_start"
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_warmup_end:
-    local.payload = tracker_common.scr::build_base_payload "warmup_end"
+    local.payload = global/tracker_common.scr::build_base_payload "warmup_end"
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_objective_capture local.obj local.team:
-    local.payload = tracker_common.scr::build_base_payload "objective_capture"
-    local.payload = local.payload + "&objective=" + local.obj
+    local.payload = global/tracker_common.scr::build_base_payload "objective_capture"
+    local.payload = local.payload + "&objective_name=" + local.obj
     local.payload = local.payload + "&team=" + local.team
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
-on_server_spawned local.map local.gametype:
-    local.payload = tracker_common.scr::build_base_payload "server_spawned"
+on_map_ready local.map local.gametype:
+    local.payload = global/tracker_common.scr::build_base_payload "map_ready"
     local.payload = local.payload + "&map=" + local.map
     local.payload = local.payload + "&gametype=" + local.gametype
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_server_console_command local.cmd:
-    local.payload = tracker_common.scr::build_base_payload "server_console_command"
+    local.payload = global/tracker_common.scr::build_base_payload "server_console_command"
     local.payload = local.payload + "&command=" + local.cmd
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_map_restart:
-    local.payload = tracker_common.scr::build_base_payload "map_restart"
+    local.payload = global/tracker_common.scr::build_base_payload "map_restart"
     local.payload = local.payload + "&map=" + level.map_name
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_game_init local.gametype:
-    local.payload = tracker_common.scr::build_base_payload "game_init"
+    local.payload = global/tracker_common.scr::build_base_payload "game_init"
     local.payload = local.payload + "&gametype=" + local.gametype
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_game_start:
-    local.payload = tracker_common.scr::build_base_payload "game_start"
+    local.payload = global/tracker_common.scr::build_base_payload "game_start"
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_game_end:
-    local.payload = tracker_common.scr::build_base_payload "game_end"
+    local.payload = global/tracker_common.scr::build_base_payload "game_end"
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_round_start:
-    local.payload = tracker_common.scr::build_base_payload "round_start"
+    local.payload = global/tracker_common.scr::build_base_payload "round_start"
     local.payload = local.payload + "&round_number=" + level.round_number
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_round_end:
-    local.payload = tracker_common.scr::build_base_payload "round_end"
+    local.payload = global/tracker_common.scr::build_base_payload "round_end"
     local.payload = local.payload + "&round_number=" + level.round_number
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_team_win local.teamnum:
-    local.payload = tracker_common.scr::build_base_payload "team_win"
+    local.payload = global/tracker_common.scr::build_base_payload "team_win"
     local.payload = local.payload + "&teamnum=" + local.teamnum
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_objective_update local.index local.status:
-    local.payload = tracker_common.scr::build_base_payload "objective_update"
+    local.payload = global/tracker_common.scr::build_base_payload "objective_update"
     local.payload = local.payload + "&objective_index=" + local.index
     local.payload = local.payload + "&objective_status=" + local.status
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_map_load_start local.map_name:
-    local.payload = tracker_common.scr::build_base_payload "map_load_start"
+    local.payload = global/tracker_common.scr::build_base_payload "map_load_start"
     local.payload = local.payload + "&map=" + local.map_name
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_map_load_end local.map_name:
-    local.payload = tracker_common.scr::build_base_payload "map_load_end"
+    local.payload = global/tracker_common.scr::build_base_payload "map_load_end"
     local.payload = local.payload + "&map=" + local.map_name
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_map_change_start local.new_map:
-    local.payload = tracker_common.scr::build_base_payload "map_change_start"
+    local.payload = global/tracker_common.scr::build_base_payload "map_change_start"
     local.payload = local.payload + "&new_map=" + local.new_map
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
-on_server_init local.gametype:
-    local.payload = tracker_common.scr::build_base_payload "server_init"
+on_map_init local.gametype:
+    local.payload = global/tracker_common.scr::build_base_payload "map_init"
     local.payload = local.payload + "&gametype=" + local.gametype
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
-on_server_start:
-    local.payload = tracker_common.scr::build_base_payload "server_start"
+on_map_start:
+    local.payload = global/tracker_common.scr::build_base_payload "map_start"
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end
 
-on_server_shutdown local.reason:
-    local.payload = tracker_common.scr::build_base_payload "server_shutdown"
+on_map_shutdown local.reason:
+    local.payload = global/tracker_common.scr::build_base_payload "map_shutdown"
     local.payload = local.payload + "&reason=" + local.reason
 
-    thread tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.payload
 end

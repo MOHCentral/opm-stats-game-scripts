@@ -5,10 +5,10 @@
 // ============================================================================
 // CONFIGURATION & GLOBALS
 // ============================================================================
-level.api_base_url = "http://localhost:8080"
+level.api_base_url = "http://localhost:8084"
     level.api_events_endpoint = "/api/v1/ingest/events"
-    level.server_token = "dev-server-token-replace-in-production"
-    level.server_id = "dev-server-01"
+    level.server_token = "8b6a271b-eed5-4e55-995a-d5494f3ca94b"
+    level.server_id = "728ae814-a0c4-47d5-9dd7-82c0ab3c221d"
     level.tracker_debug = 1
 
     // Batching Globals
@@ -148,10 +148,7 @@ flush_loop:
                 }
             end
 
-            // Deprecated - kept for compatibility
-send_to_api local.payload:
-                thread queue_event local.payload
-            end
+
 
             // ============================================================================
             // HELPERS
