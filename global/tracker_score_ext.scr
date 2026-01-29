@@ -3,8 +3,13 @@
 // ============================================================================
 
 on_score_change local.player local.type local.delta local.total:
-    local.payload = global/tracker_common.scr::build_base_payload "score_change"
-    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
+    if (local.player == NIL) end
+    if (!local.player) end
+    if (local.type == NIL) { local.type = "unknown" }
+    if (local.delta == NIL) { local.delta = 0 }
+    if (local.total == NIL) { local.total = 0 }
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "score_change"
+    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&score_type=" + local.type
     local.payload = local.payload + "&delta=" + local.delta
     local.payload = local.payload + "&new_total=" + local.total
@@ -13,8 +18,11 @@ on_score_change local.player local.type local.delta local.total:
 end
 
 on_teamkill_kick local.player local.count:
-    local.payload = global/tracker_common.scr::build_base_payload "teamkill_kick"
-    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
+    if (local.player == NIL) end
+    if (!local.player) end
+    if (local.count == NIL) { local.count = 0 }
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "teamkill_kick"
+    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&count=" + local.count
 
     thread global/tracker_common.scr::queue_event local.payload

@@ -61,7 +61,9 @@ register_server:
     // Use JSON payload
     local.json = "{\"name\":\"" + local.name + "\",\"ip_address\":\"" + local.ip + "\",\"port\":" + local.port + "}"
     
-    curl_post local.url local.json "global/register.scr::on_register_response"
+    // TODO: curl_post not available in this engine build
+    println ("[STUB] Would POST registration to: " + local.url)
+    // curl_post local.url local.json "global/register.scr::on_register_response"
 end
 
 on_register_response local.success local.response local.http_code:

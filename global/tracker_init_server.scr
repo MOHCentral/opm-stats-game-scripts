@@ -1,6 +1,7 @@
 // ============================================================================
 // OpenMOHAA Telemetry Tracker - Server Initialization
 // Subscribes to Server, Map, Game Flow, World, and Bot/Actor events
+// Uses local wrapper labels since event_subscribe doesn't parse script::label
 // ============================================================================
 
 init:
@@ -9,49 +10,181 @@ init:
     // ========================================================================
     // GAME FLOW (11 events)
     // ========================================================================
-    event_subscribe "game_init" "global/tracker_gameflow_ext.scr::on_game_init"
-    event_subscribe "game_start" "global/tracker_gameflow_ext.scr::on_game_start"
-    event_subscribe "game_end" "global/tracker_gameflow_ext.scr::on_game_end"
-    event_subscribe "round_start" "global/tracker_gameflow_ext.scr::on_round_start"
-    event_subscribe "round_end" "global/tracker_gameflow_ext.scr::on_round_end"
-    event_subscribe "team_win" "global/tracker_gameflow_ext.scr::on_team_win"
-    event_subscribe "match_end" "global/tracker_gameflow_ext.scr::on_match_end"
-    event_subscribe "intermission_start" "global/tracker_gameflow_ext.scr::on_intermission_start"
-    event_subscribe "warmup_start" "global/tracker_gameflow_ext.scr::on_warmup_start"
-    event_subscribe "warmup_end" "global/tracker_gameflow_ext.scr::on_warmup_end"
-    event_subscribe "objective_update" "global/tracker_gameflow_ext.scr::on_objective_update"
+    event_subscribe "game_init" wrapper_game_init
+    event_subscribe "game_start" wrapper_game_start
+    event_subscribe "game_end" wrapper_game_end
+    event_subscribe "round_start" wrapper_round_start
+    event_subscribe "round_end" wrapper_round_end
+    event_subscribe "team_win" wrapper_team_win
+    event_subscribe "match_end" wrapper_match_end
+    event_subscribe "intermission_start" wrapper_intermission_start
+    event_subscribe "warmup_start" wrapper_warmup_start
+    event_subscribe "warmup_end" wrapper_warmup_end
+    event_subscribe "objective_update" wrapper_objective_update
 
     // ========================================================================
-    // SERVER & MAP LIFECYCLE (Centralized in tracker.scr)
+    // SERVER EVENTS (3 events)
     // ========================================================================
-    
-    event_subscribe "server_console_command" "global/tracker_gameflow_ext.scr::on_server_console_command"
+    event_subscribe "server_console_command" wrapper_server_console_command
 
     // ========================================================================
-    // MAP EVENTS (4 events)
+    // MAP EVENTS (8 events)
     // ========================================================================
-    event_subscribe "map_load_start" "global/tracker_gameflow_ext.scr::on_map_load_start"
-    event_subscribe "map_load_end" "global/tracker_gameflow_ext.scr::on_map_load_end"
-    event_subscribe "map_change_start" "global/tracker_gameflow_ext.scr::on_map_change_start"
-    event_subscribe "map_restart" "global/tracker_gameflow_ext.scr::on_map_restart"
+    event_subscribe "map_init" wrapper_map_init
+    event_subscribe "map_start" wrapper_map_start
+    event_subscribe "map_shutdown" wrapper_map_shutdown
+    event_subscribe "map_ready" wrapper_map_ready
+    event_subscribe "map_load_start" wrapper_map_load_start
+    event_subscribe "map_load_end" wrapper_map_load_end
+    event_subscribe "map_change_start" wrapper_map_change_start
+    event_subscribe "map_restart" wrapper_map_restart
 
     // ========================================================================
     // WORLD EVENTS (3 events)
     // ========================================================================
-    event_subscribe "door_open" "global/tracker_world_ext.scr::on_door_open"
-    event_subscribe "door_close" "global/tracker_world_ext.scr::on_door_close"
-    event_subscribe "explosion" "global/tracker_world_ext.scr::on_explosion"
+    event_subscribe "door_open" wrapper_door_open
+    event_subscribe "door_close" wrapper_door_close
+    event_subscribe "explosion" wrapper_explosion
 
     // ========================================================================
     // AI/ACTOR EVENTS (7 events)
     // ========================================================================
-    event_subscribe "actor_spawn" "global/tracker_bot_ext.scr::on_actor_spawn"
-    event_subscribe "actor_killed" "global/tracker_bot_ext.scr::on_actor_killed"
-    event_subscribe "bot_spawn" "global/tracker_bot_ext.scr::on_bot_spawn"
-    event_subscribe "bot_killed" "global/tracker_bot_ext.scr::on_bot_killed"
-    event_subscribe "bot_roam" "global/tracker_bot_ext.scr::on_bot_roam"
-    event_subscribe "bot_curious" "global/tracker_bot_ext.scr::on_bot_curious"
-    event_subscribe "bot_attack" "global/tracker_bot_ext.scr::on_bot_attack"
+    event_subscribe "actor_spawn" wrapper_actor_spawn
+    event_subscribe "actor_killed" wrapper_actor_killed
+    event_subscribe "bot_spawn" wrapper_bot_spawn
+    event_subscribe "bot_killed" wrapper_bot_killed
+    event_subscribe "bot_roam" wrapper_bot_roam
+    event_subscribe "bot_curious" wrapper_bot_curious
+    event_subscribe "bot_attack" wrapper_bot_attack
 
-    println "Server Event Subscriptions Complete."
+    println "Server Event Subscriptions Complete (32 events)."
+end
+
+// ============================================================================
+// WRAPPER LABELS - Forward event parameters to actual handlers
+// ============================================================================
+
+// Game flow wrappers
+wrapper_game_init local.gametype:
+    thread global/tracker_gameflow_ext.scr::on_game_init local.gametype
+end
+
+wrapper_game_start:
+    thread global/tracker_gameflow_ext.scr::on_game_start
+end
+
+wrapper_game_end:
+    thread global/tracker_gameflow_ext.scr::on_game_end
+end
+
+wrapper_round_start:
+    thread global/tracker_gameflow_ext.scr::on_round_start
+end
+
+wrapper_round_end:
+    thread global/tracker_gameflow_ext.scr::on_round_end
+end
+
+wrapper_team_win local.winning_team_num:
+    thread global/tracker_gameflow_ext.scr::on_team_win local.winning_team_num
+end
+
+wrapper_match_end local.map_name local.gametype local.winning_team:
+    thread global/tracker_gameflow_ext.scr::on_match_end local.map_name local.gametype local.winning_team
+end
+
+wrapper_intermission_start local.map_name local.gametype:
+    thread global/tracker_gameflow_ext.scr::on_intermission_start local.map_name local.gametype
+end
+
+wrapper_warmup_start local.map_name:
+    thread global/tracker_gameflow_ext.scr::on_warmup_start local.map_name
+end
+
+wrapper_warmup_end local.map_name:
+    thread global/tracker_gameflow_ext.scr::on_warmup_end local.map_name
+end
+
+wrapper_objective_update local.objective_index local.new_status:
+    thread global/tracker_gameflow_ext.scr::on_objective_update local.objective_index local.new_status
+end
+
+// Server wrappers
+wrapper_server_console_command local.command_string:
+    thread global/tracker_gameflow_ext.scr::on_server_console_command local.command_string
+end
+
+// Map wrappers
+wrapper_map_init:
+    thread global/tracker.scr::on_map_init
+end
+
+wrapper_map_start:
+    thread global/tracker.scr::on_map_start
+end
+
+wrapper_map_shutdown:
+    thread global/tracker.scr::on_map_shutdown
+end
+
+wrapper_map_ready local.map_name local.gametype:
+    thread global/tracker.scr::on_map_ready local.map_name local.gametype
+end
+
+wrapper_map_load_start local.map_name:
+    thread global/tracker_gameflow_ext.scr::on_map_load_start local.map_name
+end
+
+wrapper_map_load_end local.map_name local.gametype:
+    thread global/tracker_gameflow_ext.scr::on_map_load_end local.map_name local.gametype
+end
+
+wrapper_map_change_start local.current_map local.next_map:
+    thread global/tracker_gameflow_ext.scr::on_map_change_start local.current_map local.next_map
+end
+
+wrapper_map_restart local.map_name:
+    thread global/tracker_gameflow_ext.scr::on_map_restart local.map_name
+end
+
+// World wrappers
+wrapper_door_open local.activator:
+    thread global/tracker_world_ext.scr::on_door_open self local.activator
+end
+
+wrapper_door_close:
+    thread global/tracker_world_ext.scr::on_door_close self
+end
+
+wrapper_explosion local.attacker local.damage:
+    thread global/tracker_world_ext.scr::on_explosion self local.attacker local.damage
+end
+
+// Bot/Actor wrappers
+wrapper_actor_spawn:
+    thread global/tracker_bot_ext.scr::on_actor_spawn self
+end
+
+wrapper_actor_killed local.attacker:
+    thread global/tracker_bot_ext.scr::on_actor_killed self local.attacker
+end
+
+wrapper_bot_spawn:
+    thread global/tracker_bot_ext.scr::on_bot_spawn self
+end
+
+wrapper_bot_killed local.attacker:
+    thread global/tracker_bot_ext.scr::on_bot_killed self local.attacker
+end
+
+wrapper_bot_roam:
+    thread global/tracker_bot_ext.scr::on_bot_roam self
+end
+
+wrapper_bot_curious:
+    thread global/tracker_bot_ext.scr::on_bot_curious self
+end
+
+wrapper_bot_attack:
+    thread global/tracker_bot_ext.scr::on_bot_attack self
 end

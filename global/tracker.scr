@@ -13,46 +13,54 @@
 // - API returns 202 Accepted immediately (async processing)
 //
 // ============================================================================
-// CONFIGURATION
+// MAIN INITIALIZATION
 // ============================================================================
 
-// Dynamic Server Configuration
-level.api_base_url = "http://localhost:8084" 
-    level.api_events_endpoint = "/api/v1/ingest/events"
-
-    // Fetch Identity from CVars (Critical for Multi-Server)
-    level.server_token = getcvar "opm_server_token"
-    if (level.server_token == "") {
-        level.server_token = "MISSING_TOKEN_" + (getcvar "net_ip")
-        println "WARNING: opm_server_token not set!"
-    }
-
-    level.server_id = getcvar "opm_server_id"
-    if (level.server_id == "") {
-        // Fallback: Generate signature from IP:Port
-        level.server_id = "srv_" + (getcvar "net_ip") + "_" + (getcvar "net_port")
-        println "WARNING: opm_server_id not set! Using fallback: " + level.server_id
-    }
-
-    // Session tracking
-    level.session_id = ""
-    level.match_id = ""
-    level.match_start_time = 0
-    level.round_number = 0
-    level.map_name = ""
-
-    // Team scores (for heartbeat)
-    level.allies_score = 0
-    level.axis_score = 0
-
-    // Debug
-    level.tracker_debug = 1
-
-    // ============================================================================
-    // MAIN INITIALIZATION
-    // ============================================================================
-
 main:
+// ========================================================================
+// CONFIGURATION - Must be inside a label to execute!
+// ========================================================================
+level.api_base_url = "http://localhost:8084"
+        level.api_events_endpoint = "/api/v1/ingest/events"
+
+        // Fetch Identity from CVars (Critical for Multi-Server)
+        level.server_token = getcvar "opm_server_token"
+        if (level.server_token == "") {
+            local.ip = getcvar "net_ip"
+            level.server_token = "MISSING_TOKEN_" + local.ip
+            println "WARNING: opm_server_token not set!"
+        }
+
+        level.server_id = getcvar "opm_server_id"
+        if (level.server_id == "") {
+            // Fallback: Generate signature from IP:Port
+            local.ip = getcvar "net_ip"
+            local.port = getcvar "net_port"
+            level.server_id = "srv_" + local.ip + "_" + local.port
+            local.msg = "WARNING: opm_server_id not set! Using fallback: " + level.server_id
+            println local.msg
+        }
+
+        // Session tracking
+        level.session_id = ""
+        level.match_id = ""
+        level.match_start_time = 0
+        level.round_number = 0
+        level.map_name = ""
+
+        // Team scores (for heartbeat)
+        level.allies_score = 0
+        level.axis_score = 0
+
+        // Debug - Default to CVar, fallback to 1
+        local.debug_cvar = getcvar "opm_debug"
+        if (local.debug_cvar == "") {
+            setcvar "opm_debug" "1"
+            level.tracker_debug = 1
+        } else {
+            level.tracker_debug = (int local.debug_cvar)
+        }
+
         println "=============================================="
         println "OpenMOHAA Telemetry Tracker v2.0 Initializing"
         println "=============================================="
@@ -63,9 +71,12 @@ main:
         level.match_start_time = level.time
         level.map_name = getcvar "mapname"
     
-        println ("Session ID: " + level.session_id)
-        println ("Map: " + level.map_name)
-        println ("API Endpoint: " + level.api_base_url + level.api_events_endpoint)
+        local.sid_msg = "Session ID: " + level.session_id
+        println local.sid_msg
+        local.map_msg = "Map: " + level.map_name
+        println local.map_msg
+        local.api_msg = "API Endpoint: " + level.api_base_url + level.api_events_endpoint
+        println local.api_msg
     
         // Register console commands
         registercmd "login" "cmd_login"
@@ -73,8 +84,8 @@ main:
         registercmd "claim" "cmd_claim"
         registercmd "stats" "cmd_stats"
         registercmd "whoami" "cmd_whoami"
-        registercmd "seed" "global/seeder.scr::cmd_seed"
-    
+        registercmd "seed" seed_cmd_wrapper
+
         // ========================================================================
         // EVENT SUBSCRIPTIONS
         // ========================================================================
@@ -83,16 +94,13 @@ main:
         thread global/tracker_init_player.scr::init
         thread global/tracker_init_server.scr::init
 
-        // Life-Cycle Events (New Engine Specification)
-        event_subscribe "server_process_start" "global/tracker.scr::on_server_process_start"
-        event_subscribe "server_process_quit"  "global/tracker.scr::on_server_process_quit"
-        event_subscribe "map_init"             "global/tracker.scr::on_map_init"
-        event_subscribe "map_start"            "global/tracker.scr::on_map_start"
-        event_subscribe "map_shutdown"         "global/tracker.scr::on_map_shutdown"
-        event_subscribe "map_ready"            "global/tracker.scr::on_map_ready"
+        // Life-Cycle Events (handled in tracker_init_server.scr now)
+        // server_process_start and server_process_quit are one-time only
+        event_subscribe "server_process_start" on_server_process_start
+        event_subscribe "server_process_quit"  on_server_process_quit
 
     
-        println "Subscribed to all 30 player events."
+        println "Subscribed to all 94 events."
     
         // Send match_start event (Generates unique match_id)
         // thread send_match_start  // <-- Moved to on_map_start handler
@@ -100,8 +108,20 @@ main:
         // Start heartbeat loop (every 30 seconds)
         thread heartbeat_loop
         
+        // Start debug CVar sync loop
+        thread debug_sync_loop
+        
         // Start API flush loop (every 2 seconds)
         thread global/tracker_common.scr::flush_loop
+        
+        // Check for auto-seed cvar (opm_seed)
+        // Usage: +set opm_seed 5 on command line to seed 5 matches on startup
+        local.seed_count = getcvar "opm_seed"
+        if (local.seed_count != NIL && local.seed_count != "" && local.seed_count != "0") {
+            println ("AUTO-SEED: opm_seed cvar set to " + local.seed_count + ", starting seeder...")
+            wait 2
+            thread global/seeder.scr::cmd_seed NIL local.seed_count
+        }
     
         // ============================================================================
         // PLAYER HUD MANAGER 
@@ -126,8 +146,9 @@ player_hud_manager:
 show_hud_notification local.player local.message local.r local.g local.b:
             if (!local.player) end
         
-                // MoHAA hudprint sends message to the specific player's chat area
-            local.player hudprint (">>> " + local.message + "\n")
+                // Use iprint instead of hudprint (which doesn't exist)
+            local.msg = (">>> " + local.message)
+            iprint local.msg
         end
 
         // ============================================================================
@@ -137,6 +158,11 @@ show_hud_notification local.player local.message local.r local.g local.b:
         // Players generate tokens at the forum and use them in-game to link identities.
         // Once authenticated, the SMF member_id is used for all stat tracking.
         // ============================================================================
+
+        // Wrapper for seed command (external script)
+seed_cmd_wrapper local.player local.args:
+            thread global/seeder.scr::cmd_seed local.player local.args
+        end
 
 cmd_login local.player local.args:
             if (local.args.size < 1) {
@@ -170,8 +196,10 @@ cmd_login local.player local.args:
     
             // No longer storing global reference to avoid race conditions
             // level.pending_auth_player = local.player  <-- REMOVED
-    
-            curl_post local.url local.data "global/tracker.scr::on_smf_auth_verify"
+
+            // TODO: curl_post not available in this engine build
+            println ("[STUB] Would POST to: " + local.url)
+            // curl_post local.url local.data "global/tracker.scr::on_smf_auth_verify"
         end
 
 cmd_logout local.player local.args:
@@ -184,7 +212,9 @@ cmd_logout local.player local.args:
             local.url = level.api_base_url + "/api/v1/auth/smf-logout"
             local.data = "member_id=" + local.player.smf_member_id
             local.data = local.data + "&guid=" + (getclientnum local.player)
-            curl_post local.url local.data "global/tracker_common.scr::on_http_callback"
+            // TODO: curl_post not available in this engine build
+            println ("[STUB] Would POST logout to: " + local.url)
+            // curl_post local.url local.data "global/tracker_common.scr::on_http_callback"
     
             // Clear auth state
             local.player.is_authenticated = 0
@@ -216,7 +246,9 @@ cmd_stats local.player local.args:
                 local.url = level.api_base_url + "/api/v1/stats/player/" + (getclientnum local.player)
             }
     
-            curl_get local.url "global/tracker.scr::on_stats_response"
+            // TODO: curl_get not available in this engine build
+            println ("[STUB] Would GET stats from: " + local.url)
+            // curl_get local.url "global/tracker.scr::on_stats_response"
         end
 
 cmd_whoami local.player local.args:
@@ -236,7 +268,7 @@ send_match_start:
             level.match_id = "match_" + level.session_id + "_" + level.time + "_" + local.rnd
             level.round_number = 1
     
-            local.payload = global/tracker_common.scr::build_base_payload "match_start"
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "match_start"
             local.payload = local.payload + "&server_id=" + level.server_id
             local.payload = local.payload + "&map_name=" + level.map_name
             local.payload = local.payload + "&gametype=" + (getcvar "g_gametype")
@@ -249,14 +281,23 @@ send_match_start:
         end
 
 send_match_end local.winning_team local.allies_score local.axis_score:
-            local.payload = global/tracker_common.scr::build_base_payload "match_end"
+            if (local.winning_team == NIL) { local.winning_team = "unknown" }
+                if (local.allies_score == NIL) { local.allies_score = 0 }
+                    if (local.axis_score == NIL) { local.axis_score = 0 }
+                        local.round = level.round_number
+            local.map = level.map_name
+            local.duration = level.time - level.match_start_time
+            if (local.round == NIL) { local.round = 0 }
+                if (local.map == NIL) { local.map = "unknown" }
+                    if (local.duration == NIL) { local.duration = 0 }
+                        local.payload = waitthread global/tracker_common.scr::build_base_payload "match_end"
             local.payload = local.payload + "&server_id=" + level.server_id
-            local.payload = local.payload + "&map_name=" + level.map_name
-            local.payload = local.payload + "&duration=" + (level.time - level.match_start_time)
+            local.payload = local.payload + "&map_name=" + local.map
+            local.payload = local.payload + "&duration=" + local.duration
             local.payload = local.payload + "&winning_team=" + local.winning_team
             local.payload = local.payload + "&allies_score=" + local.allies_score
             local.payload = local.payload + "&axis_score=" + local.axis_score
-            local.payload = local.payload + "&total_rounds=" + level.round_number
+            local.payload = local.payload + "&total_rounds=" + local.round
     
             thread global/tracker_common.scr::queue_event local.payload
             println ("MATCH END: " + level.match_id + " Winner: " + local.winning_team)
@@ -266,15 +307,18 @@ send_round_start:
             level.round_number = (level.round_number + 1)
             if (level.round_number == NIL) level.round_number = 1
 
-                local.payload = global/tracker_common.scr::build_base_payload "round_start"
+                local.payload = waitthread global/tracker_common.scr::build_base_payload "round_start"
             local.payload = local.payload + "&round_number=" + level.round_number
 
             thread global/tracker_common.scr::queue_event local.payload
         end
 
 send_round_end local.winning_team:
-            local.payload = global/tracker_common.scr::build_base_payload "round_end"
-            local.payload = local.payload + "&round_number=" + level.round_number
+            local.round = level.round_number
+            if (local.round == NIL) { local.round = 0 }
+                if (local.winning_team == NIL) { local.winning_team = "unknown" }
+                    local.payload = waitthread global/tracker_common.scr::build_base_payload "round_end"
+            local.payload = local.payload + "&round_number=" + local.round
             local.payload = local.payload + "&winning_team=" + local.winning_team
 
             thread global/tracker_common.scr::queue_event local.payload
@@ -283,14 +327,33 @@ send_round_end local.winning_team:
 heartbeat_loop:
             wait 30
 
-            local.payload = global/tracker_common.scr::build_base_payload "heartbeat"
-            local.payload = local.payload + "&round_number=" + level.round_number
-            local.payload = local.payload + "&allies_score=" + level.allies_score
-            local.payload = local.payload + "&axis_score=" + level.axis_score
-            local.payload = local.payload + "&player_count=" + level.playercount
+            local.round = level.round_number
+            local.allies = level.allies_score
+            local.axis = level.axis_score
+            local.pcount = level.playercount
+            if (local.round == NIL) { local.round = 0 }
+                if (local.allies == NIL) { local.allies = 0 }
+                    if (local.axis == NIL) { local.axis = 0 }
+                        if (local.pcount == NIL) { local.pcount = 0 }
+
+                            local.payload = waitthread global/tracker_common.scr::build_base_payload "heartbeat"
+            local.payload = local.payload + "&round_number=" + local.round
+            local.payload = local.payload + "&allies_score=" + local.allies
+            local.payload = local.payload + "&axis_score=" + local.axis
+            local.payload = local.payload + "&player_count=" + local.pcount
 
             thread global/tracker_common.scr::queue_event local.payload
             thread heartbeat_loop
+        end
+
+debug_sync_loop:
+            while (1) {
+                wait 5
+                local.debug_val = getcvar "opm_debug"
+                if (local.debug_val != "") {
+                    level.tracker_debug = (int local.debug_val)
+                }
+            }
         end
 
         // ============================================================================
@@ -303,40 +366,55 @@ heartbeat_loop:
         // MOVEMENT EVENT HANDLERS
         // ============================================================================
 
-on_player_jump local.dummy:
-            local.payload = global/tracker_common.scr::build_base_payload "jump"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_player_jump local.player:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    local.payload = waitthread global/tracker_common.scr::build_base_payload "jump"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     
             thread global/tracker_common.scr::queue_event local.payload
         end
 
-on_player_land local.height:
-            local.payload = global/tracker_common.scr::build_base_payload "land"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_player_land local.player local.height:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    if (local.height == NIL) { local.height = 0 }
+                        local.payload = waitthread global/tracker_common.scr::build_base_payload "land"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
             local.payload = local.payload + "&fall_height=" + local.height
     
             thread global/tracker_common.scr::queue_event local.payload
         end
 
-on_player_crouch local.dummy:
-            self.tracker_stance = "crouch"
-            local.payload = global/tracker_common.scr::build_base_payload "crouch"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_player_crouch local.player:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    local.player.tracker_stance = "crouch"
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "crouch"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     
             thread global/tracker_common.scr::queue_event local.payload
         end
 
-on_player_prone local.dummy:
-            self.tracker_stance = "prone"
-            local.payload = global/tracker_common.scr::build_base_payload "prone"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_player_prone local.player:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    local.player.tracker_stance = "prone"
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "prone"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     
             thread global/tracker_common.scr::queue_event local.payload
         end
 
-on_player_distance local.walked local.sprinted local.swam local.driven:
-            local.payload = global/tracker_common.scr::build_base_payload "distance"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_player_distance local.player local.walked local.sprinted local.swam local.driven:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    if (local.walked == NIL) { local.walked = 0 }
+                        if (local.sprinted == NIL) { local.sprinted = 0 }
+                            if (local.swam == NIL) { local.swam = 0 }
+                                if (local.driven == NIL) { local.driven = 0 }
+                                    local.payload = waitthread global/tracker_common.scr::build_base_payload "distance"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
             local.payload = local.payload + "&walked=" + local.walked
             local.payload = local.payload + "&sprinted=" + local.sprinted
             local.payload = local.payload + "&swam=" + local.swam
@@ -349,25 +427,32 @@ on_player_distance local.walked local.sprinted local.swam local.driven:
         // INTERACTION EVENT HANDLERS
         // ============================================================================
 
-on_ladder_mount local.ladder:
-            local.payload = global/tracker_common.scr::build_base_payload "ladder_mount"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_ladder_mount local.player local.ladder:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    local.payload = waitthread global/tracker_common.scr::build_base_payload "ladder_mount"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     
             thread global/tracker_common.scr::queue_event local.payload
         end
 
-on_ladder_dismount local.ladder:
-            local.payload = global/tracker_common.scr::build_base_payload "ladder_dismount"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_ladder_dismount local.player local.ladder:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    local.payload = waitthread global/tracker_common.scr::build_base_payload "ladder_dismount"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     
             thread global/tracker_common.scr::queue_event local.payload
         end
 
         // MOVED TO: global/tracker_items_ext.scr
 
-on_player_use local.entity:
-            local.payload = global/tracker_common.scr::build_base_payload "use"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_player_use local.player local.entity:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    if (local.entity == NIL) { local.entity = "unknown" }
+                        local.payload = waitthread global/tracker_common.scr::build_base_payload "use"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
             local.payload = local.payload + "&entity=" + local.entity
     
             thread global/tracker_common.scr::queue_event local.payload
@@ -378,30 +463,35 @@ on_player_use local.entity:
         // ============================================================================
 
 on_client_connect local.clientnum:
-            local.payload = global/tracker_common.scr::build_base_payload "connect"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+            if (local.clientnum == NIL) { local.clientnum = -1 }
+                local.payload = waitthread global/tracker_common.scr::build_base_payload "connect"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload self "player"
             local.payload = local.payload + "&client_num=" + local.clientnum
     
             thread global/tracker_common.scr::queue_event local.payload
         end
 
-on_client_disconnect local.dummy:
-            local.payload = global/tracker_common.scr::build_base_payload "disconnect"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_client_disconnect local.player:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    local.payload = waitthread global/tracker_common.scr::build_base_payload "disconnect"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     
             thread global/tracker_common.scr::queue_event local.payload
         end
 
 on_client_begin local.player:
-        // Initialize session-based counters
+            if (local.player == NIL) end
+                if (!local.player) end
+                    // Initialize session-based counters
             local.player.shots_fired = 0
             local.player.shots_hit = 0
         
             // Initialize stance
             local.player.tracker_stance = "stand"
 
-            local.payload = global/tracker_common.scr::build_base_payload "client_begin"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "client_begin"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
 
             thread global/tracker_common.scr::queue_event local.payload
     
@@ -416,8 +506,8 @@ player_accuracy_loop local.player:
                 if (!local.player) end
 
                     if (local.player.shots_fired > 0) {
-                    local.payload = global/tracker_common.scr::build_base_payload "accuracy_summary"
-                    local.payload = local.payload + global/tracker_common.scr::build_player_payload_compact local.player "player"
+                    local.payload = waitthread global/tracker_common.scr::build_base_payload "accuracy_summary"
+                    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload_compact local.player "player"
                     local.payload = local.payload + "&fired=" + local.player.shots_fired
                     local.payload = local.payload + "&hits=" + local.player.shots_hit
             
@@ -426,10 +516,14 @@ player_accuracy_loop local.player:
             }
         end
 
-on_team_join local.old_team local.new_team:
-            if (level.tracker_debug) { println "EVENT: on_team_join local.old_team local.new_team:" }
-                local.payload = global/tracker_common.scr::build_base_payload "team_join"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload self "player"
+on_team_join local.player local.old_team local.new_team:
+            if (local.player == NIL) end
+                if (!local.player) end
+                    if (local.old_team == NIL) { local.old_team = "unknown" }
+                        if (local.new_team == NIL) { local.new_team = "unknown" }
+                            if (level.tracker_debug) { println "EVENT: on_team_join" }
+                                local.payload = waitthread global/tracker_common.scr::build_base_payload "team_join"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
             local.payload = local.payload + "&old_team=" + local.old_team
             local.payload = local.payload + "&new_team=" + local.new_team
 
@@ -524,8 +618,8 @@ on_smf_auth_verify local.success local.response local.http_code:
         end
 
 send_player_auth_event local.player:
-            local.payload = global/tracker_common.scr::build_base_payload "player_auth"
-            local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "player_auth"
+            local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
             local.payload = local.payload + "&smf_member_id=" + local.player.smf_member_id
             local.payload = local.payload + "&smf_member_name=" + local.player.smf_member_name
 
@@ -566,7 +660,7 @@ on_stats_response local.success local.response local.http_code:
         // ENGINE LIFE-CYCLE HANDLERS (New OPM Spec)
         // ============================================================================
 
-on_server_process_start local.dummy:
+on_server_process_start:
             println "------------------------------------------------"
             println "OPM TRACKER: Server Process Start"
             println "------------------------------------------------"
@@ -574,7 +668,7 @@ on_server_process_start local.dummy:
             thread global/register.scr::check_registration
         end
 
-on_server_process_quit local.dummy:
+on_server_process_quit:
             println "------------------------------------------------"
             println "OPM TRACKER: Server Process Quit"
             println "------------------------------------------------"
@@ -582,11 +676,11 @@ on_server_process_quit local.dummy:
             waitthread global/tracker_common.scr::flush_queue
         end
 
-on_map_init local.gametype:
+on_map_init:
             if (level.tracker_debug) {
-                println ("OPM TRACKER: Map Init (" + local.gametype + ")")
+                println "OPM TRACKER: Map Init"
             }
-            thread global/tracker_gameflow_ext.scr::on_map_init local.gametype
+            thread global/tracker_gameflow_ext.scr::on_map_init
         end
 
 on_map_start local.dummy:
@@ -609,13 +703,13 @@ on_map_ready local.dummy:
             thread global/tracker_gameflow_ext.scr::on_map_ready (getcvar "mapname") (getcvar "g_gametype")
         end
 
-on_map_shutdown local.reason:
+on_map_shutdown:
             println "------------------------------------------------"
-            println ("OPM TRACKER: Map Shutdown (" + local.reason + ")")
+            println "OPM TRACKER: Map Shutdown"
             println "------------------------------------------------"
     
             // Call extension
-            thread global/tracker_gameflow_ext.scr::on_map_shutdown local.reason
+            thread global/tracker_gameflow_ext.scr::on_map_shutdown
 
             // Final map-level flush
             waitthread global/tracker_common.scr::flush_queue

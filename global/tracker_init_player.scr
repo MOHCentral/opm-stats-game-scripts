@@ -1,6 +1,7 @@
 // ============================================================================
 // OpenMOHAA Telemetry Tracker - Player Initialization
 // Subscribes to Player, Combat, Movement, Interaction, Item, Vehicle, Client, and Score events
+// Uses local wrapper labels since event_subscribe doesn't parse script::label
 // ============================================================================
 
 init:
@@ -9,97 +10,361 @@ init:
     // ========================================================================
     // COMBAT EVENTS (23 events)
     // ========================================================================
-    event_subscribe "player_kill" "global/tracker_combat_ext.scr::on_player_kill"
-    event_subscribe "player_death" "global/tracker_combat_ext.scr::on_player_death"
-    event_subscribe "player_damage" "global/tracker_combat_ext.scr::on_player_damage"
-    event_subscribe "player_pain" "global/tracker_combat_ext.scr::on_player_pain"
-    event_subscribe "player_headshot" "global/tracker_combat_ext.scr::on_player_headshot"
-    event_subscribe "player_suicide" "global/tracker_combat_ext.scr::on_player_suicide"
-    event_subscribe "player_crushed" "global/tracker_combat_ext.scr::on_player_crushed"
-    event_subscribe "player_telefragged" "global/tracker_combat_ext.scr::on_player_telefragged"
-    event_subscribe "player_roadkill" "global/tracker_combat_ext.scr::on_player_roadkill"
-    event_subscribe "player_bash" "global/tracker_combat_ext.scr::on_player_bash"
-    event_subscribe "player_teamkill" "global/tracker_combat_ext.scr::on_player_teamkill"
-    event_subscribe "weapon_fire" "global/tracker_combat_ext.scr::on_weapon_fire"
-    event_subscribe "weapon_hit" "global/tracker_combat_ext.scr::on_weapon_hit"
-    event_subscribe "weapon_reload" "global/tracker_combat_ext.scr::on_weapon_reload"
-    event_subscribe "weapon_reload_done" "global/tracker_combat_ext.scr::on_weapon_reload_done"
-    event_subscribe "weapon_change" "global/tracker_combat_ext.scr::on_weapon_change"
-    event_subscribe "weapon_ready" "global/tracker_combat_ext.scr::on_weapon_ready"
-    event_subscribe "weapon_no_ammo" "global/tracker_combat_ext.scr::on_weapon_no_ammo"
-    event_subscribe "weapon_holster" "global/tracker_combat_ext.scr::on_weapon_holster"
-    event_subscribe "weapon_raise" "global/tracker_combat_ext.scr::on_weapon_raise"
-    event_subscribe "weapon_drop" "global/tracker_combat_ext.scr::on_weapon_drop"
-    event_subscribe "grenade_throw" "global/tracker_combat_ext.scr::on_grenade_throw"
-    event_subscribe "grenade_explode" "global/tracker_combat_ext.scr::on_grenade_explode"
+    event_subscribe "player_kill" wrapper_player_kill
+    event_subscribe "player_death" wrapper_player_death
+    event_subscribe "player_damage" wrapper_player_damage
+    event_subscribe "player_pain" wrapper_player_pain
+    event_subscribe "player_headshot" wrapper_player_headshot
+    event_subscribe "player_suicide" wrapper_player_suicide
+    event_subscribe "player_crushed" wrapper_player_crushed
+    event_subscribe "player_telefragged" wrapper_player_telefragged
+    event_subscribe "player_roadkill" wrapper_player_roadkill
+    event_subscribe "player_bash" wrapper_player_bash
+    event_subscribe "player_teamkill" wrapper_player_teamkill
+    event_subscribe "weapon_fire" wrapper_weapon_fire
+    event_subscribe "weapon_hit" wrapper_weapon_hit
+    event_subscribe "weapon_reload" wrapper_weapon_reload
+    event_subscribe "weapon_reload_done" wrapper_weapon_reload_done
+    event_subscribe "weapon_change" wrapper_weapon_change
+    event_subscribe "weapon_ready" wrapper_weapon_ready
+    event_subscribe "weapon_no_ammo" wrapper_weapon_no_ammo
+    event_subscribe "weapon_holster" wrapper_weapon_holster
+    event_subscribe "weapon_raise" wrapper_weapon_raise
+    event_subscribe "weapon_drop" wrapper_weapon_drop
+    event_subscribe "grenade_throw" wrapper_grenade_throw
+    event_subscribe "grenade_explode" wrapper_grenade_explode
 
     // ========================================================================
     // MOVEMENT EVENTS (10 events)
     // ========================================================================
-    event_subscribe "player_spawn" "global/tracker_movement_ext.scr::on_player_spawn"
-    event_subscribe "player_respawn" "global/tracker_movement_ext.scr::on_player_respawn"
-    event_subscribe "player_jump" "global/tracker.scr::on_player_jump"
-    event_subscribe "player_land" "global/tracker.scr::on_player_land"
-    event_subscribe "player_crouch" "global/tracker.scr::on_player_crouch"
-    event_subscribe "player_prone" "global/tracker.scr::on_player_prone"
-    event_subscribe "player_stand" "global/tracker_movement_ext.scr::on_player_stand"
-    event_subscribe "player_distance" "global/tracker.scr::on_player_distance"
-    event_subscribe "ladder_mount" "global/tracker.scr::on_ladder_mount"
-    event_subscribe "ladder_dismount" "global/tracker.scr::on_ladder_dismount"
+    event_subscribe "player_spawn" wrapper_player_spawn
+    event_subscribe "player_respawn" wrapper_player_respawn
+    event_subscribe "player_jump" wrapper_player_jump
+    event_subscribe "player_land" wrapper_player_land
+    event_subscribe "player_crouch" wrapper_player_crouch
+    event_subscribe "player_prone" wrapper_player_prone
+    event_subscribe "player_stand" wrapper_player_stand
+    event_subscribe "player_distance" wrapper_player_distance
+    event_subscribe "ladder_mount" wrapper_ladder_mount
+    event_subscribe "ladder_dismount" wrapper_ladder_dismount
 
     // ========================================================================
     // INTERACTION EVENTS (6 events)
     // ========================================================================
-    event_subscribe "player_use" "global/tracker.scr::on_player_use"
-    event_subscribe "player_use_object_start" "global/tracker_interaction_ext.scr::on_player_use_object_start"
-    event_subscribe "player_use_object_finish" "global/tracker_interaction_ext.scr::on_player_use_object_finish"
-    event_subscribe "player_spectate" "global/tracker_interaction_ext.scr::on_player_spectate"
-    event_subscribe "player_freeze" "global/tracker_interaction_ext.scr::on_player_freeze"
-    event_subscribe "player_say" "global/tracker_interaction_ext.scr::on_player_say"
+    event_subscribe "player_use" wrapper_player_use
+    event_subscribe "player_use_object_start" wrapper_player_use_object_start
+    event_subscribe "player_use_object_finish" wrapper_player_use_object_finish
+    event_subscribe "player_spectate" wrapper_player_spectate
+    event_subscribe "player_freeze" wrapper_player_freeze
+    event_subscribe "player_say" wrapper_player_say
 
     // ========================================================================
-    // ITEM EVENTS (5 events)
+    // ITEM EVENTS (6 events)
     // ========================================================================
-    event_subscribe "item_pickup" "global/tracker_items_ext.scr::on_item_pickup"
-    event_subscribe "item_drop" "global/tracker_items_ext.scr::on_item_drop"
-    event_subscribe "item_respawn" "global/tracker_items_ext.scr::on_item_respawn"
-    event_subscribe "health_pickup" "global/tracker_items_ext.scr::on_health_pickup"
-    event_subscribe "ammo_pickup" "global/tracker_items_ext.scr::on_ammo_pickup"
-    // armor_pickup might not be in base game events, check list (not in user list, but was in code)
+    event_subscribe "item_pickup" wrapper_item_pickup
+    event_subscribe "item_drop" wrapper_item_drop
+    event_subscribe "item_respawn" wrapper_item_respawn
+    event_subscribe "health_pickup" wrapper_health_pickup
+    event_subscribe "ammo_pickup" wrapper_ammo_pickup
+    event_subscribe "armor_pickup" wrapper_armor_pickup
 
     // ========================================================================
     // VEHICLE/TURRET EVENTS (6 events)
     // ========================================================================
-    event_subscribe "vehicle_enter" "global/tracker_vehicle_ext.scr::on_vehicle_enter"
-    event_subscribe "vehicle_exit" "global/tracker_vehicle_ext.scr::on_vehicle_exit"
-    event_subscribe "vehicle_death" "global/tracker_vehicle_ext.scr::on_vehicle_death"
-    event_subscribe "vehicle_collision" "global/tracker_vehicle_ext.scr::on_vehicle_collision"
-    event_subscribe "turret_enter" "global/tracker_vehicle_ext.scr::on_turret_enter"
-    event_subscribe "turret_exit" "global/tracker_vehicle_ext.scr::on_turret_exit"
+    event_subscribe "vehicle_enter" wrapper_vehicle_enter
+    event_subscribe "vehicle_exit" wrapper_vehicle_exit
+    event_subscribe "vehicle_death" wrapper_vehicle_death
+    event_subscribe "vehicle_collision" wrapper_vehicle_collision
+    event_subscribe "turret_enter" wrapper_turret_enter
+    event_subscribe "turret_exit" wrapper_turret_exit
 
     // ========================================================================
     // CLIENT EVENTS (5 events)
     // ========================================================================
-    event_subscribe "client_connect" "global/tracker.scr::on_client_connect"
-    event_subscribe "client_begin" "global/tracker.scr::on_client_begin"
-    event_subscribe "client_userinfo_changed" "global/tracker_client_ext.scr::on_client_userinfo_changed"
-    event_subscribe "client_disconnect" "global/tracker.scr::on_client_disconnect"
-    event_subscribe "player_inactivity_drop" "global/tracker_client_ext.scr::on_player_inactivity_drop"
+    event_subscribe "client_connect" wrapper_client_connect
+    event_subscribe "client_begin" wrapper_client_begin
+    event_subscribe "client_userinfo_changed" wrapper_client_userinfo_changed
+    event_subscribe "client_disconnect" wrapper_client_disconnect
+    event_subscribe "player_inactivity_drop" wrapper_player_inactivity_drop
 
     // ========================================================================
     // TEAM/VOTE EVENTS (5 events)
     // ========================================================================
-    event_subscribe "team_join" "global/tracker.scr::on_team_join"
-    event_subscribe "vote_start" "global/tracker_client_ext.scr::on_vote_start"
-    event_subscribe "vote_passed" "global/tracker_client_ext.scr::on_vote_passed"
-    event_subscribe "vote_failed" "global/tracker_client_ext.scr::on_vote_failed"
-    event_subscribe "objective_capture" "global/tracker_gameflow_ext.scr::on_objective_capture"
+    event_subscribe "team_join" wrapper_team_join
+    event_subscribe "vote_start" wrapper_vote_start
+    event_subscribe "vote_passed" wrapper_vote_passed
+    event_subscribe "vote_failed" wrapper_vote_failed
+    event_subscribe "objective_capture" wrapper_objective_capture
 
     // ========================================================================
     // SCORE EVENTS (2 events)
     // ========================================================================
-    event_subscribe "score_change" "global/tracker_score_ext.scr::on_score_change"
-    event_subscribe "teamkill_kick" "global/tracker_score_ext.scr::on_teamkill_kick"
+    event_subscribe "score_change" wrapper_score_change
+    event_subscribe "teamkill_kick" wrapper_teamkill_kick
 
-    println "Player Event Subscriptions Complete."
+    println "Player Event Subscriptions Complete (62 events)."
+end
+
+// ============================================================================
+// WRAPPER LABELS - Forward event parameters to actual handlers
+// ============================================================================
+
+// Combat wrappers
+wrapper_player_kill local.attacker local.attacker2 local.victim local.inflictor local.location local.meansofdeath:
+    thread global/tracker_combat_ext.scr::on_player_kill local.attacker local.attacker2 local.victim local.inflictor local.location local.meansofdeath
+end
+
+wrapper_player_death local.victim local.inflictor:
+    thread global/tracker_combat_ext.scr::on_player_death local.victim local.inflictor
+end
+
+wrapper_player_damage local.victim local.attacker local.damage local.meansofdeath:
+    thread global/tracker_combat_ext.scr::on_player_damage local.victim local.attacker local.damage local.meansofdeath
+end
+
+wrapper_player_pain local.victim local.attacker local.damage local.meansofdeath local.hit_location:
+    thread global/tracker_combat_ext.scr::on_player_pain local.victim local.attacker local.damage local.meansofdeath local.hit_location
+end
+
+wrapper_player_headshot local.attacker local.victim local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_player_headshot local.attacker local.victim local.weapon_name
+end
+
+wrapper_player_suicide:
+    thread global/tracker_combat_ext.scr::on_player_suicide self
+end
+
+wrapper_player_crushed local.victim local.attacker:
+    thread global/tracker_combat_ext.scr::on_player_crushed local.victim local.attacker
+end
+
+wrapper_player_telefragged local.victim local.attacker:
+    thread global/tracker_combat_ext.scr::on_player_telefragged local.victim local.attacker
+end
+
+wrapper_player_roadkill local.attacker local.victim:
+    thread global/tracker_combat_ext.scr::on_player_roadkill local.attacker local.victim
+end
+
+wrapper_player_bash local.attacker local.victim:
+    thread global/tracker_combat_ext.scr::on_player_bash local.attacker local.victim
+end
+
+wrapper_player_teamkill local.killer local.victim:
+    thread global/tracker_combat_ext.scr::on_player_teamkill local.killer local.victim
+end
+
+wrapper_weapon_fire local.owner local.weapon_name local.ammo_remaining:
+    thread global/tracker_combat_ext.scr::on_weapon_fire local.owner local.weapon_name local.ammo_remaining
+end
+
+wrapper_weapon_hit local.owner local.target local.hit_location:
+    thread global/tracker_combat_ext.scr::on_weapon_hit local.owner local.target local.hit_location
+end
+
+wrapper_weapon_reload local.owner local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_reload local.owner local.weapon_name
+end
+
+wrapper_weapon_reload_done local.owner local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_reload_done local.owner local.weapon_name
+end
+
+wrapper_weapon_change local.owner local.old_weapon local.new_weapon local.client_num:
+    thread global/tracker_combat_ext.scr::on_weapon_change local.owner local.old_weapon local.new_weapon local.client_num
+end
+
+wrapper_weapon_ready local.owner local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_ready local.owner local.weapon_name
+end
+
+wrapper_weapon_no_ammo local.owner local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_no_ammo local.owner local.weapon_name
+end
+
+wrapper_weapon_holster local.owner local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_holster local.owner local.weapon_name
+end
+
+wrapper_weapon_raise local.owner local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_raise local.owner local.weapon_name
+end
+
+wrapper_weapon_drop local.previous_owner local.weapon_entity:
+    thread global/tracker_combat_ext.scr::on_weapon_drop local.previous_owner local.weapon_entity
+end
+
+wrapper_grenade_throw local.owner local.projectile_entity:
+    thread global/tracker_combat_ext.scr::on_grenade_throw local.owner local.projectile_entity
+end
+
+wrapper_grenade_explode local.owner local.grenade_entity:
+    thread global/tracker_combat_ext.scr::on_grenade_explode local.owner local.grenade_entity
+end
+
+// Movement wrappers - self is the player for player events
+wrapper_player_spawn:
+    thread global/tracker_movement_ext.scr::on_player_spawn self
+end
+
+wrapper_player_respawn:
+    thread global/tracker_movement_ext.scr::on_player_respawn self
+end
+
+wrapper_player_jump:
+    thread global/tracker.scr::on_player_jump self
+end
+
+wrapper_player_land local.fall_velocity:
+    thread global/tracker.scr::on_player_land self local.fall_velocity
+end
+
+wrapper_player_crouch:
+    thread global/tracker.scr::on_player_crouch self
+end
+
+wrapper_player_prone:
+    thread global/tracker.scr::on_player_prone self
+end
+
+wrapper_player_stand:
+    thread global/tracker_movement_ext.scr::on_player_stand self
+end
+
+wrapper_player_distance local.walked local.sprinted local.swam local.driven:
+    thread global/tracker.scr::on_player_distance self local.walked local.sprinted local.swam local.driven
+end
+
+wrapper_ladder_mount local.ladder_entity:
+    thread global/tracker.scr::on_ladder_mount self local.ladder_entity
+end
+
+wrapper_ladder_dismount local.ladder_entity:
+    thread global/tracker.scr::on_ladder_dismount self local.ladder_entity
+end
+
+// Interaction wrappers - self is the player for player events
+wrapper_player_use local.target_entity:
+    thread global/tracker.scr::on_player_use self local.target_entity
+end
+
+wrapper_player_use_object_start local.use_object:
+    thread global/tracker_interaction_ext.scr::on_player_use_object_start self local.use_object
+end
+
+wrapper_player_use_object_finish local.use_object:
+    thread global/tracker_interaction_ext.scr::on_player_use_object_finish self local.use_object
+end
+
+wrapper_player_spectate:
+    thread global/tracker_interaction_ext.scr::on_player_spectate self
+end
+
+wrapper_player_freeze local.frozen_state:
+    thread global/tracker_interaction_ext.scr::on_player_freeze self local.frozen_state
+end
+
+wrapper_player_say local.message_text:
+    thread global/tracker_interaction_ext.scr::on_player_say self local.message_text
+end
+
+// Item wrappers - self is the player for player events
+wrapper_item_pickup local.item_name local.amount:
+    thread global/tracker_items_ext.scr::on_item_pickup self local.item_name local.amount
+end
+
+wrapper_item_drop local.item_name:
+    thread global/tracker_items_ext.scr::on_item_drop self local.item_name
+end
+
+wrapper_item_respawn local.item_name:
+    thread global/tracker_items_ext.scr::on_item_respawn self local.item_name
+end
+
+wrapper_health_pickup local.heal_amount:
+    thread global/tracker_items_ext.scr::on_health_pickup self local.heal_amount
+end
+
+wrapper_ammo_pickup local.ammo_name local.amount:
+    thread global/tracker_items_ext.scr::on_ammo_pickup self local.ammo_name local.amount
+end
+
+wrapper_armor_pickup local.armor_amount:
+    thread global/tracker_items_ext.scr::on_armor_pickup self local.armor_amount
+end
+
+// Vehicle wrappers - self is the player for player events
+wrapper_vehicle_enter local.vehicle_entity:
+    thread global/tracker_vehicle_ext.scr::on_vehicle_enter self local.vehicle_entity
+end
+
+wrapper_vehicle_exit local.vehicle_entity:
+    thread global/tracker_vehicle_ext.scr::on_vehicle_exit self local.vehicle_entity
+end
+
+wrapper_vehicle_death local.attacker:
+    thread global/tracker_vehicle_ext.scr::on_vehicle_death self local.attacker
+end
+
+wrapper_vehicle_collision local.other_entity:
+    thread global/tracker_vehicle_ext.scr::on_vehicle_collision self local.other_entity
+end
+
+wrapper_turret_enter local.turret_entity:
+    thread global/tracker_vehicle_ext.scr::on_turret_enter self local.turret_entity
+end
+
+wrapper_turret_exit local.turret_entity:
+    thread global/tracker_vehicle_ext.scr::on_turret_exit self local.turret_entity
+end
+
+// Client wrappers - self is the player for player events
+wrapper_client_connect local.client_num:
+    thread global/tracker.scr::on_client_connect local.client_num
+end
+
+wrapper_client_begin:
+    thread global/tracker.scr::on_client_begin self
+end
+
+wrapper_client_userinfo_changed:
+    thread global/tracker_client_ext.scr::on_client_userinfo_changed self
+end
+
+wrapper_client_disconnect:
+    thread global/tracker.scr::on_client_disconnect self
+end
+
+wrapper_player_inactivity_drop:
+    thread global/tracker_client_ext.scr::on_player_inactivity_drop self
+end
+
+// Team/Vote wrappers - self is the player for player events
+wrapper_team_join local.old_team local.new_team:
+    thread global/tracker.scr::on_team_join self local.old_team local.new_team
+end
+
+wrapper_vote_start local.vote_name local.vote_string:
+    thread global/tracker_client_ext.scr::on_vote_start self local.vote_name local.vote_string
+end
+
+wrapper_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
+    thread global/tracker_client_ext.scr::on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count
+end
+
+wrapper_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count:
+    thread global/tracker_client_ext.scr::on_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count
+end
+
+wrapper_objective_capture local.controller_team:
+    thread global/tracker_gameflow_ext.scr::on_objective_capture self local.controller_team
+end
+
+// Score wrappers - self is the player for player events
+wrapper_score_change local.score_type local.delta local.new_total:
+    thread global/tracker_score_ext.scr::on_score_change self local.score_type local.delta local.new_total
+end
+
+wrapper_teamkill_kick local.teamkill_count:
+    thread global/tracker_score_ext.scr::on_teamkill_kick self local.teamkill_count
 end

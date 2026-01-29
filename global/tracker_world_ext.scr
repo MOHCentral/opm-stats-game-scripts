@@ -3,23 +3,27 @@
 // ============================================================================
 
 on_explosion local.entity local.attacker local.damage:
-    local.payload = global/tracker_common.scr::build_base_payload "explosion"
+    if (local.damage == NIL) { local.damage = 0 }
+    if (local.entity == NIL) { local.entity = "unknown" }
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "explosion"
     local.payload = local.payload + "&damage=" + local.damage
-    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.attacker "attacker"
+    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_door_open local.door local.activator:
-    local.payload = global/tracker_common.scr::build_base_payload "door_open"
+    if (local.door == NIL) { local.door = "unknown" }
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "door_open"
     local.payload = local.payload + "&entity=" + local.door
-    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.activator "player"
+    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.activator "player"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_door_close local.door:
-    local.payload = global/tracker_common.scr::build_base_payload "door_close"
+    if (local.door == NIL) { local.door = "unknown" }
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "door_close"
     local.payload = local.payload + "&entity=" + local.door
 
     thread global/tracker_common.scr::queue_event local.payload

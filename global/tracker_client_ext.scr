@@ -3,22 +3,30 @@
 // ============================================================================
 
 on_client_userinfo_changed local.player:
-    local.payload = global/tracker_common.scr::build_base_payload "client_userinfo_changed"
-    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
+    if (local.player == NIL) end
+    if (!local.player) end
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "client_userinfo_changed"
+    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_player_inactivity_drop local.player:
-    local.payload = global/tracker_common.scr::build_base_payload "player_inactivity_drop"
-    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
+    if (local.player == NIL) end
+    if (!local.player) end
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "player_inactivity_drop"
+    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_vote_start local.player local.vote_name local.vote_string:
-    local.payload = global/tracker_common.scr::build_base_payload "vote_start"
-    local.payload = local.payload + global/tracker_common.scr::build_player_payload local.player "player"
+    if (local.player == NIL) end
+    if (!local.player) end
+    if (local.vote_name == NIL) { local.vote_name = "unknown" }
+    if (local.vote_string == NIL) { local.vote_string = "" }
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "vote_start"
+    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&vote_name=" + local.vote_name
     local.payload = local.payload + "&vote_string=" + local.vote_string
 
@@ -26,7 +34,11 @@ on_vote_start local.player local.vote_name local.vote_string:
 end
 
 on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
-    local.payload = global/tracker_common.scr::build_base_payload "vote_passed"
+    if (local.vote_name == NIL) { local.vote_name = "unknown" }
+    if (local.vote_string == NIL) { local.vote_string = "" }
+    if (local.yes_count == NIL) { local.yes_count = 0 }
+    if (local.no_count == NIL) { local.no_count = 0 }
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "vote_passed"
     local.payload = local.payload + "&vote_name=" + local.vote_name
     local.payload = local.payload + "&vote_string=" + local.vote_string
     local.payload = local.payload + "&yes_count=" + local.yes_count
@@ -36,7 +48,11 @@ on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
 end
 
 on_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count:
-    local.payload = global/tracker_common.scr::build_base_payload "vote_failed"
+    if (local.vote_name == NIL) { local.vote_name = "unknown" }
+    if (local.fail_reason == NIL) { local.fail_reason = "unknown" }
+    if (local.yes_count == NIL) { local.yes_count = 0 }
+    if (local.no_count == NIL) { local.no_count = 0 }
+    local.payload = waitthread global/tracker_common.scr::build_base_payload "vote_failed"
     local.payload = local.payload + "&vote_name=" + local.vote_name
     local.payload = local.payload + "&fail_reason=" + local.fail_reason
     local.payload = local.payload + "&yes_count=" + local.yes_count
