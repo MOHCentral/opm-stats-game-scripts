@@ -190,16 +190,16 @@ wrapper_weapon_raise local.weapon_name:
     thread global/tracker_combat_ext.scr::on_weapon_raise self local.weapon_name
 end
 
-wrapper_weapon_drop local.previous_owner local.weapon_entity:
-    thread global/tracker_combat_ext.scr::on_weapon_drop local.previous_owner local.weapon_entity
+wrapper_weapon_drop local.weapon_entity:
+    thread global/tracker_combat_ext.scr::on_weapon_drop self local.weapon_entity
 end
 
-wrapper_grenade_throw local.owner local.projectile_entity:
-    thread global/tracker_combat_ext.scr::on_grenade_throw local.owner local.projectile_entity
+wrapper_grenade_throw local.projectile_entity:
+    thread global/tracker_combat_ext.scr::on_grenade_throw self local.projectile_entity
 end
 
-wrapper_grenade_explode local.owner local.grenade_entity:
-    thread global/tracker_combat_ext.scr::on_grenade_explode local.owner local.grenade_entity
+wrapper_grenade_explode local.grenade_entity:
+    thread global/tracker_combat_ext.scr::on_grenade_explode self local.grenade_entity
 end
 
 // Movement wrappers - self is the player for player events
