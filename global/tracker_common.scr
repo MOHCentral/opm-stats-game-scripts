@@ -17,17 +17,77 @@ level.api_base_url = "http://localhost:8084"
     level.max_batch_size = 20 // Flush immediately if this size reached
 
     // ============================================================================
+    // HELPERS
+    // ============================================================================
+
+safestr local.val:
+        if (local.val == NIL) {
+            end "NIL"
+        }
+        if (local.val == NULL) {
+            end "NULL"
+        }
+        // Check type - floats and ints need special handling
+        local.t = typeof local.val
+        if (local.t == "float" || local.t == "int" || local.t == "double") {
+            end ("" + local.val)  // Numeric to string via concatenation
+        }
+        if (local.t == "listener") {
+            // For listeners/entities, try to get netname or use targetname
+            if (local.val.netname != NIL) {
+                end local.val.netname
+            }
+            if (local.val.targetname != NIL) {
+                end local.val.targetname
+            }
+            end "[entity]"
+        }
+        end ("" + local.val)
+    end
+
+debug_log_var local.a1 local.a2 local.a3 local.a4 local.a5 local.a6 local.a7 local.a8 local.a9 local.a10 local.a11 local.a12 local.a13 local.a14 local.a15 local.a16:
+        if (level.tracker_debug) {
+            local.msg = ""
+            if (local.a1 != NIL) local.msg += (waitthread safestr local.a1)
+                if (local.a2 != NIL) local.msg += (waitthread safestr local.a2)
+                    if (local.a3 != NIL) local.msg += (waitthread safestr local.a3)
+                        if (local.a4 != NIL) local.msg += (waitthread safestr local.a4)
+                            if (local.a5 != NIL) local.msg += (waitthread safestr local.a5)
+                                if (local.a6 != NIL) local.msg += (waitthread safestr local.a6)
+                                    if (local.a7 != NIL) local.msg += (waitthread safestr local.a7)
+                                        if (local.a8 != NIL) local.msg += (waitthread safestr local.a8)
+                                            if (local.a9 != NIL) local.msg += (waitthread safestr local.a9)
+                                                if (local.a10 != NIL) local.msg += (waitthread safestr local.a10)
+                                                    if (local.a11 != NIL) local.msg += (waitthread safestr local.a11)
+                                                        if (local.a12 != NIL) local.msg += (waitthread safestr local.a12)
+                                                            if (local.a13 != NIL) local.msg += (waitthread safestr local.a13)
+                                                                if (local.a14 != NIL) local.msg += (waitthread safestr local.a14)
+                                                                    if (local.a15 != NIL) local.msg += (waitthread safestr local.a15)
+                                                                        if (local.a16 != NIL) local.msg += (waitthread safestr local.a16)
+        
+                                                                            println ("[" + level.time + "] [OPM] " + local.msg)
+        }
+    end
+
+    // ============================================================================
     // PLAYER PAYLOAD BUILDER
     // ============================================================================
 build_player_payload local.player local.prefix:
         local.payload = ""
 
-        // Check if player is valid (could be NIL or NULL listener or a float like -1)
-        if (local.player == NIL || local.player == -1 || !local.player) {
+        // Check if player is valid - MUST be a listener/entity type
+        if (local.player == NIL || local.player == NULL) {
             end local.payload
         }
-
-        // Safely get netname with fallback
+        
+        // Critical type check - prevent float/int being treated as entity
+        local.ptype = typeof local.player
+        if (local.ptype != "listener") {
+            // Not an entity - could be -1, float, or other invalid type
+            end local.payload
+        }
+        
+        // Now safe to dereference .netname
         local.name = local.player.netname
         if (local.name == NIL) {
             end local.payload
@@ -84,12 +144,18 @@ build_player_payload local.player local.prefix:
 build_player_payload_compact local.player local.prefix:
             local.payload = ""
 
-            // Check if player is valid (could be NIL or NULL listener or a float like -1)
-            if (local.player == NIL || local.player == -1 || !local.player) {
+            // Check if player is valid - MUST be a listener/entity type
+            if (local.player == NIL || local.player == NULL || typeof local.player != "listener") {
+                end local.payload
+            }
+            
+            // Critical type check - prevent float/int being treated as entity
+            local.ptype = typeof local.player
+            if (local.ptype != "listener") {
                 end local.payload
             }
 
-            // Safely get netname with fallback
+            // Now safe to dereference .netname
             local.name = local.player.netname
             if (local.name == NIL) {
                 end local.payload
@@ -202,23 +268,29 @@ on_http_callback local.success local.response local.http_code:
             end
 
 build_base_payload local.event_type:
-                local.payload = "type=" + local.event_type
-                local.payload = local.payload + "&match_id=" + level.match_id
-                local.payload = local.payload + "&timestamp=" + level.time
+                if (local.event_type == NIL) { local.event_type = "unknown" }
+                    local.payload = "type=" + local.event_type
     
+                local.match_id = level.match_id
+                if (local.match_id == NIL) { local.match_id = "no_match" }
+                    local.payload = local.payload + "&match_id=" + local.match_id
+    
+                local.payload = local.payload + "&timestamp=" + level.time
+
                 if (level.session_id != NIL && level.session_id != "") {
                     local.payload = local.payload + "&session_id=" + level.session_id
                 }
-    
+
                 if (level.map_name != NIL && level.map_name != "") {
                     local.payload = local.payload + "&map_name=" + level.map_name
                 }
-    
+
                 end local.payload
 
 debug_log local.message:
                     if (level.tracker_debug) {
-                        println ("[" + level.time + "] [OPM] " + local.message)
+                        local.safe_msg = waitthread safestr local.message
+                        println ("[" + level.time + "] [OPM] " + local.safe_msg)
                     }
                 end
 
@@ -227,16 +299,20 @@ debug_log local.message:
                 // ============================================================================
                 // Returns the index of 'search' within 'str', starting from 'start'
 str_indexof local.str local.search local.start:
-                    if (local.start == NIL) local.start = 0
-                        if (local.str == NIL || local.search == NIL) end -1
+                    if (local.start == NIL) { local.start = 0 }
+                        if (local.str == NIL || local.search == NIL) { end -1 }
     
                             local.str_len = local.str.size
                     local.search_len = local.search.size
     
-                    if (local.search_len == 0) end local.start
-                        if (local.search_len > local.str_len) end -1
+                    if (local.str_len == NIL || local.search_len == NIL) { end -1 }
+                        if (local.search_len == 0) { end local.start }
+                            if (local.search_len > local.str_len) { end -1 }
     
-                            for (local.i = local.start; local.i <= (local.str_len - local.search_len); local.i++) {
+                                local.end_idx = (local.str_len - local.search_len)
+                    if (local.end_idx == NIL) { end -1 }
+
+                        for (local.i = local.start; local.i <= local.end_idx; local.i++) {
                         local.found = 1
                         for (local.j = 0; local.j < local.search_len; local.j++) {
                             if (local.str[local.i + local.j] != local.search[local.j]) {
@@ -244,7 +320,7 @@ str_indexof local.str local.search local.start:
                                 break
                             }
                         }
-                        if (local.found) end local.i
+                        if (local.found) { end local.i }
                     }
                     end -1
 
@@ -253,23 +329,24 @@ str_indexof local.str local.search local.start:
                     // ============================================================================
                     // Extracts a string value from a simple JSON object: {"key":"value"}
 json_get_string local.json local.key:
-                        local.quote = "\"" // This is standard in SCR
+                        if (local.json == NIL || local.key == NIL) { end "" }
+                            local.quote = "\"" // This is standard in SCR
                         local.key_quoted = local.quote + local.key + local.quote
                         local.key_index = waitthread str_indexof local.json local.key_quoted
-                        if (local.key_index == -1) end ""
-    
+                        if (local.key_index == -1) { end "" }
+
                             // Find colon after key
                         local.colon_index = waitthread str_indexof local.json ":" (local.key_index + local.key_quoted.size)
-                        if (local.colon_index == -1) end ""
-    
+                        if (local.colon_index == -1) { end "" }
+
                             // Find first quote after colon
                         local.start_quote = waitthread str_indexof local.json local.quote (local.colon_index + 1)
-                        if (local.start_quote == -1) end ""
-    
+                        if (local.start_quote == -1) { end "" }
+
                             // Find end quote
                         local.end_quote = waitthread str_indexof local.json local.quote (local.start_quote + 1)
-                        if (local.end_quote == -1) end ""
-    
+                        if (local.end_quote == -1) { end "" }
+
                             local.result = ""
                         for (local.i = (local.start_quote + 1); local.i < local.end_quote; local.i++) {
                             local.result = local.result + local.json[local.i]
@@ -278,24 +355,28 @@ json_get_string local.json local.key:
 
                         // Extracts an integer value from a simple JSON object: {"key":123}
 json_get_int local.json local.key:
-                            local.quote = "\"" // This is standard in SCR
+                            if (local.json == NIL || local.key == NIL) { end 0 }
+                                local.quote = "\"" // This is standard in SCR
                             local.key_quoted = local.quote + local.key + local.quote
                             local.key_index = waitthread str_indexof local.json local.key_quoted
-                            if (local.key_index == -1) end 0
-    
+                            if (local.key_index == -1) { end 0 }
+
                                 // Find colon after key
                             local.colon_index = waitthread str_indexof local.json ":" (local.key_index + local.key_quoted.size)
-                            if (local.colon_index == -1) end 0
-    
+                            if (local.colon_index == -1) { end 0 }
+
                                 // Start after colon, skip spaces
                             local.start = local.colon_index + 1
-                            while (local.start < local.json.size && (local.json[local.start] == " " || local.json[local.start] == "\t")) {
+                            local.json_size = local.json.size
+                            if (local.json_size == NIL) { end 0 }
+    
+                                while (local.start < local.json_size && (local.json[local.start] == " " || local.json[local.start] == "\t")) {
                                 local.start++
                             }
-    
+
                             local.result_str = ""
                             local.i = local.start
-                            while (local.i < local.json.size) {
+                            while (local.i < local.json_size) {
                                 local.char = local.json[local.i]
                                 if (local.char >= "0" && local.char <= "9") {
                                     local.result_str = local.result_str + local.char
@@ -306,6 +387,6 @@ json_get_int local.json local.key:
                                 }
                                 local.i++
                             }
-    
-                            if (local.result_str == "") end 0
+
+                            if (local.result_str == "") { end 0 }
                                 end (int local.result_str)

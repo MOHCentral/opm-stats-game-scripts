@@ -3,9 +3,9 @@
 // ============================================================================
 
 on_client_userinfo_changed local.player:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_client_userinfo_changed | Player: " + local.player)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_client_userinfo_changed | Player: " local.player
     if (local.player == NIL) end
-        if (!local.player) end
+        if (typeof local.player != "listener") end
             local.payload = waitthread global/tracker_common.scr::build_base_payload "client_userinfo_changed"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
 
@@ -13,9 +13,9 @@ on_client_userinfo_changed local.player:
 end
 
 on_player_inactivity_drop local.player:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_inactivity_drop | Player: " + local.player)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_inactivity_drop | Player: " local.player
     if (local.player == NIL) end
-        if (!local.player) end
+        if (typeof local.player != "listener") end
             local.payload = waitthread global/tracker_common.scr::build_base_payload "player_inactivity_drop"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
 
@@ -23,9 +23,9 @@ on_player_inactivity_drop local.player:
 end
 
 on_vote_start local.player local.vote_name local.vote_string:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_vote_start | Player: " + local.player + " | Vote: " + local.vote_name + " | Text: " + local.vote_string)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_vote_start | Player: " local.player " | Vote: " local.vote_name " | Text: " local.vote_string
     if (local.player == NIL) end
-        if (!local.player) end
+        if (typeof local.player != "listener") end
             if (local.vote_name == NIL) { local.vote_name = "unknown" }
                 if (local.vote_string == NIL) { local.vote_string = "" }
                     local.payload = waitthread global/tracker_common.scr::build_base_payload "vote_start"
@@ -37,7 +37,7 @@ on_vote_start local.player local.vote_name local.vote_string:
 end
 
 on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_vote_passed | Vote: " + local.vote_name + " | Text: " + local.vote_string + " | Yes: " + local.yes_count + " | No: " + local.no_count)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_vote_passed | Vote: " local.vote_name " | Text: " local.vote_string " | Yes: " local.yes_count " | No: " local.no_count
     if (local.vote_name == NIL) { local.vote_name = "unknown" }
         if (local.vote_string == NIL) { local.vote_string = "" }
             if (local.yes_count == NIL) { local.yes_count = 0 }
@@ -52,7 +52,7 @@ on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
 end
 
 on_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_vote_failed | Vote: " + local.vote_name + " | Reason: " + local.fail_reason + " | Yes: " + local.yes_count + " | No: " + local.no_count)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_vote_failed | Vote: " local.vote_name " | Reason: " local.fail_reason " | Yes: " local.yes_count " | No: " local.no_count
     if (local.vote_name == NIL) { local.vote_name = "unknown" }
         if (local.fail_reason == NIL) { local.fail_reason = "unknown" }
             if (local.yes_count == NIL) { local.yes_count = 0 }

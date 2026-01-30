@@ -367,7 +367,7 @@ debug_sync_loop:
         // ============================================================================
 
 on_player_jump local.player:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_jump | Player: " + local.player)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_jump | Player: " local.player
             if (local.player == NIL) end
                 if (!local.player) end
                     local.payload = waitthread global/tracker_common.scr::build_base_payload "jump"
@@ -377,7 +377,7 @@ on_player_jump local.player:
         end
 
 on_player_land local.player local.height:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_land | Player: " + local.player + " | Height: " + local.height)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_land | Player: " local.player " | Height: " local.height
             if (local.player == NIL) end
                 if (!local.player) end
                     if (local.height == NIL) { local.height = 0 }
@@ -389,7 +389,7 @@ on_player_land local.player local.height:
         end
 
 on_player_crouch local.player:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_crouch | Player: " + local.player)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_crouch | Player: " local.player
             if (local.player == NIL) end
                 if (!local.player) end
                     local.player.tracker_stance = "crouch"
@@ -400,7 +400,7 @@ on_player_crouch local.player:
         end
 
 on_player_prone local.player:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_prone | Player: " + local.player)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_prone | Player: " local.player
             if (local.player == NIL) end
                 if (!local.player) end
                     local.player.tracker_stance = "prone"
@@ -411,7 +411,7 @@ on_player_prone local.player:
         end
 
 on_player_distance local.player local.walked local.sprinted local.swam local.driven:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_distance | Player: " + local.player + " | Walked: " + local.walked + " | Sprinted: " + local.sprinted)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_distance | Player: " local.player " | Walked: " local.walked " | Sprinted: " local.sprinted
             if (local.player == NIL) end
                 if (!local.player) end
                     if (local.walked == NIL) { local.walked = 0 }
@@ -433,7 +433,7 @@ on_player_distance local.player local.walked local.sprinted local.swam local.dri
         // ============================================================================
 
 on_ladder_mount local.player local.ladder:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_ladder_mount | Player: " + local.player)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_ladder_mount | Player: " local.player
             if (local.player == NIL) end
                 if (!local.player) end
                     local.payload = waitthread global/tracker_common.scr::build_base_payload "ladder_mount"
@@ -443,7 +443,7 @@ on_ladder_mount local.player local.ladder:
         end
 
 on_ladder_dismount local.player local.ladder:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_ladder_dismount | Player: " + local.player)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_ladder_dismount | Player: " local.player
             if (local.player == NIL) end
                 if (!local.player) end
                     local.payload = waitthread global/tracker_common.scr::build_base_payload "ladder_dismount"
@@ -455,7 +455,7 @@ on_ladder_dismount local.player local.ladder:
         // MOVED TO: global/tracker_items_ext.scr
 
 on_player_use local.player local.entity:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_use | Player: " + local.player + " | Entity: " + local.entity)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_use | Player: " local.player " | Entity: " local.entity
             if (local.player == NIL) end
                 if (!local.player) end
                     if (local.entity == NIL) { local.entity = "unknown" }
@@ -471,7 +471,7 @@ on_player_use local.player local.entity:
         // ============================================================================
 
 on_client_connect local.clientnum:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_client_connect | ClientNum: " + local.clientnum)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_client_connect | ClientNum: " local.clientnum
             if (local.clientnum == NIL) { local.clientnum = -1 }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "connect"
             local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload self "player"
@@ -481,7 +481,7 @@ on_client_connect local.clientnum:
         end
 
 on_client_disconnect local.player:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_client_disconnect | Player: " + local.player)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_client_disconnect | Player: " local.player
             if (local.player == NIL) end
                 if (!local.player) end
                     local.payload = waitthread global/tracker_common.scr::build_base_payload "disconnect"
@@ -491,7 +491,7 @@ on_client_disconnect local.player:
         end
 
 on_client_begin local.player:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_client_begin | Player: " + local.player)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_client_begin | Player: " local.player
             if (local.player == NIL) end
                 if (!local.player) end
                     // Initialize session-based counters
@@ -528,7 +528,7 @@ player_accuracy_loop local.player:
         end
 
 on_team_join local.player local.old_team local.new_team:
-            waitthread global/tracker_common.scr::debug_log ("EVENT: on_team_join | Player: " + local.player + " | NewTeam: " + local.new_team)
+            waitthread global/tracker_common.scr::debug_log_var "EVENT: on_team_join | Player: " local.player " | NewTeam: " local.new_team
             if (local.player == NIL) end
                 if (!local.player) end
                     if (local.old_team == NIL) { local.old_team = "unknown" }

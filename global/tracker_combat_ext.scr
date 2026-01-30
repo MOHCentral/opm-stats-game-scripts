@@ -5,44 +5,47 @@
 
 
 on_player_suicide local.player:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_suicide | Player: " + local.player)
-    if (local.player == NIL) end
-        if (!local.player) end
-            local.payload = waitthread global/tracker_common.scr::build_base_payload "player_suicide"
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_suicide | Player: " local.player
+    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "player_suicide"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_player_crushed local.player local.attacker:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_crushed | Player: " + local.player + " | Attacker: " + local.attacker)
-    if (local.player == NIL) end
-        if (!local.player) end
-            local.payload = waitthread global/tracker_common.scr::build_base_payload "player_crushed"
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_crushed | Player: " local.player " | Attacker: " local.attacker
+    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "player_crushed"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
+    if (local.attacker != NIL && local.attacker != NULL && typeof local.attacker == "listener") {
+        local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
+    }
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_player_telefragged local.player local.attacker:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_telefragged | Player: " + local.player + " | Attacker: " + local.attacker)
-    if (local.player == NIL) end
-        if (!local.player) end
-            local.payload = waitthread global/tracker_common.scr::build_base_payload "player_telefragged"
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_telefragged | Player: " local.player " | Attacker: " local.attacker
+    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "player_telefragged"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
+    if (local.attacker != NIL && local.attacker != NULL && typeof local.attacker == "listener") {
+        local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
+    }
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_player_roadkill local.attacker local.victim:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_roadkill | Attacker: " + local.attacker + " | Victim: " + local.victim)
-    if (local.attacker == NIL) end
-        if (!local.attacker) end
-            if (local.victim == NIL) end
-                if (!local.victim) end
-                    local.payload = waitthread global/tracker_common.scr::build_base_payload "player_roadkill"
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_roadkill | Attacker: " local.attacker " | Victim: " local.victim
+    if (local.attacker == NIL || local.attacker == NULL || typeof local.attacker != "listener") { end }
+        if (local.victim == NIL || local.victim == NULL || typeof local.victim != "listener") { end }
+
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "player_roadkill"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.victim "victim"
 
@@ -50,12 +53,11 @@ on_player_roadkill local.attacker local.victim:
 end
 
 on_player_bash local.attacker local.victim:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_bash | Attacker: " + local.attacker + " | Victim: " + local.victim)
-    if (local.attacker == NIL) end
-        if (!local.attacker) end
-            if (local.victim == NIL) end
-                if (!local.victim) end
-                    local.payload = waitthread global/tracker_common.scr::build_base_payload "player_bash"
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_bash | Attacker: " local.attacker " | Victim: " local.victim
+    if (local.attacker == NIL || local.attacker == NULL || typeof local.attacker != "listener") { end }
+        if (local.victim == NIL || local.victim == NULL || typeof local.victim != "listener") { end }
+
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "player_bash"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.victim "victim"
 
@@ -63,12 +65,11 @@ on_player_bash local.attacker local.victim:
 end
 
 on_player_teamkill local.killer local.victim:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_teamkill | Killer: " + local.killer + " | Victim: " + local.victim)
-    if (local.killer == NIL) end
-        if (!local.killer) end
-            if (local.victim == NIL) end
-                if (!local.victim) end
-                    local.payload = waitthread global/tracker_common.scr::build_base_payload "player_teamkill"
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_teamkill | Killer: " local.killer " | Victim: " local.victim
+    if (local.killer == NIL || local.killer == NULL || typeof local.killer != "listener") { end }
+        if (local.victim == NIL || local.victim == NULL || typeof local.victim != "listener") { end }
+
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "player_teamkill"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.killer "killer"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.victim "victim"
 
@@ -76,11 +77,12 @@ on_player_teamkill local.killer local.victim:
 end
 
 on_weapon_reload_done local.owner local.weapon_name:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_reload_done | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
-    if (local.owner == NIL) end
-        if (!local.owner) end
-            if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_reload_done"
+// This is owner/player
+    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+        waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_reload_done | Owner: " local.owner " | Weapon: " local.weapon_name
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+    
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_reload_done"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"
     local.payload = local.payload + "&weapon=" + local.weapon_name
 
@@ -88,11 +90,11 @@ on_weapon_reload_done local.owner local.weapon_name:
 end
 
 on_weapon_ready local.owner local.weapon_name:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_ready | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
-    if (local.owner == NIL) end
-        if (!local.owner) end
-            if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_ready"
+    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+        waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_ready | Owner: " local.owner " | Weapon: " local.weapon_name
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+    
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_ready"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"
     local.payload = local.payload + "&weapon=" + local.weapon_name
 
@@ -100,11 +102,11 @@ on_weapon_ready local.owner local.weapon_name:
 end
 
 on_weapon_no_ammo local.owner local.weapon_name:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_no_ammo | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
-    if (local.owner == NIL) end
-        if (!local.owner) end
-            if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_no_ammo"
+    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+        waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_no_ammo | Owner: " local.owner " | Weapon: " local.weapon_name
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+    
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_no_ammo"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"
     local.payload = local.payload + "&weapon=" + local.weapon_name
 
@@ -112,11 +114,11 @@ on_weapon_no_ammo local.owner local.weapon_name:
 end
 
 on_weapon_holster local.owner local.weapon_name:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_holster | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
-    if (local.owner == NIL) end
-        if (!local.owner) end
-            if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_holster"
+    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+        waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_holster | Owner: " local.owner " | Weapon: " local.weapon_name
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+    
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_holster"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"
     local.payload = local.payload + "&weapon=" + local.weapon_name
 
@@ -124,11 +126,11 @@ on_weapon_holster local.owner local.weapon_name:
 end
 
 on_weapon_raise local.owner local.weapon_name:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_raise | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
-    if (local.owner == NIL) end
-        if (!local.owner) end
-            if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_raise"
+    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+        waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_raise | Owner: " local.owner " | Weapon: " local.weapon_name
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+    
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_raise"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"
     local.payload = local.payload + "&weapon=" + local.weapon_name
 
@@ -136,11 +138,11 @@ on_weapon_raise local.owner local.weapon_name:
 end
 
 on_weapon_drop local.owner local.weapon:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_drop | Owner: " + local.owner + " | Weapon: " + local.weapon)
-    if (local.owner == NIL) end
-        if (!local.owner) end
-            if (local.weapon == NIL) { local.weapon = "unknown" }
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_drop"
+    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+        waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_drop | Owner: " local.owner " | Weapon: " local.weapon
+    if (local.weapon == NIL) { local.weapon = "unknown" }
+    
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_drop"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"
     local.payload = local.payload + "&weapon=" + local.weapon
 
@@ -152,9 +154,10 @@ end
 // ============================================================================
 
 on_player_kill local.attacker local.attacker2 local.victim local.inflictor local.hitloc local.mod:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_kill | Attacker: " + local.attacker + " | Victim: " + local.victim + " | Inflictor: " + local.inflictor + " | HitLoc: " + local.hitloc + " | MOD: " + local.mod)
-    if (local.attacker != NIL && local.attacker != -1 && local.attacker) {
-        if (local.attacker.shots_hit == NIL) local.attacker.shots_hit = 0
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_kill | Att: " local.attacker " | Vic: " local.victim " | Inf: " local.inflictor " | Loc: " local.hitloc " | Mod: " local.mod
+    // Type-safe check for attacker entity
+    if (local.attacker != NIL && local.attacker != NULL && typeof local.attacker == "listener") {
+        if (local.attacker.shots_hit == NIL) { local.attacker.shots_hit = 0 }
             local.attacker.shots_hit++
     }
     if (local.inflictor == NIL) { local.inflictor = "unknown" }
@@ -172,11 +175,11 @@ on_player_kill local.attacker local.attacker2 local.victim local.inflictor local
 end
 
 on_player_death local.victim local.inflictor:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_death | Victim: " + local.victim + " | Inflictor: " + local.inflictor)
-    if (local.victim == NIL) end
-        if (!local.victim) end
-            if (local.inflictor == NIL) { local.inflictor = "unknown" }
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "death"
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_death | Victim: " local.victim " | Inflictor: " local.inflictor
+    if (local.victim == NIL || local.victim == NULL || typeof local.victim != "listener") { end }
+        if (local.inflictor == NIL) { local.inflictor = "unknown" }
+
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "death"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.victim "player"
     local.payload = local.payload + "&inflictor=" + local.inflictor
 
@@ -184,12 +187,13 @@ on_player_death local.victim local.inflictor:
 end
 
 on_player_damage local.victim local.attacker local.amount local.mod:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_damage | Victim: " + local.victim + " | Attacker: " + local.attacker + " | Amount: " + local.amount + " | MOD: " + local.mod)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_damage | Vic: " local.victim " | Att: " local.attacker " | Dmg: " local.amount " | Mod: " local.mod
     if (local.amount == NIL) { local.amount = 0 }
         if (local.mod == NIL) { local.mod = "unknown" }
             local.payload = waitthread global/tracker_common.scr::build_base_payload "damage"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.victim "victim"
-    if (local.attacker != NIL && local.attacker != -1 && local.attacker) {
+    // Type-safe check for attacker entity
+    if (local.attacker != NIL && local.attacker != NULL && typeof local.attacker == "listener") {
         local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
     }
     local.payload = local.payload + "&damage=" + local.amount
@@ -199,13 +203,14 @@ on_player_damage local.victim local.attacker local.amount local.mod:
 end
 
 on_player_pain local.player local.attacker local.damage local.mod local.location:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_pain | Player: " + local.player + " | Attacker: " + local.attacker + " | Damage: " + local.damage + " | HitLoc: " + local.location)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_pain | Player: " local.player " | Att: " local.attacker " | Dmg: " local.damage " | Loc: " local.location
     if (local.damage == NIL) { local.damage = 0 }
         if (local.mod == NIL) { local.mod = "unknown" }
             if (local.location == NIL) { local.location = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "player_pain"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "victim"
-    if (local.attacker != NIL && local.attacker != -1 && local.attacker) {
+    // Type-safe check for attacker entity
+    if (local.attacker != NIL && typeof local.attacker == "listener") {
         local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
     }
     local.payload = local.payload + "&damage=" + local.damage
@@ -216,13 +221,13 @@ on_player_pain local.player local.attacker local.damage local.mod local.location
 end
 
 on_weapon_fire local.player local.weapon_name local.ammo_left:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_fire | Player: " + local.player + " | Weapon: " + local.weapon_name + " | Ammo: " + local.ammo_left)
-    if (local.player == NIL) end
-        if (!local.player) end
-            if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-                if (local.ammo_left == NIL) { local.ammo_left = 0 }
-                    // Track localized accuracy
-    if (local.player.shots_fired == NIL) local.player.shots_fired = 0
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_fire | Player: " local.player " | Weapon: " local.weapon_name " | Ammo: " local.ammo_left
+    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+        if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+            if (local.ammo_left == NIL) { local.ammo_left = 0 }
+    
+                // Track localized accuracy
+    if (local.player.shots_fired == NIL) { local.player.shots_fired = 0 }
         local.player.shots_fired++
 
     local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_fire"
@@ -234,16 +239,17 @@ on_weapon_fire local.player local.weapon_name local.ammo_left:
 end
 
 on_weapon_hit local.player local.target local.location:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_hit | Player: " + local.player + " | Target: " + local.target + " | HitLoc: " + local.location)
-    if (local.player == NIL) end
-        if (!local.player) end
-            if (local.location == NIL) { local.location = "unknown" }
-                if (local.player.shots_hit == NIL) local.player.shots_hit = 0
-                    local.player.shots_hit++
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_hit | Player: " local.player " | Target: " local.target " | Loc: " local.location
+    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+        if (local.location == NIL) { local.location = "unknown" }
+    
+            if (local.player.shots_hit == NIL) { local.player.shots_hit = 0 }
+                local.player.shots_hit++
 
     local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_hit"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    if (local.target != NIL && local.target != -1 && local.target) {
+    // Type-safe check for target entity
+    if (local.target != NIL && local.target != NULL && typeof local.target == "listener") {
         local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.target "target"
     }
     local.payload = local.payload + "&hitloc=" + local.location
@@ -263,7 +269,7 @@ end
 
 on_weapon_reload local.owner local.weapon:
     if (local.owner == NIL) end
-        if (!local.owner) end
+        if (typeof local.owner != "listener") end
             if (local.weapon == NIL) { local.weapon = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "reload"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"
@@ -274,7 +280,7 @@ end
 
 on_weapon_change local.owner local.old local.new local.client_num:
     if (local.owner == NIL) end
-        if (!local.owner) end
+        if (typeof local.owner != "listener") end
             if (local.old == NIL) { local.old = "none" }
                 if (local.new == NIL) { local.new = "unknown" }
                     local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_change"
@@ -287,7 +293,7 @@ end
 
 on_grenade_throw local.owner local.proj:
     if (local.owner == NIL) end
-        if (!local.owner) end
+        if (typeof local.owner != "listener") end
             if (local.proj == NIL) { local.proj = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "grenade_throw"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"

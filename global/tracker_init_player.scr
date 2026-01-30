@@ -110,84 +110,84 @@ end
 // ============================================================================
 
 // Combat wrappers
-wrapper_player_kill local.attacker local.attacker2 local.victim local.inflictor local.location local.meansofdeath:
-    thread global/tracker_combat_ext.scr::on_player_kill local.attacker local.attacker2 local.victim local.inflictor local.location local.meansofdeath
+wrapper_player_kill local.attacker2 local.victim local.inflictor local.location local.meansofdeath:
+    thread global/tracker_combat_ext.scr::on_player_kill self local.attacker2 local.victim local.inflictor local.location local.meansofdeath
 end
 
-wrapper_player_death local.victim local.inflictor:
-    thread global/tracker_combat_ext.scr::on_player_death local.victim local.inflictor
+wrapper_player_death local.inflictor:
+    thread global/tracker_combat_ext.scr::on_player_death self local.inflictor
 end
 
-wrapper_player_damage local.victim local.attacker local.damage local.meansofdeath:
-    thread global/tracker_combat_ext.scr::on_player_damage local.victim local.attacker local.damage local.meansofdeath
+wrapper_player_damage local.attacker local.damage local.meansofdeath:
+    thread global/tracker_combat_ext.scr::on_player_damage self local.attacker local.damage local.meansofdeath
 end
 
-wrapper_player_pain local.victim local.attacker local.damage local.meansofdeath local.hit_location:
-    thread global/tracker_combat_ext.scr::on_player_pain local.victim local.attacker local.damage local.meansofdeath local.hit_location
+wrapper_player_pain local.attacker local.damage local.meansofdeath local.hit_location:
+    thread global/tracker_combat_ext.scr::on_player_pain self local.attacker local.damage local.meansofdeath local.hit_location
 end
 
-wrapper_player_headshot local.attacker local.victim local.weapon_name:
-    thread global/tracker_combat_ext.scr::on_player_headshot local.attacker local.victim local.weapon_name
+wrapper_player_headshot local.victim local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_player_headshot self local.victim local.weapon_name
 end
 
 wrapper_player_suicide:
     thread global/tracker_combat_ext.scr::on_player_suicide self
 end
 
-wrapper_player_crushed local.victim local.attacker:
-    thread global/tracker_combat_ext.scr::on_player_crushed local.victim local.attacker
+wrapper_player_crushed local.attacker:
+    thread global/tracker_combat_ext.scr::on_player_crushed self local.attacker
 end
 
-wrapper_player_telefragged local.victim local.attacker:
-    thread global/tracker_combat_ext.scr::on_player_telefragged local.victim local.attacker
+wrapper_player_telefragged local.attacker:
+    thread global/tracker_combat_ext.scr::on_player_telefragged self local.attacker
 end
 
-wrapper_player_roadkill local.attacker local.victim:
-    thread global/tracker_combat_ext.scr::on_player_roadkill local.attacker local.victim
+wrapper_player_roadkill local.victim:
+    thread global/tracker_combat_ext.scr::on_player_roadkill self local.victim
 end
 
-wrapper_player_bash local.attacker local.victim:
-    thread global/tracker_combat_ext.scr::on_player_bash local.attacker local.victim
+wrapper_player_bash local.victim:
+    thread global/tracker_combat_ext.scr::on_player_bash self local.victim
 end
 
-wrapper_player_teamkill local.killer local.victim:
-    thread global/tracker_combat_ext.scr::on_player_teamkill local.killer local.victim
+wrapper_player_teamkill local.victim:
+    thread global/tracker_combat_ext.scr::on_player_teamkill self local.victim
 end
 
-wrapper_weapon_fire local.owner local.weapon_name local.ammo_remaining:
-    thread global/tracker_combat_ext.scr::on_weapon_fire local.owner local.weapon_name local.ammo_remaining
+wrapper_weapon_fire local.weapon_name local.ammo_remaining:
+    thread global/tracker_combat_ext.scr::on_weapon_fire self local.weapon_name local.ammo_remaining
 end
 
-wrapper_weapon_hit local.owner local.target local.hit_location:
-    thread global/tracker_combat_ext.scr::on_weapon_hit local.owner local.target local.hit_location
+wrapper_weapon_hit local.target local.hit_location:
+    thread global/tracker_combat_ext.scr::on_weapon_hit self local.target local.hit_location
 end
 
-wrapper_weapon_reload local.owner local.weapon_name:
-    thread global/tracker_combat_ext.scr::on_weapon_reload local.owner local.weapon_name
+wrapper_weapon_reload local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_reload self local.weapon_name
 end
 
-wrapper_weapon_reload_done local.owner local.weapon_name:
-    thread global/tracker_combat_ext.scr::on_weapon_reload_done local.owner local.weapon_name
+wrapper_weapon_reload_done local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_reload_done self local.weapon_name
 end
 
-wrapper_weapon_change local.owner local.old_weapon local.new_weapon local.client_num:
-    thread global/tracker_combat_ext.scr::on_weapon_change local.owner local.old_weapon local.new_weapon local.client_num
+wrapper_weapon_change local.old_weapon local.new_weapon local.client_num:
+    thread global/tracker_combat_ext.scr::on_weapon_change self local.old_weapon local.new_weapon local.client_num
 end
 
-wrapper_weapon_ready local.owner local.weapon_name:
-    thread global/tracker_combat_ext.scr::on_weapon_ready local.owner local.weapon_name
+wrapper_weapon_ready local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_ready self local.weapon_name
 end
 
-wrapper_weapon_no_ammo local.owner local.weapon_name:
-    thread global/tracker_combat_ext.scr::on_weapon_no_ammo local.owner local.weapon_name
+wrapper_weapon_no_ammo local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_no_ammo self local.weapon_name
 end
 
-wrapper_weapon_holster local.owner local.weapon_name:
-    thread global/tracker_combat_ext.scr::on_weapon_holster local.owner local.weapon_name
+wrapper_weapon_holster local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_holster self local.weapon_name
 end
 
-wrapper_weapon_raise local.owner local.weapon_name:
-    thread global/tracker_combat_ext.scr::on_weapon_raise local.owner local.weapon_name
+wrapper_weapon_raise local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_raise self local.weapon_name
 end
 
 wrapper_weapon_drop local.previous_owner local.weapon_entity:

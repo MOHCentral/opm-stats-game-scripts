@@ -3,9 +3,9 @@
 // ============================================================================
 
 on_vehicle_enter local.player local.vehicle:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_vehicle_enter | Player: " + local.player + " | Vehicle: " + local.vehicle)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_vehicle_enter | Player: " local.player " | Vehicle: " local.vehicle
     if (local.player == NIL) end
-        if (!local.player) end
+        if (typeof local.player != "listener") end
             if (local.vehicle == NIL) { local.vehicle = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "vehicle_enter"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
@@ -15,9 +15,9 @@ on_vehicle_enter local.player local.vehicle:
 end
 
 on_vehicle_exit local.player local.vehicle:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_vehicle_exit | Player: " + local.player + " | Vehicle: " + local.vehicle)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_vehicle_exit | Player: " local.player " | Vehicle: " local.vehicle
     if (local.player == NIL) end
-        if (!local.player) end
+        if (typeof local.player != "listener") end
             if (local.vehicle == NIL) { local.vehicle = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "vehicle_exit"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
@@ -27,7 +27,7 @@ on_vehicle_exit local.player local.vehicle:
 end
 
 on_vehicle_death local.vehicle local.attacker:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_vehicle_death | Vehicle: " + local.vehicle + " | Attacker: " + local.attacker)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_vehicle_death | Vehicle: " local.vehicle " | Attacker: " local.attacker
     if (local.vehicle == NIL) { local.vehicle = "unknown" }
         local.payload = waitthread global/tracker_common.scr::build_base_payload "vehicle_death"
     local.payload = local.payload + "&entity=" + local.vehicle
@@ -37,9 +37,9 @@ on_vehicle_death local.vehicle local.attacker:
 end
 
 on_vehicle_collision local.vehicle local.other:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_vehicle_collision | Vehicle: " + local.vehicle + " | Other: " + local.other)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_vehicle_collision | Vehicle: " local.vehicle " | Other: " local.other
     if (local.vehicle == NIL) end
-        if (!local.vehicle) end
+        if (typeof local.vehicle != "listener") end
             if (local.other == NIL) { local.other = NIL }
                 if (!local.other) { local.other = NIL }
     
@@ -67,9 +67,9 @@ thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_turret_enter local.player local.turret:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_turret_enter | Player: " + local.player + " | Turret: " + local.turret)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_turret_enter | Player: " local.player " | Turret: " local.turret
     if (local.player == NIL) end
-        if (!local.player) end
+        if (typeof local.player != "listener") end
             if (local.turret == NIL) { local.turret = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "turret_enter"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
@@ -79,9 +79,9 @@ on_turret_enter local.player local.turret:
 end
 
 on_turret_exit local.player local.turret:
-    waitthread global/tracker_common.scr::debug_log ("EVENT: on_turret_exit | Player: " + local.player + " | Turret: " + local.turret)
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_turret_exit | Player: " local.player " | Turret: " local.turret
     if (local.player == NIL) end
-        if (!local.player) end
+        if (typeof local.player != "listener") end
             if (local.turret == NIL) { local.turret = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "turret_exit"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
