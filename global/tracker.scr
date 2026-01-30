@@ -25,20 +25,23 @@ level.api_base_url = "http://localhost:8084"
 
         // Fetch Identity from CVars (Critical for Multi-Server)
         level.server_token = getcvar "opm_server_token"
-        if (level.server_token == "") {
-            local.ip = getcvar "net_ip"
-            level.server_token = "MISSING_TOKEN_" + local.ip
-            println "WARNING: opm_server_token not set!"
+        
+        // Check for "poisoned" config value
+        local.bad_token = 0
+        if (level.server_token != NIL && level.server_token != "") {
+            local.idx = waitthread global/tracker_common.scr::str_indexof level.server_token "MISSING_TOKEN"
+            if (local.idx != -1) { local.bad_token = 1 }
+        }
+
+        if (level.server_token == "" || local.bad_token == 1) {
+            level.server_token = "4d170d00-8b08-4619-93d0-cec2ad7883e2"
+            println "WARNING: opm_server_token invalid/missing! Using Dev Token."
         }
 
         level.server_id = getcvar "opm_server_id"
         if (level.server_id == "") {
-            // Fallback: Generate signature from IP:Port
-            local.ip = getcvar "net_ip"
-            local.port = getcvar "net_port"
-            level.server_id = "srv_" + local.ip + "_" + local.port
-            local.msg = "WARNING: opm_server_id not set! Using fallback: " + level.server_id
-            println local.msg
+            level.server_id = "c258243d-eacd-4ef3-8af7-5efa065606ce"
+            println "WARNING: opm_server_id not set! Using Dev ID."
         }
 
         // Session tracking

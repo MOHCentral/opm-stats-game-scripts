@@ -1,0 +1,12 @@
+main:
+    println "TEST: Starting curl_post check..."
+    // Try to hit the API health endpoint
+    // Payload is empty string
+    // Callback is local
+curl_post "http://localhost:8084/api/v1/health" "" "global/test_curl.scr::callback"
+    end
+
+callback local.success local.response local.code:
+        println ("TEST: curl_post callback triggered!")
+        println ("TEST: Success=" + local.success + " Code=" + local.code)
+    end

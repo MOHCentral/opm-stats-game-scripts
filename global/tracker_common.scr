@@ -5,10 +5,10 @@
 // ============================================================================
 // CONFIGURATION & GLOBALS
 // ============================================================================
-level.api_base_url = "http://localhost:8084"
+level.api_base_url = "http://127.0.0.1:8084"
     level.api_events_endpoint = "/api/v1/ingest/events"
-    level.server_token = "8b6a271b-eed5-4e55-995a-d5494f3ca94b"
-    level.server_id = "728ae814-a0c4-47d5-9dd7-82c0ab3c221d"
+    level.server_token = "5dc879b4-f748-4d77-8742-87f41224d9f8"
+    level.server_id = "f39f24c9-1d69-4f3b-84f1-3180c6d418c6"
     level.tracker_debug = 1
 
     // Batching Globals
@@ -198,13 +198,14 @@ queue_event local.payload:
                     level.batch_size = 0
                 }
                 if (level.max_batch_size == NIL) {
-                    level.max_batch_size = 20
+                    level.max_batch_size = 1
                 }
-                if (level.server_token == NIL) {
-                    level.server_token = "unregistered"
+                if (level.server_token == NIL || level.server_token == "" || level.server_token == "MISSING_TOKEN") {
+                    level.server_token = "5dc879b4-f748-4d77-8742-87f41224d9f8"
                 }
-                if (level.server_id == NIL) {
-                    level.server_id = "0"
+
+                if (level.server_id == NIL || level.server_id == "" || level.server_id == "0") {
+                    level.server_id = "f39f24c9-1d69-4f3b-84f1-3180c6d418c6"
                 }
 
                 // Append server identification to each event
@@ -233,15 +234,16 @@ flush_queue:
                 level.event_queue = ""
                 level.batch_size = 0
 
-                local.url = level.api_base_url + level.api_events_endpoint
+                local.url = level.api_base_url + level.api_events_endpoint + "?server_token=" + level.server_token
     
-                //if (level.tracker_debug) {
-                //    println ("API BATCH FLUSH: " + local.url)
-                //}
+                if (level.tracker_debug) {
+                    println ("API BATCH FLUSH: " + local.url)
+                    println ("PAYLOAD PREVIEW: " + local.payload_to_send)
+                }
     
                 // TODO: curl_post not available in this engine build
                 //println ("[STUB] Would POST batch to: " + local.url)
-                // curl_post local.url local.payload_to_send "tracker_common.scr::on_http_callback"
+                curl_post local.url local.payload_to_send "global/tracker_common.scr::on_http_callback"
             end
 
 flush_loop:
