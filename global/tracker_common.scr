@@ -253,7 +253,7 @@ str_indexof local.str local.search local.start:
                     // ============================================================================
                     // Extracts a string value from a simple JSON object: {"key":"value"}
 json_get_string local.json local.key:
-                        local.quote = "\""
+                        local.quote = "\"" // This is standard in SCR
                         local.key_quoted = local.quote + local.key + local.quote
                         local.key_index = waitthread str_indexof local.json local.key_quoted
                         if (local.key_index == -1) end ""
@@ -278,7 +278,7 @@ json_get_string local.json local.key:
 
                         // Extracts an integer value from a simple JSON object: {"key":123}
 json_get_int local.json local.key:
-                            local.quote = "\""
+                            local.quote = "\"" // This is standard in SCR
                             local.key_quoted = local.quote + local.key + local.quote
                             local.key_index = waitthread str_indexof local.json local.key_quoted
                             if (local.key_index == -1) end 0

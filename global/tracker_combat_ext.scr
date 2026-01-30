@@ -5,6 +5,7 @@
 
 
 on_player_suicide local.player:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_suicide | Player: " + local.player)
     if (local.player == NIL) end
         if (!local.player) end
             local.payload = waitthread global/tracker_common.scr::build_base_payload "player_suicide"
@@ -14,6 +15,7 @@ on_player_suicide local.player:
 end
 
 on_player_crushed local.player local.attacker:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_crushed | Player: " + local.player + " | Attacker: " + local.attacker)
     if (local.player == NIL) end
         if (!local.player) end
             local.payload = waitthread global/tracker_common.scr::build_base_payload "player_crushed"
@@ -24,6 +26,7 @@ on_player_crushed local.player local.attacker:
 end
 
 on_player_telefragged local.player local.attacker:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_telefragged | Player: " + local.player + " | Attacker: " + local.attacker)
     if (local.player == NIL) end
         if (!local.player) end
             local.payload = waitthread global/tracker_common.scr::build_base_payload "player_telefragged"
@@ -34,6 +37,7 @@ on_player_telefragged local.player local.attacker:
 end
 
 on_player_roadkill local.attacker local.victim:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_roadkill | Attacker: " + local.attacker + " | Victim: " + local.victim)
     if (local.attacker == NIL) end
         if (!local.attacker) end
             if (local.victim == NIL) end
@@ -46,6 +50,7 @@ on_player_roadkill local.attacker local.victim:
 end
 
 on_player_bash local.attacker local.victim:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_bash | Attacker: " + local.attacker + " | Victim: " + local.victim)
     if (local.attacker == NIL) end
         if (!local.attacker) end
             if (local.victim == NIL) end
@@ -58,6 +63,7 @@ on_player_bash local.attacker local.victim:
 end
 
 on_player_teamkill local.killer local.victim:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_teamkill | Killer: " + local.killer + " | Victim: " + local.victim)
     if (local.killer == NIL) end
         if (!local.killer) end
             if (local.victim == NIL) end
@@ -70,6 +76,7 @@ on_player_teamkill local.killer local.victim:
 end
 
 on_weapon_reload_done local.owner local.weapon_name:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_reload_done | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
     if (local.owner == NIL) end
         if (!local.owner) end
             if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
@@ -81,6 +88,7 @@ on_weapon_reload_done local.owner local.weapon_name:
 end
 
 on_weapon_ready local.owner local.weapon_name:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_ready | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
     if (local.owner == NIL) end
         if (!local.owner) end
             if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
@@ -92,6 +100,7 @@ on_weapon_ready local.owner local.weapon_name:
 end
 
 on_weapon_no_ammo local.owner local.weapon_name:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_no_ammo | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
     if (local.owner == NIL) end
         if (!local.owner) end
             if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
@@ -103,6 +112,7 @@ on_weapon_no_ammo local.owner local.weapon_name:
 end
 
 on_weapon_holster local.owner local.weapon_name:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_holster | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
     if (local.owner == NIL) end
         if (!local.owner) end
             if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
@@ -114,6 +124,7 @@ on_weapon_holster local.owner local.weapon_name:
 end
 
 on_weapon_raise local.owner local.weapon_name:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_raise | Owner: " + local.owner + " | Weapon: " + local.weapon_name)
     if (local.owner == NIL) end
         if (!local.owner) end
             if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
@@ -125,6 +136,7 @@ on_weapon_raise local.owner local.weapon_name:
 end
 
 on_weapon_drop local.owner local.weapon:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_drop | Owner: " + local.owner + " | Weapon: " + local.weapon)
     if (local.owner == NIL) end
         if (!local.owner) end
             if (local.weapon == NIL) { local.weapon = "unknown" }
@@ -140,6 +152,7 @@ end
 // ============================================================================
 
 on_player_kill local.attacker local.attacker2 local.victim local.inflictor local.hitloc local.mod:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_kill | Attacker: " + local.attacker + " | Victim: " + local.victim + " | Inflictor: " + local.inflictor + " | HitLoc: " + local.hitloc + " | MOD: " + local.mod)
     if (local.attacker != NIL && local.attacker != -1 && local.attacker) {
         if (local.attacker.shots_hit == NIL) local.attacker.shots_hit = 0
             local.attacker.shots_hit++
@@ -159,6 +172,7 @@ on_player_kill local.attacker local.attacker2 local.victim local.inflictor local
 end
 
 on_player_death local.victim local.inflictor:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_death | Victim: " + local.victim + " | Inflictor: " + local.inflictor)
     if (local.victim == NIL) end
         if (!local.victim) end
             if (local.inflictor == NIL) { local.inflictor = "unknown" }
@@ -170,6 +184,7 @@ on_player_death local.victim local.inflictor:
 end
 
 on_player_damage local.victim local.attacker local.amount local.mod:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_damage | Victim: " + local.victim + " | Attacker: " + local.attacker + " | Amount: " + local.amount + " | MOD: " + local.mod)
     if (local.amount == NIL) { local.amount = 0 }
         if (local.mod == NIL) { local.mod = "unknown" }
             local.payload = waitthread global/tracker_common.scr::build_base_payload "damage"
@@ -184,6 +199,7 @@ on_player_damage local.victim local.attacker local.amount local.mod:
 end
 
 on_player_pain local.player local.attacker local.damage local.mod local.location:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_pain | Player: " + local.player + " | Attacker: " + local.attacker + " | Damage: " + local.damage + " | HitLoc: " + local.location)
     if (local.damage == NIL) { local.damage = 0 }
         if (local.mod == NIL) { local.mod = "unknown" }
             if (local.location == NIL) { local.location = "unknown" }
@@ -200,6 +216,7 @@ on_player_pain local.player local.attacker local.damage local.mod local.location
 end
 
 on_weapon_fire local.player local.weapon_name local.ammo_left:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_fire | Player: " + local.player + " | Weapon: " + local.weapon_name + " | Ammo: " + local.ammo_left)
     if (local.player == NIL) end
         if (!local.player) end
             if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
@@ -217,6 +234,7 @@ on_weapon_fire local.player local.weapon_name local.ammo_left:
 end
 
 on_weapon_hit local.player local.target local.location:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_weapon_hit | Player: " + local.player + " | Target: " + local.target + " | HitLoc: " + local.location)
     if (local.player == NIL) end
         if (!local.player) end
             if (local.location == NIL) { local.location = "unknown" }

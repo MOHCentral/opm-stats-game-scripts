@@ -3,35 +3,39 @@
 // ============================================================================
 
 on_actor_spawn local.actor:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_actor_spawn | Actor: " + local.actor)
     if (local.actor == NIL) end
-    if (!local.actor) end
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "actor_spawn"
+        if (!local.actor) end
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "actor_spawn"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_actor_killed local.actor local.attacker:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_actor_killed | Actor: " + local.actor + " | Attacker: " + local.attacker)
     if (local.actor == NIL) end
-    if (!local.actor) end
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "actor_killed"
+        if (!local.actor) end
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "actor_killed"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_bot_spawn local.bot:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_bot_spawn | Bot: " + local.bot)
     if (local.bot == NIL) end
-    if (!local.bot) end
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_spawn"
+        if (!local.bot) end
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_spawn"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.bot "player"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_bot_killed local.bot local.attacker:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_bot_killed | Bot: " + local.bot + " | Attacker: " + local.attacker)
     if (local.bot == NIL) end
-    if (!local.bot) end
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_killed"
+        if (!local.bot) end
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_killed"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.bot "victim"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
 
@@ -39,27 +43,30 @@ on_bot_killed local.bot local.attacker:
 end
 
 on_bot_roam local.bot:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_bot_roam | Bot: " + local.bot)
     if (local.bot == NIL) end
-    if (!local.bot) end
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_roam"
+        if (!local.bot) end
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_roam"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.bot "player"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_bot_curious local.bot:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_bot_curious | Bot: " + local.bot)
     if (local.bot == NIL) end
-    if (!local.bot) end
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_curious"
+        if (!local.bot) end
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_curious"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.bot "player"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_bot_attack local.bot:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_bot_attack | Bot: " + local.bot)
     if (local.bot == NIL) end
-    if (!local.bot) end
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_attack"
+        if (!local.bot) end
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "bot_attack"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.bot "player"
 
     thread global/tracker_common.scr::queue_event local.payload

@@ -3,10 +3,11 @@
 // ============================================================================
 
 on_player_use_object_start local.player local.object:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_use_object_start | Player: " + local.player + " | Object: " + local.object)
     if (local.player == NIL) end
-    if (!local.player) end
-    if (local.object == NIL) { local.object = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "player_use_object_start"
+        if (!local.player) end
+            if (local.object == NIL) { local.object = "unknown" }
+                local.payload = waitthread global/tracker_common.scr::build_base_payload "player_use_object_start"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&object=" + local.object
 
@@ -14,10 +15,11 @@ on_player_use_object_start local.player local.object:
 end
 
 on_player_use_object_finish local.player local.object:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_use_object_finish | Player: " + local.player + " | Object: " + local.object)
     if (local.player == NIL) end
-    if (!local.player) end
-    if (local.object == NIL) { local.object = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "player_use_object_finish"
+        if (!local.player) end
+            if (local.object == NIL) { local.object = "unknown" }
+                local.payload = waitthread global/tracker_common.scr::build_base_payload "player_use_object_finish"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&object=" + local.object
 
@@ -25,10 +27,11 @@ on_player_use_object_finish local.player local.object:
 end
 
 on_player_say local.player local.text:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_say | Player: " + local.player + " | Message: " + local.text)
     if (local.player == NIL) end
-    if (!local.player) end
-    if (local.text == NIL) { local.text = "" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "chat"
+        if (!local.player) end
+            if (local.text == NIL) { local.text = "" }
+                local.payload = waitthread global/tracker_common.scr::build_base_payload "chat"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&message=" + local.text
 
@@ -36,19 +39,21 @@ on_player_say local.player local.text:
 end
 
 on_player_spectate local.player:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_spectate | Player: " + local.player)
     if (local.player == NIL) end
-    if (!local.player) end
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "player_spectate"
+        if (!local.player) end
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "player_spectate"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_player_freeze local.player local.frozen_state:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_freeze | Player: " + local.player + " | State: " + local.frozen_state)
     if (local.player == NIL) end
-    if (!local.player) end
-    if (local.frozen_state == NIL) { local.frozen_state = 0 }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "player_freeze"
+        if (!local.player) end
+            if (local.frozen_state == NIL) { local.frozen_state = 0 }
+                local.payload = waitthread global/tracker_common.scr::build_base_payload "player_freeze"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&frozen_state=" + local.frozen_state
 

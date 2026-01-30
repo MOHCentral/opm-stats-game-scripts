@@ -3,9 +3,10 @@
 // ============================================================================
 
 on_intermission_start local.map_name local.gametype:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_intermission_start | Map: " + local.map_name + " | GameType: " + local.gametype)
     if (local.map_name == NIL) { local.map_name = "unknown" }
-    if (local.gametype == NIL) { local.gametype = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "intermission_start"
+        if (local.gametype == NIL) { local.gametype = "unknown" }
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "intermission_start"
     local.payload = local.payload + "&map=" + local.map_name
     local.payload = local.payload + "&gametype=" + local.gametype
 
@@ -13,45 +14,49 @@ on_intermission_start local.map_name local.gametype:
 end
 
 on_warmup_start local.map_name:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_warmup_start | Map: " + local.map_name)
     if (local.map_name == NIL) { local.map_name = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "warmup_start"
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "warmup_start"
     local.payload = local.payload + "&map=" + local.map_name
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_warmup_end local.map_name:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_warmup_end | Map: " + local.map_name)
     if (local.map_name == NIL) { local.map_name = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "warmup_end"
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "warmup_end"
     local.payload = local.payload + "&map=" + local.map_name
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_objective_capture local.objective local.controller_team:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_objective_capture | Obj: " + local.objective + " | Team: " + local.controller_team)
     if (local.objective == NIL) { local.objective = NIL }
-    if (!local.objective) { local.objective = NIL }
-    if (local.controller_team == NIL) { local.controller_team = 0 }
+        if (!local.objective) { local.objective = NIL }
+            if (local.controller_team == NIL) { local.controller_team = 0 }
     
-    local.obj_name = "unknown"
+                local.obj_name = "unknown"
     if (local.objective != NIL)
         if (local.objective)
             local.obj_name = local.objective.targetname
-            if (local.obj_name == NIL) { local.obj_name = "unknown" }
+    if (local.obj_name == NIL) { local.obj_name = "unknown" }
         end
-    end
+end
     
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "objective_capture"
-    local.payload = local.payload + "&objective_name=" + local.obj_name
-    local.payload = local.payload + "&team=" + local.controller_team
+local.payload = waitthread global/tracker_common.scr::build_base_payload "objective_capture"
+local.payload = local.payload + "&objective_name=" + local.obj_name
+local.payload = local.payload + "&team=" + local.controller_team
 
-    thread global/tracker_common.scr::queue_event local.payload
+thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_map_ready local.map local.gametype:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_map_ready | Map: " + local.map + " | GameType: " + local.gametype)
     if (local.map == NIL) { local.map = "unknown" }
-    if (local.gametype == NIL) { local.gametype = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "map_ready"
+        if (local.gametype == NIL) { local.gametype = "unknown" }
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "map_ready"
     local.payload = local.payload + "&map=" + local.map
     local.payload = local.payload + "&gametype=" + local.gametype
 
@@ -59,72 +64,81 @@ on_map_ready local.map local.gametype:
 end
 
 on_server_console_command local.cmd:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_server_console_command | Cmd: " + local.cmd)
     if (local.cmd == NIL) { local.cmd = "" }
     
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "server_console_command"
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "server_console_command"
     local.payload = local.payload + "&command=" + local.cmd
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_map_restart local.map_name:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_map_restart | Map: " + local.map_name)
     if (local.map_name == NIL) { local.map_name = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "map_restart"
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "map_restart"
     local.payload = local.payload + "&map=" + local.map_name
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_game_init local.gametype:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_game_init | GameType: " + local.gametype)
     if (local.gametype == NIL) { local.gametype = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "game_init"
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "game_init"
     local.payload = local.payload + "&gametype=" + local.gametype
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_game_start:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_game_start")
     local.payload = waitthread global/tracker_common.scr::build_base_payload "game_start"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_game_end:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_game_end")
     local.payload = waitthread global/tracker_common.scr::build_base_payload "game_end"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_round_start:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_round_start | Round: " + level.round_number)
     local.round = level.round_number
     if (local.round == NIL) { local.round = 0 }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "round_start"
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "round_start"
     local.payload = local.payload + "&round_number=" + local.round
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_round_end:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_round_end | Round: " + level.round_number)
     local.round = level.round_number
     if (local.round == NIL) { local.round = 0 }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "round_end"
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "round_end"
     local.payload = local.payload + "&round_number=" + local.round
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_team_win local.teamnum:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_team_win | Team: " + local.teamnum)
     if (local.teamnum == NIL) { local.teamnum = 0 }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "team_win"
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "team_win"
     local.payload = local.payload + "&teamnum=" + local.teamnum
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_objective_update local.index local.status:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_objective_update | Index: " + local.index + " | Status: " + local.status)
     if (local.index == NIL) { local.index = 0 }
-    if (local.status == NIL) { local.status = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "objective_update"
+        if (local.status == NIL) { local.status = "unknown" }
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "objective_update"
     local.payload = local.payload + "&objective_index=" + local.index
     local.payload = local.payload + "&objective_status=" + local.status
 
@@ -132,17 +146,19 @@ on_objective_update local.index local.status:
 end
 
 on_map_load_start local.map_name:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_map_load_start | Map: " + local.map_name)
     if (local.map_name == NIL) { local.map_name = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "map_load_start"
+        local.payload = waitthread global/tracker_common.scr::build_base_payload "map_load_start"
     local.payload = local.payload + "&map=" + local.map_name
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_map_load_end local.map_name local.gametype:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_map_load_end | Map: " + local.map_name + " | GameType: " + local.gametype)
     if (local.map_name == NIL) { local.map_name = "unknown" }
-    if (local.gametype == NIL) { local.gametype = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "map_load_end"
+        if (local.gametype == NIL) { local.gametype = "unknown" }
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "map_load_end"
     local.payload = local.payload + "&map=" + local.map_name
     local.payload = local.payload + "&gametype=" + local.gametype
 
@@ -150,9 +166,10 @@ on_map_load_end local.map_name local.gametype:
 end
 
 on_map_change_start local.current_map local.next_map:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_map_change_start | Current: " + local.current_map + " | Next: " + local.next_map)
     if (local.current_map == NIL) { local.current_map = "unknown" }
-    if (local.next_map == NIL) { local.next_map = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "map_change_start"
+        if (local.next_map == NIL) { local.next_map = "unknown" }
+            local.payload = waitthread global/tracker_common.scr::build_base_payload "map_change_start"
     local.payload = local.payload + "&current_map=" + local.current_map
     local.payload = local.payload + "&next_map=" + local.next_map
 
@@ -160,6 +177,7 @@ on_map_change_start local.current_map local.next_map:
 end
 
 on_map_init:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_map_init")
     local.gametype = getcvar "g_gametype"
     local.payload = waitthread global/tracker_common.scr::build_base_payload "map_init"
     local.payload = local.payload + "&gametype=" + local.gametype
@@ -168,22 +186,25 @@ on_map_init:
 end
 
 on_map_start:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_map_start")
     local.payload = waitthread global/tracker_common.scr::build_base_payload "map_start"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_map_shutdown:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_map_shutdown")
     local.payload = waitthread global/tracker_common.scr::build_base_payload "map_shutdown"
 
     thread global/tracker_common.scr::queue_event local.payload
 end
 
 on_match_end local.map_name local.gametype local.winning_team:
+    waitthread global/tracker_common.scr::debug_log ("EVENT: on_match_end | Map: " + local.map_name + " | GameType: " + local.gametype + " | Winner: " + local.winning_team)
     if (local.map_name == NIL) { local.map_name = "unknown" }
-    if (local.gametype == NIL) { local.gametype = "unknown" }
-    if (local.winning_team == NIL) { local.winning_team = "unknown" }
-    local.payload = waitthread global/tracker_common.scr::build_base_payload "match_end"
+        if (local.gametype == NIL) { local.gametype = "unknown" }
+            if (local.winning_team == NIL) { local.winning_team = "unknown" }
+                local.payload = waitthread global/tracker_common.scr::build_base_payload "match_end"
     local.payload = local.payload + "&map=" + local.map_name
     local.payload = local.payload + "&gametype=" + local.gametype
     local.payload = local.payload + "&winning_team=" + local.winning_team
