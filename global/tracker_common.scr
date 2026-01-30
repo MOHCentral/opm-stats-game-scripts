@@ -243,6 +243,7 @@ flush_queue:
     
                 // TODO: curl_post not available in this engine build
                 //println ("[STUB] Would POST batch to: " + local.url)
+                // println ("[STUB] Would POST batch to: " + local.url)
                 curl_post local.url local.payload_to_send "global/tracker_common.scr::on_http_callback"
             end
 
@@ -267,6 +268,14 @@ on_http_callback local.success local.response local.http_code:
                         println ("HTTP FAIL [" + local.http_code + "]: " + local.response)
                     }
                 }
+
+                // Auto-recover from invalid token
+                if (local.http_code == 401) {
+                    println "[OPM] Server token rejected. Triggering re-registration..."
+                    level.server_token = NIL
+                    setcvar "opm_server_token" "" // Force register.scr to generate new
+                    // exec global/register.scr // Prevent recursion loop
+                }
             end
 
 build_base_payload local.event_type:
@@ -274,7 +283,7 @@ build_base_payload local.event_type:
                     local.payload = "type=" + local.event_type
     
                 local.match_id = level.match_id
-                if (local.match_id == NIL) { local.match_id = "no_match" }
+                if (local.match_id == NIL || local.match_id == "") { local.match_id = "no_match" }
                     local.payload = local.payload + "&match_id=" + local.match_id
     
                 local.payload = local.payload + "&timestamp=" + level.time

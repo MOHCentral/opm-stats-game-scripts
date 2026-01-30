@@ -8,14 +8,7 @@
 check_registration:
     local.token = getcvar "opm_server_token"
     
-    // First, check if we have a saved config
-    if (local.token == "" || local.token == "MISSING_TOKEN") {
-        // Try to load from main/opm_registration.cfg
-        exec opm_registration.cfg
-        
-        // Re-check after exec
-        local.token = getcvar "opm_server_token"
-    }
+    local.token = getcvar "opm_server_token"
 
     local.id = getcvar "opm_server_id"
 
