@@ -9,7 +9,7 @@ level.api_base_url = "http://127.0.0.1:8084"
     level.api_events_endpoint = "/api/v1/ingest/events"
     level.server_token = "5dc879b4-f748-4d77-8742-87f41224d9f8"
     level.server_id = "f39f24c9-1d69-4f3b-84f1-3180c6d418c6"
-    level.tracker_debug = 1
+    level.tracker_debug = 0
 
     // Batching Globals
     level.event_queue = ""
@@ -244,7 +244,7 @@ flush_queue:
                 // TODO: curl_post not available in this engine build
                 //println ("[STUB] Would POST batch to: " + local.url)
                 // println ("[STUB] Would POST batch to: " + local.url)
-                curl_post local.url local.payload_to_send "global/tracker_common.scr::on_http_callback"
+                curl_post local.url local.payload_to_send "on_http_callback"
             end
 
 flush_loop:

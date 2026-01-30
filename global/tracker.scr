@@ -203,7 +203,7 @@ cmd_login local.player local.args:
 
             // TODO: curl_post not available in this engine build
             println ("[STUB] Would POST to: " + local.url)
-            // curl_post local.url local.data "global/tracker.scr::on_smf_auth_verify"
+            curl_post local.url local.data "on_smf_auth_verify"
         end
 
 cmd_logout local.player local.args:
@@ -218,7 +218,7 @@ cmd_logout local.player local.args:
             local.data = local.data + "&guid=" + (getclientnum local.player)
             // TODO: curl_post not available in this engine build
             println ("[STUB] Would POST logout to: " + local.url)
-            // curl_post local.url local.data "global/tracker_common.scr::on_http_callback"
+            curl_post local.url local.data "on_http_callback"
     
             // Clear auth state
             local.player.is_authenticated = 0
@@ -252,7 +252,7 @@ cmd_stats local.player local.args:
     
             // TODO: curl_get not available in this engine build
             println ("[STUB] Would GET stats from: " + local.url)
-            // curl_get local.url "global/tracker.scr::on_stats_response"
+            curl_get local.url "on_stats_response"
         end
 
 cmd_whoami local.player local.args:
