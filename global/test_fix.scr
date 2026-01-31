@@ -3,27 +3,27 @@
 // ============================================================================
 
 main:
-    println "=============================================="
-    println "Verifying build_player_payload robustness..."
-    println "=============================================="
+    conprintf "=============================================="
+    conprintf "Verifying build_player_payload robustness..."
+    conprintf "=============================================="
 
     // Test Case 1: NIL
     local.res = waitthread global/tracker_common.scr::build_player_payload NIL "test"
-    if (local.res == "") { println "PASS: NIL handled" } else { println "FAIL: NIL returned data: " local.res }
+    if (local.res == "") { conprintf "PASS: NIL handled" } else { conprintf "FAIL: NIL returned data: " local.res }
 
         // Test Case 2: -1 (The suspected culprit)
     local.res = waitthread global/tracker_common.scr::build_player_payload -1 "test"
-    if (local.res == "") { println "PASS: -1 handled" } else { println "FAIL: -1 returned data: " local.res }
+    if (local.res == "") { conprintf "PASS: -1 handled" } else { conprintf "FAIL: -1 returned data: " local.res }
 
         // Test Case 3: 0
     local.res = waitthread global/tracker_common.scr::build_player_payload 0 "test"
-    if (local.res == "") { println "PASS: 0 handled" } else { println "FAIL: 0 returned data: " local.res }
+    if (local.res == "") { conprintf "PASS: 0 handled" } else { conprintf "FAIL: 0 returned data: " local.res }
 
         // Test Case 4: String
     local.res = waitthread global/tracker_common.scr::build_player_payload "not_a_player" "test"
-    if (local.res == "") { println "PASS: String handled" } else { println "FAIL: String returned data: " local.res }
+    if (local.res == "") { conprintf "PASS: String handled" } else { conprintf "FAIL: String returned data: " local.res }
 
-        println "=============================================="
-    println "Verification Complete"
-    println "=============================================="
+        conprintf "=============================================="
+    conprintf "Verification Complete"
+    conprintf "=============================================="
 end

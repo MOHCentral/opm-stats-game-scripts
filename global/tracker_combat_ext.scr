@@ -268,8 +268,8 @@ on_player_headshot local.attacker local.victim local.weapon:
 end
 
 on_weapon_reload local.owner local.weapon:
-    if (local.owner == NIL) end
-        if (typeof local.owner != "listener") end
+    if (local.owner == NIL) { end }
+        if (typeof local.owner != "listener") { end }
             if (local.weapon == NIL) { local.weapon = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "reload"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"
@@ -279,8 +279,8 @@ on_weapon_reload local.owner local.weapon:
 end
 
 on_weapon_change local.owner local.old local.new local.client_num:
-    if (local.owner == NIL) end
-        if (typeof local.owner != "listener") end
+    if (local.owner == NIL) { end }
+        if (typeof local.owner != "listener") { end }
             if (local.old == NIL) { local.old = "none" }
                 if (local.new == NIL) { local.new = "unknown" }
                     local.payload = waitthread global/tracker_common.scr::build_base_payload "weapon_change"
@@ -292,8 +292,8 @@ on_weapon_change local.owner local.old local.new local.client_num:
 end
 
 on_grenade_throw local.owner local.proj:
-    if (local.owner == NIL) end
-        if (typeof local.owner != "listener") end
+    if (local.owner == NIL) { end }
+        if (typeof local.owner != "listener") { end }
             if (local.proj == NIL) { local.proj = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "grenade_throw"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.owner "player"

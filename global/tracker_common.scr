@@ -48,24 +48,24 @@ safestr local.val:
 debug_log_var local.a1 local.a2 local.a3 local.a4 local.a5 local.a6 local.a7 local.a8 local.a9 local.a10 local.a11 local.a12 local.a13 local.a14 local.a15 local.a16:
         if (level.tracker_debug) {
             local.msg = ""
-            if (local.a1 != NIL) local.msg += (waitthread safestr local.a1)
-                if (local.a2 != NIL) local.msg += (waitthread safestr local.a2)
-                    if (local.a3 != NIL) local.msg += (waitthread safestr local.a3)
-                        if (local.a4 != NIL) local.msg += (waitthread safestr local.a4)
-                            if (local.a5 != NIL) local.msg += (waitthread safestr local.a5)
-                                if (local.a6 != NIL) local.msg += (waitthread safestr local.a6)
-                                    if (local.a7 != NIL) local.msg += (waitthread safestr local.a7)
-                                        if (local.a8 != NIL) local.msg += (waitthread safestr local.a8)
-                                            if (local.a9 != NIL) local.msg += (waitthread safestr local.a9)
-                                                if (local.a10 != NIL) local.msg += (waitthread safestr local.a10)
-                                                    if (local.a11 != NIL) local.msg += (waitthread safestr local.a11)
-                                                        if (local.a12 != NIL) local.msg += (waitthread safestr local.a12)
-                                                            if (local.a13 != NIL) local.msg += (waitthread safestr local.a13)
-                                                                if (local.a14 != NIL) local.msg += (waitthread safestr local.a14)
-                                                                    if (local.a15 != NIL) local.msg += (waitthread safestr local.a15)
-                                                                        if (local.a16 != NIL) local.msg += (waitthread safestr local.a16)
+            if (local.a1 != NIL) { local.msg += (waitthread safestr local.a1) }
+                if (local.a2 != NIL) { local.msg += (waitthread safestr local.a2) }
+                    if (local.a3 != NIL) { local.msg += (waitthread safestr local.a3) }
+                        if (local.a4 != NIL) { local.msg += (waitthread safestr local.a4) }
+                            if (local.a5 != NIL) { local.msg += (waitthread safestr local.a5) }
+                                if (local.a6 != NIL) { local.msg += (waitthread safestr local.a6) }
+                                    if (local.a7 != NIL) { local.msg += (waitthread safestr local.a7) }
+                                        if (local.a8 != NIL) { local.msg += (waitthread safestr local.a8) }
+                                            if (local.a9 != NIL) { local.msg += (waitthread safestr local.a9) }
+                                                if (local.a10 != NIL) { local.msg += (waitthread safestr local.a10) }
+                                                    if (local.a11 != NIL) { local.msg += (waitthread safestr local.a11) }
+                                                        if (local.a12 != NIL) { local.msg += (waitthread safestr local.a12) }
+                                                            if (local.a13 != NIL) { local.msg += (waitthread safestr local.a13) }
+                                                                if (local.a14 != NIL) { local.msg += (waitthread safestr local.a14) }
+                                                                    if (local.a15 != NIL) { local.msg += (waitthread safestr local.a15) }
+                                                                        if (local.a16 != NIL) { local.msg += (waitthread safestr local.a16) }
         
-                                                                            println ("[" + level.time + "] [OPM] " + local.msg)
+                                                                            conprintf ("[" + level.time + "] [OPM] " + local.msg)
         }
     end
 
@@ -187,8 +187,8 @@ build_player_payload_compact local.player local.prefix:
 
 queue_event local.payload:
             // Guard against NIL payload
-                if (local.payload == NIL) end
-                    if (local.payload == "") end
+                if (local.payload == NIL) { end }
+                    if (local.payload == "") { end }
 
                         // Ensure globals are initialized
                 if (level.event_queue == NIL) {
@@ -237,14 +237,14 @@ flush_queue:
                 local.url = level.api_base_url + level.api_events_endpoint + "?server_token=" + level.server_token
     
                 if (level.tracker_debug) {
-                    println ("API BATCH FLUSH: " + local.url)
-                    println ("PAYLOAD PREVIEW: " + local.payload_to_send)
+                    conprintf ("API BATCH FLUSH: " + local.url)
+                    conprintf ("PAYLOAD PREVIEW: " + local.payload_to_send)
                 }
     
-                // TODO: curl_post not available in this engine build
-                //println ("[STUB] Would POST batch to: " + local.url)
-                // println ("[STUB] Would POST batch to: " + local.url)
-                curl_post local.url local.payload_to_send "on_http_callback"
+                // TODO: // curl_post not available in this engine build
+                //conprintf ("[STUB] Would POST batch to: " + local.url)
+                // conprintf ("[STUB] Would POST batch to: " + local.url)
+                // curl_post local.url local.payload_to_send on_http_callback
             end
 
 flush_loop:
@@ -263,15 +263,15 @@ flush_loop:
 on_http_callback local.success local.response local.http_code:
                 if (level.tracker_debug) {
                     if (local.success) {
-                        println ("HTTP OK [" + local.http_code + "]")
+                        conprintf ("HTTP OK [" + local.http_code + "]")
                     } else {
-                        println ("HTTP FAIL [" + local.http_code + "]: " + local.response)
+                        conprintf ("HTTP FAIL [" + local.http_code + "]: " + local.response)
                     }
                 }
 
                 // Auto-recover from invalid token
                 if (local.http_code == 401) {
-                    println "[OPM] Server token rejected. Triggering re-registration..."
+                    conprintf "[OPM] Server token rejected. Triggering re-registration..."
                     level.server_token = NIL
                     setcvar "opm_server_token" "" // Force register.scr to generate new
                     // exec global/register.scr // Prevent recursion loop
@@ -301,7 +301,7 @@ build_base_payload local.event_type:
 debug_log local.message:
                     if (level.tracker_debug) {
                         local.safe_msg = waitthread safestr local.message
-                        println ("[" + level.time + "] [OPM] " + local.safe_msg)
+                        conprintf ("[" + level.time + "] [OPM] " + local.safe_msg)
                     }
                 end
 

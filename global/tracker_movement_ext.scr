@@ -5,8 +5,8 @@
 
 on_player_respawn local.player:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_respawn | Player: " local.player
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             local.player.tracker_stance = "stand"
     local.payload = waitthread global/tracker_common.scr::build_base_payload "player_respawn"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
@@ -16,8 +16,8 @@ end
 
 on_player_stand local.player:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_stand | Player: " local.player
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             local.player.tracker_stance = "stand"
     local.payload = waitthread global/tracker_common.scr::build_base_payload "player_stand"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
@@ -27,8 +27,8 @@ end
 
 on_player_spawn local.player:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_spawn | Player: " local.player
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             local.player.tracker_stance = "stand"
     local.payload = waitthread global/tracker_common.scr::build_base_payload "player_spawn"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"

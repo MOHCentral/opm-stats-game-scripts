@@ -4,8 +4,8 @@
 
 on_health_pickup local.player local.amount:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_health_pickup | Player: " local.player " | Amount: " local.amount
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             if (local.amount == NIL) { local.amount = 0 }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "health_pickup"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
@@ -16,8 +16,8 @@ end
 
 on_ammo_pickup local.player local.item_name local.amount:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_ammo_pickup | Player: " local.player " | Item: " local.item_name " | Amt: " local.amount
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             if (local.item_name == NIL) { local.item_name = "unknown" }
                 if (local.amount == NIL) { local.amount = 0 }
                     local.payload = waitthread global/tracker_common.scr::build_base_payload "ammo_pickup"
@@ -30,8 +30,8 @@ end
 
 on_armor_pickup local.player local.amount:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_armor_pickup | Player: " local.player " | Amount: " local.amount
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             if (local.amount == NIL) { local.amount = 0 }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "armor_pickup"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
@@ -53,8 +53,8 @@ end
 
 on_item_pickup local.player local.item local.count:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_item_pickup | Player: " local.player " | Item: " local.item " | Count: " local.count
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             if (local.item == NIL) { local.item = "unknown" }
                 if (local.count == NIL) { local.count = 0 }
                     local.payload = waitthread global/tracker_common.scr::build_base_payload "item_pickup"
@@ -67,13 +67,12 @@ end
 
 on_item_drop local.player local.item:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_item_drop | Player: " local.player " | Item: " local.item
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             if (local.item == NIL) { local.item = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "item_drop"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&item_name=" + local.item
 
     thread global/tracker_common.scr::queue_event local.payload
-end
 

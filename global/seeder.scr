@@ -197,8 +197,7 @@ end
 cmd_seed local.player local.args:
     waitthread init_data
     if (level.seeder_running) {
-        println "Seeder is already running!"
-        iprintln "Seeder is already running!"
+        local.player iprint "Seeder is already running!"
         end
     }
 
@@ -219,23 +218,25 @@ cmd_seed local.player local.args:
         }
     }
 
-    println "=============================================="
-    println "MEGA SEEDER v4.0 - 1,000,000% COVERAGE"
-    println "=============================================="
-    println ("Starting simulation of " + local.count + " full matches...")
-    iprintln ("MEGA SEED: " + local.count + " matches")
+    if (local.player) {
+        local.player iprint "=============================================="
+        local.player iprint "MEGA SEEDER v4.0 - 1,000,000% COVERAGE"
+        local.player iprint "=============================================="
+        local.player iprint ("Starting simulation of " + local.count + " full matches...")
+    }
+    local.player iprint ("MEGA SEED: " + local.count + " matches")
     
     level.seeder_running = 1
     
     // Run in a separate thread to not block the game loop
-    thread run_mega_simulation local.count
+    thread run_mega_simulation local.count local.player
 
     while (level.seeder_running) {
         wait 1
     }
 end
 
-run_mega_simulation local.count:
+run_mega_simulation local.count local.player:
 // Guard against NIL count
     if (local.count == NIL) {
         local.count = 10 
@@ -247,12 +248,12 @@ run_mega_simulation local.count:
     // Setup fake players with varied skill levels
     local.players = waitthread create_mega_player_roster
     if (local.players == NIL) {
-        println "MEGA SEEDER: Failed to create player roster!"
+        conprintf "MEGA SEEDER: Failed to create player roster!"
         level.seeder_running = 0
         end
     }
     
-    println ("MEGA SEEDER: Created " + local.players.size + " simulated players")
+    conprintf ("MEGA SEEDER: Created " + local.players.size + " simulated players")
 
     // Track global stats for reporting
     level.seed_total_kills = 0
@@ -260,8 +261,8 @@ run_mega_simulation local.count:
     level.seed_total_events = 0
 
     for (local.i = 1; local.i <= local.count; local.i++) {
-        println ""
-        println ("=== MATCH " + local.i + "/" + local.count + " ===")
+        conprintf ""
+        conprintf ("=== MATCH " + local.i + "/" + local.count + " ===")
         
         // Rotate maps and gametypes
         local.map_idx = 1
@@ -285,14 +286,16 @@ run_mega_simulation local.count:
         wait 0.2 // Small delay between matches
     }
 
-    println ""
-    println "=============================================="
-    println "MEGA SEEDER COMPLETE!"
-    println ("Total Events: " + level.seed_total_events)
-    println ("Total Kills: " + level.seed_total_kills)
-    println ("Total Headshots: " + level.seed_total_headshots)
-    println "=============================================="
-    iprintln "MEGA SEED Complete!"
+    conprintf ""
+    conprintf "=============================================="
+    conprintf "MEGA SEEDER COMPLETE!"
+    conprintf ("Total Events: " + level.seed_total_events)
+    conprintf ("Total Kills: " + level.seed_total_kills)
+    conprintf ("Total Headshots: " + level.seed_total_headshots)
+    conprintf "=============================================="
+    if (local.player) {
+        local.player iprint "MEGA SEED Complete!"
+    }
     
     waitthread cleanup_mega_players local.players
     level.seeder_running = 0
@@ -308,7 +311,7 @@ create_mega_player_roster:
     // Robust Fallback
     if (local.name_count == NIL || local.name_count < 1) { 
         local.name_count = 10 
-        println "MEGA SEEDER: WARNING - player_name_count missing. Defaulting to 10 players."
+        conprintf "MEGA SEEDER: WARNING - player_name_count missing. Defaulting to 10 players."
     }
 
     for (local.i = 1; local.i <= local.name_count; local.i++) {
@@ -401,7 +404,7 @@ simulate_match local.players local.match_num:
 
         // 3. MATCH END
         local.winning_team = "allies"
-        if (local.axis_score > local.allies_score) local.winning_team = "axis"
+        if (local.axis_score > local.allies_score) { local.winning_team = "axis" }
 
             waitthread send_event "match_end" ("&winning_team=" + local.winning_team + "&allies_score=" + local.allies_score + "&axis_score=" + local.axis_score + "&duration=1200")
         waitthread send_event "game_end" ""
@@ -428,7 +431,7 @@ simulate_full_match local.players local.match_num local.map_name local.gametype:
         level.match_id = local.match_id
         level.map_name = local.map_name
 
-        println ("  Map: " + local.map_name + " | GameType: " + local.gametype)
+        conprintf ("  Map: " + local.map_name + " | GameType: " + local.gametype)
 
         // 1. MAP LOAD EVENTS
         waitthread send_event "map_load_start" ("&map_name=" + local.map_name)
@@ -463,7 +466,7 @@ simulate_full_match local.players local.match_num local.map_name local.gametype:
         local.allies_score = 0
         local.axis_score = 0
         local.round_count = 2
-        if (local.gametype == "ffa") local.round_count = 1
+        if (local.gametype == "ffa") { local.round_count = 1 }
     
             // 4. SIMULATE ROUNDS
         for (local.r = 1; local.r <= local.round_count; local.r++) {

@@ -4,8 +4,8 @@
 
 on_player_use_object_start local.player local.object:
     waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_use_object_start | Player: " + local.player + " | Object: " + local.object)
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             if (local.object == NIL) { local.object = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "player_use_object_start"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
@@ -16,8 +16,8 @@ end
 
 on_player_use_object_finish local.player local.object:
     waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_use_object_finish | Player: " + local.player + " | Object: " + local.object)
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             if (local.object == NIL) { local.object = "unknown" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "player_use_object_finish"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
@@ -28,8 +28,8 @@ end
 
 on_player_say local.player local.text:
     waitthread global/tracker_common.scr::debug_log ("EVENT: on_player_say | Player: " + local.player + " | Message: " + local.text)
-    if (local.player == NIL) end
-        if (typeof local.player != "listener") end
+    if (local.player == NIL) { end }
+        if (typeof local.player != "listener") { end }
             if (local.text == NIL) { local.text = "" }
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "chat"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
