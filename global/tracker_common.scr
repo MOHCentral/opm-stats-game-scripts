@@ -64,8 +64,8 @@ debug_log_var local.a1 local.a2 local.a3 local.a4 local.a5 local.a6 local.a7 loc
                                                                 if (local.a14 != NIL) { local.msg += (waitthread safestr local.a14) }
                                                                     if (local.a15 != NIL) { local.msg += (waitthread safestr local.a15) }
                                                                         if (local.a16 != NIL) { local.msg += (waitthread safestr local.a16) }
-        
-                                                                            conprintf ("[" + level.time + "] [OPM] " + local.msg)
+    
+                                                                            dprintln ("[" + level.time + "] [OPM] " + local.msg)
         }
     end
 
@@ -237,14 +237,15 @@ flush_queue:
                 local.url = level.api_base_url + level.api_events_endpoint + "?server_token=" + level.server_token
     
                 if (level.tracker_debug) {
-                    conprintf ("API BATCH FLUSH: " + local.url)
-                    conprintf ("PAYLOAD PREVIEW: " + local.payload_to_send)
+                    dprintln ("API BATCH FLUSH: " + local.url)
+                    dprintln ("PAYLOAD PREVIEW: " + local.payload_to_send)
                 }
     
-                // TODO: // curl_post not available in this engine build
-                //conprintf ("[STUB] Would POST batch to: " + local.url)
-                // conprintf ("[STUB] Would POST batch to: " + local.url)
-                // curl_post local.url local.payload_to_send on_http_callback
+                if (level.tracker_debug) {
+                    dprintln ("[OPM] POST batch: " + local.url)
+                }
+                
+                curl_post local.url local.payload_to_send on_http_callback
             end
 
 flush_loop:
@@ -263,15 +264,15 @@ flush_loop:
 on_http_callback local.success local.response local.http_code:
                 if (level.tracker_debug) {
                     if (local.success) {
-                        conprintf ("HTTP OK [" + local.http_code + "]")
+                        dprintln ("HTTP OK [" + local.http_code + "]")
                     } else {
-                        conprintf ("HTTP FAIL [" + local.http_code + "]: " + local.response)
+                        dprintln ("HTTP FAIL [" + local.http_code + "]: " + local.response)
                     }
                 }
 
                 // Auto-recover from invalid token
                 if (local.http_code == 401) {
-                    conprintf "[OPM] Server token rejected. Triggering re-registration..."
+                    dprintln "[OPM] Server token rejected. Triggering re-registration..."
                     level.server_token = NIL
                     setcvar "opm_server_token" "" // Force register.scr to generate new
                     // exec global/register.scr // Prevent recursion loop
@@ -301,7 +302,7 @@ build_base_payload local.event_type:
 debug_log local.message:
                     if (level.tracker_debug) {
                         local.safe_msg = waitthread safestr local.message
-                        conprintf ("[" + level.time + "] [OPM] " + local.safe_msg)
+                        dprintln ("[" + level.time + "] [OPM] " + local.safe_msg)
                     }
                 end
 
@@ -336,68 +337,41 @@ str_indexof local.str local.search local.start:
                     end -1
 
                     // ============================================================================
-                    // JSON HELPERS (Basic Parsing)
+                    // JSON HELPERS (Powered by ScriptYAML Engine)
                     // ============================================================================
-                    // Extracts a string value from a simple JSON object: {"key":"value"}
+
 json_get_string local.json local.key:
-                        if (local.json == NIL || local.key == NIL) { end "" }
-                            local.quote = "\"" // This is standard in SCR
-                        local.key_quoted = local.quote + local.key + local.quote
-                        local.key_index = waitthread str_indexof local.json local.key_quoted
-                        if (local.key_index == -1) { end "" }
-
-                            // Find colon after key
-                        local.colon_index = waitthread str_indexof local.json ":" (local.key_index + local.key_quoted.size)
-                        if (local.colon_index == -1) { end "" }
-
-                            // Find first quote after colon
-                        local.start_quote = waitthread str_indexof local.json local.quote (local.colon_index + 1)
-                        if (local.start_quote == -1) { end "" }
-
-                            // Find end quote
-                        local.end_quote = waitthread str_indexof local.json local.quote (local.start_quote + 1)
-                        if (local.end_quote == -1) { end "" }
-
-                            local.result = ""
-                        for (local.i = (local.start_quote + 1); local.i < local.end_quote; local.i++) {
-                            local.result = local.result + local.json[local.i]
+                        if (local.json == NIL || local.json == "" || local.key == NIL) { end "" }
+                            local.parser = spawn ScriptYAML
+                        local.success = local.parser parse local.json
+                        local.val = ""
+                        if (local.success) {
+                            local.val = local.parser get local.key
                         }
-                        end local.result
+                        local.parser remove
+                        if (local.val == NIL) { end "" }
+                            end (string local.val)
 
-                        // Extracts an integer value from a simple JSON object: {"key":123}
 json_get_int local.json local.key:
-                            if (local.json == NIL || local.key == NIL) { end 0 }
-                                local.quote = "\"" // This is standard in SCR
-                            local.key_quoted = local.quote + local.key + local.quote
-                            local.key_index = waitthread str_indexof local.json local.key_quoted
-                            if (local.key_index == -1) { end 0 }
-
-                                // Find colon after key
-                            local.colon_index = waitthread str_indexof local.json ":" (local.key_index + local.key_quoted.size)
-                            if (local.colon_index == -1) { end 0 }
-
-                                // Start after colon, skip spaces
-                            local.start = local.colon_index + 1
-                            local.json_size = local.json.size
-                            if (local.json_size == NIL) { end 0 }
-    
-                                while (local.start < local.json_size && (local.json[local.start] == " " || local.json[local.start] == "\t")) {
-                                local.start++
+                            if (local.json == NIL || local.json == "" || local.key == NIL) { end 0 }
+                                local.parser = spawn ScriptYAML
+                            local.success = local.parser parse local.json
+                            local.val = 0
+                            if (local.success) {
+                                local.val = local.parser get local.key
                             }
+                            local.parser remove
+                            if (local.val == NIL) { end 0 }
+                                end (int local.val)
 
-                            local.result_str = ""
-                            local.i = local.start
-                            while (local.i < local.json_size) {
-                                local.char = local.json[local.i]
-                                if (local.char >= "0" && local.char <= "9") {
-                                    local.result_str = local.result_str + local.char
-                                } else if (local.char == "-" && local.result_str == "") {
-                                    local.result_str = local.result_str + local.char
-                                } else {
-                                    break
+json_get_float local.json local.key:
+                                if (local.json == NIL || local.json == "" || local.key == NIL) { end 0.0 }
+                                    local.parser = spawn ScriptYAML
+                                local.success = local.parser parse local.json
+                                local.val = 0.0
+                                if (local.success) {
+                                    local.val = local.parser get local.key
                                 }
-                                local.i++
-                            }
-
-                            if (local.result_str == "") { end 0 }
-                                end (int local.result_str)
+                                local.parser remove
+                                if (local.val == NIL) { end 0.0 }
+                                    end (float local.val)

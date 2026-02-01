@@ -206,15 +206,9 @@ cmd_seed local.player local.args:
     if (local.args != NIL) {
         if (local.args) {
             local.count = int(local.args)
-            if (local.count == NIL) {
-                local.count = 10 
-            }
-            if (local.count < 1) {
-                local.count = 1 
-            }
-            if (local.count > 100) {
-                local.count = 100 
-            }
+            if (local.count == NIL) { local.count = 10 }
+                if (local.count < 1) { local.count = 1 }
+                    if (local.count > 100) { local.count = 100 }
         }
     }
 
@@ -238,22 +232,18 @@ end
 
 run_mega_simulation local.count local.player:
 // Guard against NIL count
-    if (local.count == NIL) {
-        local.count = 10 
-    }
-    if (local.count < 1) {
-        local.count = 1
-    }
+    if (local.count == NIL) { local.count = 10 }
+        if (local.count < 1) { local.count = 1 }
     
-    // Setup fake players with varied skill levels
+            // Setup fake players with varied skill levels
     local.players = waitthread create_mega_player_roster
     if (local.players == NIL) {
-        conprintf "MEGA SEEDER: Failed to create player roster!"
+        dprintln "MEGA SEEDER: Failed to create player roster!"
         level.seeder_running = 0
         end
     }
     
-    conprintf ("MEGA SEEDER: Created " + local.players.size + " simulated players")
+    dprintln ("MEGA SEEDER: Created " + local.players.size + " simulated players")
 
     // Track global stats for reporting
     level.seed_total_kills = 0
@@ -261,8 +251,8 @@ run_mega_simulation local.count local.player:
     level.seed_total_events = 0
 
     for (local.i = 1; local.i <= local.count; local.i++) {
-        conprintf ""
-        conprintf ("=== MATCH " + local.i + "/" + local.count + " ===")
+        dprintln ""
+        dprintln ("=== MATCH " + local.i + "/" + local.count + " ===")
         
         // Rotate maps and gametypes
         local.map_idx = 1
@@ -286,13 +276,13 @@ run_mega_simulation local.count local.player:
         wait 0.2 // Small delay between matches
     }
 
-    conprintf ""
-    conprintf "=============================================="
-    conprintf "MEGA SEEDER COMPLETE!"
-    conprintf ("Total Events: " + level.seed_total_events)
-    conprintf ("Total Kills: " + level.seed_total_kills)
-    conprintf ("Total Headshots: " + level.seed_total_headshots)
-    conprintf "=============================================="
+    dprintln ""
+    dprintln "=============================================="
+    dprintln "MEGA SEEDER COMPLETE!"
+    dprintln ("Total Events: " + level.seed_total_events)
+    dprintln ("Total Kills: " + level.seed_total_kills)
+    dprintln ("Total Headshots: " + level.seed_total_headshots)
+    dprintln "=============================================="
     if (local.player) {
         local.player iprint "MEGA SEED Complete!"
     }
@@ -311,7 +301,7 @@ create_mega_player_roster:
     // Robust Fallback
     if (local.name_count == NIL || local.name_count < 1) { 
         local.name_count = 10 
-        conprintf "MEGA SEEDER: WARNING - player_name_count missing. Defaulting to 10 players."
+        dprintln "MEGA SEEDER: WARNING - player_name_count missing. Defaulting to 10 players."
     }
 
     for (local.i = 1; local.i <= local.name_count; local.i++) {
@@ -431,7 +421,7 @@ simulate_full_match local.players local.match_num local.map_name local.gametype:
         level.match_id = local.match_id
         level.map_name = local.map_name
 
-        conprintf ("  Map: " + local.map_name + " | GameType: " + local.gametype)
+        dprintln ("  Map: " + local.map_name + " | GameType: " + local.gametype)
 
         // 1. MAP LOAD EVENTS
         waitthread send_event "map_load_start" ("&map_name=" + local.map_name)
@@ -495,7 +485,7 @@ simulate_full_match local.players local.match_num local.map_name local.gametype:
 
         // 7. MATCH END
         local.winning_team = "allies"
-        if (local.axis_score > local.allies_score) local.winning_team = "axis"
+        if (local.axis_score > local.allies_score) { local.winning_team = "axis" }
     
             waitthread send_event "intermission_start" ("&map_name=" + local.map_name + "&gametype=" + local.gametype)
         waitthread send_event "match_end" ("&map_name=" + local.map_name + "&gametype=" + local.gametype + "&winning_team=" + local.winning_team)
@@ -520,7 +510,7 @@ simulate_full_match local.players local.match_num local.map_name local.gametype:
             
                 waitthread send_event "map_change_start" ("&current_map=" + local.map_name + "&next_map=" + local.next_map_name)
         }
-
+    
         // Restore ID
         level.match_id = local.original_match_id
     
@@ -584,7 +574,7 @@ simulate_round_full local.players local.round_num local.gametype:
 
         // ROUND END
         local.winner = "allies"
-        if (randomint 100 > 50) local.winner = "axis"
+        if (randomint 100 > 50) { local.winner = "axis" }
             waitthread send_event "round_end" ""
     end
 
@@ -627,7 +617,7 @@ simulate_round local.players local.round_num:
 
         // ROUND END
         local.winner = "allies"
-        if (randomint 100 > 50) local.winner = "axis"
+        if (randomint 100 > 50) { local.winner = "axis" }
             waitthread send_event "round_end" ("&round_number=" + local.round_num + "&winning_team=" + local.winner)
     end
 
@@ -1096,14 +1086,14 @@ simulate_gameflow_events local.players:
 
 send_event local.type local.extra:
         local.payload = waitthread global/tracker_common.scr::build_base_payload local.type
-        if (local.extra != NIL) local.payload = local.payload + local.extra
+        if (local.extra != NIL) { local.payload = local.payload + local.extra }
             thread global/tracker_common.scr::queue_event local.payload
     end
 
 send_player_event local.type local.player local.prefix local.extra:
         local.payload = waitthread global/tracker_common.scr::build_base_payload local.type
         local.payload = local.payload + waitthread build_sim_player_payload local.player local.prefix
-        if (local.extra != NIL) local.payload = local.payload + local.extra
+        if (local.extra != NIL) { local.payload = local.payload + local.extra }
             thread global/tracker_common.scr::queue_event local.payload
     end
 
@@ -1111,7 +1101,7 @@ send_combat_event local.type local.attacker local.victim local.extra:
         local.payload = waitthread global/tracker_common.scr::build_base_payload local.type
         local.payload = local.payload + waitthread build_sim_player_payload local.attacker "attacker"
         local.payload = local.payload + waitthread build_sim_player_payload local.victim "victim"
-        if (local.extra != NIL) local.payload = local.payload + local.extra
+        if (local.extra != NIL) { local.payload = local.payload + local.extra }
             thread global/tracker_common.scr::queue_event local.payload
     end
 
@@ -1120,10 +1110,14 @@ send_combat_event local.type local.attacker local.victim local.extra:
     // ===================================
 
 build_sim_player_payload local.sim_player local.prefix:
-        if (local.sim_player == NIL) { end "" }
-            if (local.prefix == NIL) { local.prefix = "player" }
+        if (local.sim_player == NIL) {
+            end ""
+        }
+        if (local.prefix == NIL) {
+            local.prefix = "player"
+        }
     
-                local.payload = "&" + local.prefix + "_name=" + local.sim_player.name
+        local.payload = "&" + local.prefix + "_name=" + local.sim_player.name
         local.payload = local.payload + "&" + local.prefix + "_guid=" + local.sim_player.guid
         local.payload = local.payload + "&" + local.prefix + "_smf_id=" + local.sim_player.smf_id
         local.payload = local.payload + "&" + local.prefix + "_team=" + local.sim_player.team
@@ -1134,7 +1128,7 @@ build_sim_player_payload local.sim_player local.prefix:
         local.payload = local.payload + "&" + local.prefix + "_yaw=0"
         local.payload = local.payload + "&" + local.prefix + "_stance=stand"
         end local.payload
-
+    
 get_fake_players:
         // Deprecated - use create_mega_player_roster instead
             end waitthread create_mega_player_roster

@@ -130,412 +130,412 @@ main:
     event_subscribe "score_change" event_score_change
     event_subscribe "teamkill_kick" event_teamkill_kick
 
-    conprintf "TEST SUITE: Subscribed to all 101 events."
+    dprintln "TEST SUITE: Subscribed to all 101 events."
 end
 
 // --- HANDLERS ---
 
 event_player_connected:
-    conprintf ("EVENT: player_connected | Self: " + self)
+    dprintln ("EVENT: player_connected | Self: " + self)
 end
 
 event_player_disconnecting:
-    conprintf ("EVENT: player_disconnecting | Self: " + self)
+    dprintln ("EVENT: player_disconnecting | Self: " + self)
 end
 
 event_player_spawned:
-    conprintf ("EVENT: player_spawned | Self: " + self)
+    dprintln ("EVENT: player_spawned | Self: " + self)
 end
 
 event_player_damaged local.attacker local.damage local.inflictor local.position local.direction local.normal local.knockback local.damageflags local.meansofdeath local.location:
-    conprintf ("EVENT: player_damaged | Self: " + self + " | Attacker: " + local.attacker + " | Dmg: " + local.damage + " | Inf: " + local.inflictor + " | Loc: " + local.location)
+    dprintln ("EVENT: player_damaged | Self: " + self + " | Attacker: " + local.attacker + " | Dmg: " + local.damage + " | Inf: " + local.inflictor + " | Loc: " + local.location)
 end
 
 event_player_killed local.attacker local.damage local.inflictor local.position local.direction local.normal local.knockback local.damageflags local.meansofdeath local.location:
-    conprintf ("EVENT: player_killed | Self: " + self + " | Attacker: " + local.attacker + " | Dmg: " + local.damage + " | Inf: " + local.inflictor + " | Loc: " + local.location)
+    dprintln ("EVENT: player_killed | Self: " + self + " | Attacker: " + local.attacker + " | Dmg: " + local.damage + " | Inf: " + local.inflictor + " | Loc: " + local.location)
 end
 
 event_player_textMessage local.text local.is_team:
-    conprintf ("EVENT: player_textMessage | Self: " + self + " | Text: " + local.text + " | Team: " + local.is_team)
+    dprintln ("EVENT: player_textMessage | Self: " + self + " | Text: " + local.text + " | Team: " + local.is_team)
 end
 
 event_player_kill local.attacker local.victim local.inflictor local.location local.meansofdeath:
-    conprintf ("EVENT: player_kill | Self: " + self + " | Atk: " + local.attacker + " | Vic: " + local.victim + " | Inf: " + local.inflictor + " | Loc: " + local.location)
+    dprintln ("EVENT: player_kill | Self: " + self + " | Atk: " + local.attacker + " | Vic: " + local.victim + " | Inf: " + local.inflictor + " | Loc: " + local.location)
 end
 
 event_player_death local.inflictor:
-    conprintf ("EVENT: player_death | Self: " + self + " | Inf: " + local.inflictor)
+    dprintln ("EVENT: player_death | Self: " + self + " | Inf: " + local.inflictor)
 end
 
 event_player_damage local.attacker local.damage local.meansofdeath:
-    conprintf ("EVENT: player_damage | Self: " + self + " | Atk: " + local.attacker + " | Dmg: " + local.damage)
+    dprintln ("EVENT: player_damage | Self: " + self + " | Atk: " + local.attacker + " | Dmg: " + local.damage)
 end
 
 event_player_pain local.attacker local.damage local.meansofdeath local.hit_location:
-    conprintf ("EVENT: player_pain | Self: " + self + " | Atk: " + local.attacker + " | Dmg: " + local.damage + " | Loc: " + local.hit_location)
+    dprintln ("EVENT: player_pain | Self: " + self + " | Atk: " + local.attacker + " | Dmg: " + local.damage + " | Loc: " + local.hit_location)
 end
 
 event_player_headshot local.victim local.weapon_name:
-    conprintf ("EVENT: player_headshot | Self: " + self + " | Vic: " + local.victim + " | Wep: " + local.weapon_name)
+    dprintln ("EVENT: player_headshot | Self: " + self + " | Vic: " + local.victim + " | Wep: " + local.weapon_name)
 end
 
 event_player_suicide:
-    conprintf ("EVENT: player_suicide | Self: " + self)
+    dprintln ("EVENT: player_suicide | Self: " + self)
 end
 
 event_player_crushed local.attacker:
-    conprintf ("EVENT: player_crushed | Self: " + self + " | Atk: " + local.attacker)
+    dprintln ("EVENT: player_crushed | Self: " + self + " | Atk: " + local.attacker)
 end
 
 event_player_telefragged local.attacker:
-    conprintf ("EVENT: player_telefragged | Self: " + self + " | Atk: " + local.attacker)
+    dprintln ("EVENT: player_telefragged | Self: " + self + " | Atk: " + local.attacker)
 end
 
 event_player_roadkill local.victim:
-    conprintf ("EVENT: player_roadkill | Self: " + self + " | Vic: " + local.victim)
+    dprintln ("EVENT: player_roadkill | Self: " + self + " | Vic: " + local.victim)
 end
 
 event_player_bash local.victim:
-    conprintf ("EVENT: player_bash | Self: " + self + " | Vic: " + local.victim)
+    dprintln ("EVENT: player_bash | Self: " + self + " | Vic: " + local.victim)
 end
 
 event_player_teamkill local.victim:
-    conprintf ("EVENT: player_teamkill | Self: " + self + " | Vic: " + local.victim)
+    dprintln ("EVENT: player_teamkill | Self: " + self + " | Vic: " + local.victim)
 end
 
 event_weapon_fire local.weapon_name local.ammo_remaining:
-    conprintf ("EVENT: weapon_fire | Self: " + self + " | Wep: " + local.weapon_name + " | Ammo: " + local.ammo_remaining)
+    dprintln ("EVENT: weapon_fire | Self: " + self + " | Wep: " + local.weapon_name + " | Ammo: " + local.ammo_remaining)
 end
 
 event_weapon_hit local.target local.hit_location_or_type:
-    conprintf ("EVENT: weapon_hit | Self: " + self + " | Tgt: " + local.target + " | Hit: " + local.hit_location_or_type)
+    dprintln ("EVENT: weapon_hit | Self: " + self + " | Tgt: " + local.target + " | Hit: " + local.hit_location_or_type)
 end
 
 event_weapon_reload local.weapon_name:
-    conprintf ("EVENT: weapon_reload | Self: " + self + " | Wep: " + local.weapon_name)
+    dprintln ("EVENT: weapon_reload | Self: " + self + " | Wep: " + local.weapon_name)
 end
 
 event_weapon_reload_done local.weapon_name:
-    conprintf ("EVENT: weapon_reload_done | Self: " + self + " | Wep: " + local.weapon_name)
+    dprintln ("EVENT: weapon_reload_done | Self: " + self + " | Wep: " + local.weapon_name)
 end
 
 event_weapon_change local.old_weapon local.new_weapon local.client_num:
-    conprintf ("EVENT: weapon_change | Self: " + self + " | Old: " + local.old_weapon + " | New: " + local.new_weapon)
+    dprintln ("EVENT: weapon_change | Self: " + self + " | Old: " + local.old_weapon + " | New: " + local.new_weapon)
 end
 
 event_weapon_ready local.weapon_name:
-    conprintf ("EVENT: weapon_ready | Self: " + self + " | Wep: " + local.weapon_name)
+    dprintln ("EVENT: weapon_ready | Self: " + self + " | Wep: " + local.weapon_name)
 end
 
 event_weapon_no_ammo local.weapon_name:
-    conprintf ("EVENT: weapon_no_ammo | Self: " + self + " | Wep: " + local.weapon_name)
+    dprintln ("EVENT: weapon_no_ammo | Self: " + self + " | Wep: " + local.weapon_name)
 end
 
 event_weapon_holster local.weapon_name:
-    conprintf ("EVENT: weapon_holster | Self: " + self + " | Wep: " + local.weapon_name)
+    dprintln ("EVENT: weapon_holster | Self: " + self + " | Wep: " + local.weapon_name)
 end
 
 event_weapon_raise local.weapon_name:
-    conprintf ("EVENT: weapon_raise | Self: " + self + " | Wep: " + local.weapon_name)
+    dprintln ("EVENT: weapon_raise | Self: " + self + " | Wep: " + local.weapon_name)
 end
 
 event_weapon_drop local.weapon_entity:
-    conprintf ("EVENT: weapon_drop | Self: " + self + " | WepEnt: " + local.weapon_entity)
+    dprintln ("EVENT: weapon_drop | Self: " + self + " | WepEnt: " + local.weapon_entity)
 end
 
 event_grenade_throw local.projectile_entity:
-    conprintf ("EVENT: grenade_throw | Self: " + self + " | Proj: " + local.projectile_entity)
+    dprintln ("EVENT: grenade_throw | Self: " + self + " | Proj: " + local.projectile_entity)
 end
 
 event_grenade_explode local.grenade_entity:
-    conprintf ("EVENT: grenade_explode | Self: " + self + " | Gren: " + local.grenade_entity)
+    dprintln ("EVENT: grenade_explode | Self: " + self + " | Gren: " + local.grenade_entity)
 end
 
 event_player_spawn:
-    conprintf ("EVENT: player_spawn | Self: " + self)
+    dprintln ("EVENT: player_spawn | Self: " + self)
 end
 
 event_player_respawn:
-    conprintf ("EVENT: player_respawn | Self: " + self)
+    dprintln ("EVENT: player_respawn | Self: " + self)
 end
 
 event_player_jump:
-    conprintf ("EVENT: player_jump | Self: " + self)
+    dprintln ("EVENT: player_jump | Self: " + self)
 end
 
 event_player_land local.fall_velocity:
-    conprintf ("EVENT: player_land | Self: " + self + " | Vel: " + local.fall_velocity)
+    dprintln ("EVENT: player_land | Self: " + self + " | Vel: " + local.fall_velocity)
 end
 
 event_player_crouch:
-    conprintf ("EVENT: player_crouch | Self: " + self)
+    dprintln ("EVENT: player_crouch | Self: " + self)
 end
 
 event_player_prone:
-    conprintf ("EVENT: player_prone | Self: " + self)
+    dprintln ("EVENT: player_prone | Self: " + self)
 end
 
 event_player_stand:
-    conprintf ("EVENT: player_stand | Self: " + self)
+    dprintln ("EVENT: player_stand | Self: " + self)
 end
 
 event_player_distance local.walked local.sprinted local.swam local.driven:
-    conprintf ("EVENT: player_distance | Self: " + self + " | W: " + local.walked + " | S: " + local.sprinted)
+    dprintln ("EVENT: player_distance | Self: " + self + " | W: " + local.walked + " | S: " + local.sprinted)
 end
 
 event_ladder_mount local.ladder_entity:
-    conprintf ("EVENT: ladder_mount | Self: " + self + " | Ladder: " + local.ladder_entity)
+    dprintln ("EVENT: ladder_mount | Self: " + self + " | Ladder: " + local.ladder_entity)
 end
 
 event_ladder_dismount local.ladder_entity:
-    conprintf ("EVENT: ladder_dismount | Self: " + self + " | Ladder: " + local.ladder_entity)
+    dprintln ("EVENT: ladder_dismount | Self: " + self + " | Ladder: " + local.ladder_entity)
 end
 
 event_player_use local.target_entity:
-    conprintf ("EVENT: player_use | Self: " + self + " | Tgt: " + local.target_entity)
+    dprintln ("EVENT: player_use | Self: " + self + " | Tgt: " + local.target_entity)
 end
 
 event_player_use_object_start local.use_object:
-    conprintf ("EVENT: player_use_object_start | Self: " + self + " | Obj: " + local.use_object)
+    dprintln ("EVENT: player_use_object_start | Self: " + self + " | Obj: " + local.use_object)
 end
 
 event_player_use_object_finish local.use_object:
-    conprintf ("EVENT: player_use_object_finish | Self: " + self + " | Obj: " + local.use_object)
+    dprintln ("EVENT: player_use_object_finish | Self: " + self + " | Obj: " + local.use_object)
 end
 
 event_player_spectate:
-    conprintf ("EVENT: player_spectate | Self: " + self)
+    dprintln ("EVENT: player_spectate | Self: " + self)
 end
 
 event_player_freeze local.frozen_state:
-    conprintf ("EVENT: player_freeze | Self: " + self + " | State: " + local.frozen_state)
+    dprintln ("EVENT: player_freeze | Self: " + self + " | State: " + local.frozen_state)
 end
 
 event_player_say local.message_text:
-    conprintf ("EVENT: player_say | Self: " + self + " | Msg: " + local.message_text)
+    dprintln ("EVENT: player_say | Self: " + self + " | Msg: " + local.message_text)
 end
 
 event_item_pickup local.item_name local.amount:
-    conprintf ("EVENT: item_pickup | Self: " + self + " | Item: " + local.item_name + " | Amt: " + local.amount)
+    dprintln ("EVENT: item_pickup | Self: " + self + " | Item: " + local.item_name + " | Amt: " + local.amount)
 end
 
 event_item_drop local.item_name:
-    conprintf ("EVENT: item_drop | Self: " + self + " | Item: " + local.item_name)
+    dprintln ("EVENT: item_drop | Self: " + self + " | Item: " + local.item_name)
 end
 
 event_item_respawn local.item_name:
-    conprintf ("EVENT: item_respawn | Self: " + self + " | Item: " + local.item_name)
+    dprintln ("EVENT: item_respawn | Self: " + self + " | Item: " + local.item_name)
 end
 
 event_health_pickup local.heal_amount:
-    conprintf ("EVENT: health_pickup | Self: " + self + " | Amt: " + local.heal_amount)
+    dprintln ("EVENT: health_pickup | Self: " + self + " | Amt: " + local.heal_amount)
 end
 
 event_ammo_pickup local.ammo_name local.amount:
-    conprintf ("EVENT: ammo_pickup | Self: " + self + " | Ammo: " + local.ammo_name + " | Amt: " + local.amount)
+    dprintln ("EVENT: ammo_pickup | Self: " + self + " | Ammo: " + local.ammo_name + " | Amt: " + local.amount)
 end
 
 event_armor_pickup local.armor_amount:
-    conprintf ("EVENT: armor_pickup | Self: " + self + " | Amt: " + local.armor_amount)
+    dprintln ("EVENT: armor_pickup | Self: " + self + " | Amt: " + local.armor_amount)
 end
 
 event_vehicle_enter local.vehicle_entity:
-    conprintf ("EVENT: vehicle_enter | Self: " + self + " | Veh: " + local.vehicle_entity)
+    dprintln ("EVENT: vehicle_enter | Self: " + self + " | Veh: " + local.vehicle_entity)
 end
 
 event_vehicle_exit local.vehicle_entity:
-    conprintf ("EVENT: vehicle_exit | Self: " + self + " | Veh: " + local.vehicle_entity)
+    dprintln ("EVENT: vehicle_exit | Self: " + self + " | Veh: " + local.vehicle_entity)
 end
 
 event_vehicle_death local.attacker:
-    conprintf ("EVENT: vehicle_death | Self: " + self + " | Atk: " + local.attacker)
+    dprintln ("EVENT: vehicle_death | Self: " + self + " | Atk: " + local.attacker)
 end
 
 event_vehicle_collision local.other_entity:
-    conprintf ("EVENT: vehicle_collision | Self: " + self + " | Other: " + local.other_entity)
+    dprintln ("EVENT: vehicle_collision | Self: " + self + " | Other: " + local.other_entity)
 end
 
 event_turret_enter local.turret_entity:
-    conprintf ("EVENT: turret_enter | Self: " + self + " | Tur: " + local.turret_entity)
+    dprintln ("EVENT: turret_enter | Self: " + self + " | Tur: " + local.turret_entity)
 end
 
 event_turret_exit local.turret_entity:
-    conprintf ("EVENT: turret_exit | Self: " + self + " | Tur: " + local.turret_entity)
+    dprintln ("EVENT: turret_exit | Self: " + self + " | Tur: " + local.turret_entity)
 end
 
 event_server_console_command local.command_string:
 // Filter out spammy commands if needed, but keeping for now
-    conprintf ("EVENT: server_console_command | Cmd: " + local.command_string)
+    dprintln ("EVENT: server_console_command | Cmd: " + local.command_string)
 end
 
 event_server_process_start:
-    conprintf ("EVENT: server_process_start")
+    dprintln ("EVENT: server_process_start")
 end
 
 event_server_process_quit:
-    conprintf ("EVENT: server_process_quit")
+    dprintln ("EVENT: server_process_quit")
 end
 
 event_map_init:
-    conprintf ("EVENT: map_init")
+    dprintln ("EVENT: map_init")
 end
 
 event_map_start:
-    conprintf ("EVENT: map_start")
+    dprintln ("EVENT: map_start")
 end
 
 event_map_shutdown:
-    conprintf ("EVENT: map_shutdown")
+    dprintln ("EVENT: map_shutdown")
 end
 
 event_map_ready local.map_name local.gametype:
-    conprintf ("EVENT: map_ready | Map: " + local.map_name + " | Type: " + local.gametype)
+    dprintln ("EVENT: map_ready | Map: " + local.map_name + " | Type: " + local.gametype)
 end
 
 event_map_load_start local.map_name:
-    conprintf ("EVENT: map_load_start | Map: " + local.map_name)
+    dprintln ("EVENT: map_load_start | Map: " + local.map_name)
 end
 
 event_map_load_end local.map_name local.gametype:
-    conprintf ("EVENT: map_load_end | Map: " + local.map_name + " | Type: " + local.gametype)
+    dprintln ("EVENT: map_load_end | Map: " + local.map_name + " | Type: " + local.gametype)
 end
 
 event_map_change_start local.current_map local.next_map:
-    conprintf ("EVENT: map_change_start | Cur: " + local.current_map + " | Next: " + local.next_map)
+    dprintln ("EVENT: map_change_start | Cur: " + local.current_map + " | Next: " + local.next_map)
 end
 
 event_map_restart local.map_name:
-    conprintf ("EVENT: map_restart | Map: " + local.map_name)
+    dprintln ("EVENT: map_restart | Map: " + local.map_name)
 end
 
 event_game_init local.gametype:
-    conprintf ("EVENT: game_init | Type: " + local.gametype)
+    dprintln ("EVENT: game_init | Type: " + local.gametype)
 end
 
 event_game_start:
-    conprintf ("EVENT: game_start")
+    dprintln ("EVENT: game_start")
 end
 
 event_game_end:
-    conprintf ("EVENT: game_end")
+    dprintln ("EVENT: game_end")
 end
 
 event_round_start:
-    conprintf ("EVENT: round_start")
+    dprintln ("EVENT: round_start")
 end
 
 event_round_end:
-    conprintf ("EVENT: round_end")
+    dprintln ("EVENT: round_end")
 end
 
 event_team_win local.winning_team_num:
-    conprintf ("EVENT: team_win | Team: " + local.winning_team_num)
+    dprintln ("EVENT: team_win | Team: " + local.winning_team_num)
 end
 
 event_match_end local.map_name local.gametype local.winning_team:
-    conprintf ("EVENT: match_end | Map: " + local.map_name + " | Type: " + local.gametype + " | Win: " + local.winning_team)
+    dprintln ("EVENT: match_end | Map: " + local.map_name + " | Type: " + local.gametype + " | Win: " + local.winning_team)
 end
 
 event_intermission_start local.map_name local.gametype:
-    conprintf ("EVENT: intermission_start | Map: " + local.map_name + " | Type: " + local.gametype)
+    dprintln ("EVENT: intermission_start | Map: " + local.map_name + " | Type: " + local.gametype)
 end
 
 event_warmup_start local.map_name:
-    conprintf ("EVENT: warmup_start | Map: " + local.map_name)
+    dprintln ("EVENT: warmup_start | Map: " + local.map_name)
 end
 
 event_warmup_end local.map_name:
-    conprintf ("EVENT: warmup_end | Map: " + local.map_name)
+    dprintln ("EVENT: warmup_end | Map: " + local.map_name)
 end
 
 event_objective_update local.objective_index local.new_status:
-    conprintf ("EVENT: objective_update | Idx: " + local.objective_index + " | Stat: " + local.new_status)
+    dprintln ("EVENT: objective_update | Idx: " + local.objective_index + " | Stat: " + local.new_status)
 end
 
 event_team_join local.old_team local.new_team:
-    conprintf ("EVENT: team_join | Self: " + self + " | Old: " + local.old_team + " | New: " + local.new_team)
+    dprintln ("EVENT: team_join | Self: " + self + " | Old: " + local.old_team + " | New: " + local.new_team)
 end
 
 event_vote_start local.vote_name local.vote_string:
-    conprintf ("EVENT: vote_start | Self: " + self + " | Name: " + local.vote_name + " | Str: " + local.vote_string)
+    dprintln ("EVENT: vote_start | Self: " + self + " | Name: " + local.vote_name + " | Str: " + local.vote_string)
 end
 
 event_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
-    conprintf ("EVENT: vote_passed | Name: " + local.vote_name + " | Y: " + local.yes_count + " | N: " + local.no_count)
+    dprintln ("EVENT: vote_passed | Name: " + local.vote_name + " | Y: " + local.yes_count + " | N: " + local.no_count)
 end
 
 event_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count:
-    conprintf ("EVENT: vote_failed | Name: " + local.vote_name + " | Rsn: " + local.fail_reason + " | Y: " + local.yes_count + " | N: " + local.no_count)
+    dprintln ("EVENT: vote_failed | Name: " + local.vote_name + " | Rsn: " + local.fail_reason + " | Y: " + local.yes_count + " | N: " + local.no_count)
 end
 
 event_objective_capture local.controller_team:
-    conprintf ("EVENT: objective_capture | Self: " + self + " | Team: " + local.controller_team)
+    dprintln ("EVENT: objective_capture | Self: " + self + " | Team: " + local.controller_team)
 end
 
 event_client_connect local.client_num:
-    conprintf ("EVENT: client_connect | Client: " + local.client_num)
+    dprintln ("EVENT: client_connect | Client: " + local.client_num)
 end
 
 event_client_begin:
-    conprintf ("EVENT: client_begin | Self: " + self)
+    dprintln ("EVENT: client_begin | Self: " + self)
 end
 
 event_client_userinfo_changed:
-    conprintf ("EVENT: client_userinfo_changed | Self: " + self)
+    dprintln ("EVENT: client_userinfo_changed | Self: " + self)
 end
 
 event_client_disconnect:
-    conprintf ("EVENT: client_disconnect | Self: " + self)
+    dprintln ("EVENT: client_disconnect | Self: " + self)
 end
 
 event_player_inactivity_drop:
-    conprintf ("EVENT: player_inactivity_drop | Self: " + self)
+    dprintln ("EVENT: player_inactivity_drop | Self: " + self)
 end
 
 event_door_open local.activator:
-    conprintf ("EVENT: door_open | Self: " + self + " | Act: " + local.activator)
+    dprintln ("EVENT: door_open | Self: " + self + " | Act: " + local.activator)
 end
 
 event_door_close:
-    conprintf ("EVENT: door_close | Self: " + self)
+    dprintln ("EVENT: door_close | Self: " + self)
 end
 
 event_explosion local.attacker local.damage:
-    conprintf ("EVENT: explosion | Self: " + self + " | Atk: " + local.attacker + " | Dmg: " + local.damage)
+    dprintln ("EVENT: explosion | Self: " + self + " | Atk: " + local.attacker + " | Dmg: " + local.damage)
 end
 
 event_actor_spawn:
-    conprintf ("EVENT: actor_spawn | Self: " + self)
+    dprintln ("EVENT: actor_spawn | Self: " + self)
 end
 
 event_actor_killed local.attacker:
-    conprintf ("EVENT: actor_killed | Self: " + self + " | Atk: " + local.attacker)
+    dprintln ("EVENT: actor_killed | Self: " + self + " | Atk: " + local.attacker)
 end
 
 event_bot_spawn:
-    conprintf ("EVENT: bot_spawn | Self: " + self)
+    dprintln ("EVENT: bot_spawn | Self: " + self)
 end
 
 event_bot_killed local.attacker:
-    conprintf ("EVENT: bot_killed | Self: " + self + " | Atk: " + local.attacker)
+    dprintln ("EVENT: bot_killed | Self: " + self + " | Atk: " + local.attacker)
 end
 
 event_bot_roam:
-    conprintf ("EVENT: bot_roam | Self: " + self)
+    dprintln ("EVENT: bot_roam | Self: " + self)
 end
 
 event_bot_curious:
-    conprintf ("EVENT: bot_curious | Self: " + self)
+    dprintln ("EVENT: bot_curious | Self: " + self)
 end
 
 event_bot_attack:
-    conprintf ("EVENT: bot_attack | Self: " + self)
+    dprintln ("EVENT: bot_attack | Self: " + self)
 end
 
 event_score_change local.score_type local.delta local.new_total:
-    conprintf ("EVENT: score_change | Self: " + self + " | Type: " + local.score_type + " | Delta: " + local.delta + " | Total: " + local.new_total)
+    dprintln ("EVENT: score_change | Self: " + self + " | Type: " + local.score_type + " | Delta: " + local.delta + " | Total: " + local.new_total)
 end
 
 event_teamkill_kick local.teamkill_count:
-    conprintf ("EVENT: teamkill_kick | Self: " + self + " | Count: " + local.teamkill_count)
+    dprintln ("EVENT: teamkill_kick | Self: " + self + " | Count: " + local.teamkill_count)
 end

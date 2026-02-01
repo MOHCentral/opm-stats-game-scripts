@@ -155,11 +155,13 @@ end
 
 on_player_kill local.attacker local.attacker2 local.victim local.inflictor local.hitloc local.mod:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_kill | Att: " local.attacker " | Vic: " local.victim " | Inf: " local.inflictor " | Loc: " local.hitloc " | Mod: " local.mod
+    
     // Type-safe check for attacker entity
     if (local.attacker != NIL && local.attacker != NULL && typeof local.attacker == "listener") {
         if (local.attacker.shots_hit == NIL) { local.attacker.shots_hit = 0 }
             local.attacker.shots_hit++
     }
+    
     if (local.inflictor == NIL) { local.inflictor = "unknown" }
         if (local.hitloc == NIL) { local.hitloc = "unknown" }
             if (local.mod == NIL) { local.mod = "unknown" }
@@ -190,12 +192,15 @@ on_player_damage local.victim local.attacker local.amount local.mod:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_damage | Vic: " local.victim " | Att: " local.attacker " | Dmg: " local.amount " | Mod: " local.mod
     if (local.amount == NIL) { local.amount = 0 }
         if (local.mod == NIL) { local.mod = "unknown" }
+    
             local.payload = waitthread global/tracker_common.scr::build_base_payload "damage"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.victim "victim"
+    
     // Type-safe check for attacker entity
     if (local.attacker != NIL && local.attacker != NULL && typeof local.attacker == "listener") {
         local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
     }
+    
     local.payload = local.payload + "&damage=" + local.amount
     local.payload = local.payload + "&weapon=" + local.mod
 
@@ -207,12 +212,15 @@ on_player_pain local.player local.attacker local.damage local.mod local.location
     if (local.damage == NIL) { local.damage = 0 }
         if (local.mod == NIL) { local.mod = "unknown" }
             if (local.location == NIL) { local.location = "unknown" }
+    
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "player_pain"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "victim"
+    
     // Type-safe check for attacker entity
     if (local.attacker != NIL && typeof local.attacker == "listener") {
         local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
     }
+    
     local.payload = local.payload + "&damage=" + local.damage
     local.payload = local.payload + "&weapon=" + local.mod
     local.payload = local.payload + "&hitloc=" + local.location

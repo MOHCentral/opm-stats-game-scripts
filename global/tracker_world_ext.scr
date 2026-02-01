@@ -6,6 +6,7 @@ on_explosion local.entity local.attacker local.damage:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_explosion | Entity: " local.entity " | Attacker: " local.attacker " | Damage: " local.damage
     if (local.damage == NIL) { local.damage = 0 }
         if (local.entity == NIL) { local.entity = "unknown" }
+
             local.payload = waitthread global/tracker_common.scr::build_base_payload "explosion"
     local.payload = local.payload + "&damage=" + local.damage
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
@@ -16,6 +17,7 @@ end
 on_door_open local.door local.activator:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_door_open | Door: " local.door " | Activator: " local.activator
     if (local.door == NIL) { local.door = "unknown" }
+
         local.payload = waitthread global/tracker_common.scr::build_base_payload "door_open"
     local.payload = local.payload + "&entity=" + local.door
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.activator "player"
@@ -26,6 +28,7 @@ end
 on_door_close local.door:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_door_close | Door: " local.door
     if (local.door == NIL) { local.door = "unknown" }
+
         local.payload = waitthread global/tracker_common.scr::build_base_payload "door_close"
     local.payload = local.payload + "&entity=" + local.door
 

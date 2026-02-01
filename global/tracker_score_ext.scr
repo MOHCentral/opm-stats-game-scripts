@@ -9,6 +9,7 @@ on_score_change local.player local.type local.delta local.total:
             if (local.type == NIL) { local.type = "unknown" }
                 if (local.delta == NIL) { local.delta = 0 }
                     if (local.total == NIL) { local.total = 0 }
+
                         local.payload = waitthread global/tracker_common.scr::build_base_payload "score_change"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&score_type=" + local.type
@@ -23,6 +24,7 @@ on_teamkill_kick local.player local.count:
     if (local.player == NIL) { end }
         if (typeof local.player != "listener") { end }
             if (local.count == NIL) { local.count = 0 }
+
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "teamkill_kick"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
     local.payload = local.payload + "&count=" + local.count

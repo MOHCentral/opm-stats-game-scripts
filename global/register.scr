@@ -13,9 +13,9 @@ check_registration:
     local.id = getcvar "opm_server_id"
 
     if (local.token == "" || local.token == "MISSING_TOKEN") {
-        conprintf "------------------------------------------------"
-        conprintf "OPM TRACKER: Missing server token. Registering..."
-        conprintf "------------------------------------------------"
+        dprintln "------------------------------------------------"
+        dprintln "OPM TRACKER: Missing server token. Registering..."
+        dprintln "------------------------------------------------"
         thread register_server
     } else {
         // Ensure level variables are populated even if loaded from config
@@ -23,13 +23,14 @@ check_registration:
         level.server_token = local.token
         
         if (level.tracker_debug) {
-            conprintf ("OPM TRACKER: Server identifies as: " + local.id)
+            dprintln ("OPM TRACKER: Server identifies as: " + local.id)
         }
     }
 end
 
 register_server:
     if (level.opm_registered) { end }
+    
         // Build registration payload
     local.name = getcvar "sv_hostname"
     if (local.name == "") {
@@ -56,14 +57,15 @@ register_server:
     local.json = "{\"name\":\"" + local.name + "\",\"ip_address\":\"" + local.ip + "\",\"port\":" + local.port + "}"
     
     // TODO: // curl_post not available in this engine build
-    conprintf ("[STUB] Would POST registration to: " + local.url)
-    // curl_post local.url local.json on_register_response
+    dprintln ("[STUB] Would POST registration to: " + local.url)
+    
+    curl_post local.url local.json on_register_response
 end
 
 on_register_response local.success local.response local.http_code:
     if (local.success && local.http_code == 200) {
-        conprintf "------------------------------------------------"
-        conprintf "OPM TRACKER: Registration Successful!"
+        dprintln "------------------------------------------------"
+        dprintln "OPM TRACKER: Registration Successful!"
         
         local.id = waitthread global/tracker_common.scr::json_get_string local.response "server_id"
         local.token = waitthread global/tracker_common.scr::json_get_string local.response "token"
@@ -76,26 +78,27 @@ on_register_response local.success local.response local.http_code:
             level.server_id = local.id
             level.server_token = local.token
 
-            conprintf ("OPM TRACKER: Assigned ID: " + local.id)
-            conprintf "OPM TRACKER: Credentials saved in memory."
+            dprintln ("OPM TRACKER: Assigned ID: " + local.id)
+            dprintln "OPM TRACKER: Credentials saved in memory."
             
             // Save to file for persistence
             thread save_registration local.id local.token
         } else {
-            conprintf "OPM TRACKER: Error parsing registration response."
-            conprintf ("Response: " + local.response)
+            dprintln "OPM TRACKER: Error parsing registration response."
+            dprintln ("Response: " + local.response)
         }
-        conprintf "------------------------------------------------"
+        dprintln "------------------------------------------------"
     } else {
-        conprintf "------------------------------------------------"
-        conprintf ("OPM TRACKER: Registration Failed! (HTTP " + local.http_code + ")")
-        conprintf ("Response: " + local.response)
-        conprintf "------------------------------------------------"
+        dprintln "------------------------------------------------"
+        dprintln ("OPM TRACKER: Registration Failed! (HTTP " + local.http_code + ")")
+        dprintln ("Response: " + local.response)
+        dprintln "------------------------------------------------"
     }
 end
 
 save_registration local.id local.token:
     if (level.opm_registration_in_progress) { end }
+    
         // Build config content
     local.content = "// Automatically generated OPM Stats Registration\n"
     local.content = local.content + "set opm_server_id \"" + local.id + "\"\n"
@@ -105,5 +108,5 @@ save_registration local.id local.token:
     // main/ is the typical location for configs.
     fs_write_content "main/opm_registration.cfg" local.content
     
-    conprintf "OPM TRACKER: Credentials persisted to main/opm_registration.cfg"
+    dprintln "OPM TRACKER: Credentials persisted to main/opm_registration.cfg"
 end

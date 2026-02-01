@@ -5,7 +5,7 @@
 // ============================================================================
 
 init:
-    conprintf "Initializing Server Event Subscriptions..."
+    dprintln "Initializing Server Event Subscriptions..."
 
     // ========================================================================
     // GAME FLOW (11 events)
@@ -57,7 +57,7 @@ init:
     event_subscribe "bot_curious" wrapper_bot_curious
     event_subscribe "bot_attack" wrapper_bot_attack
 
-    conprintf "Server Event Subscriptions Complete (32 events)."
+    dprintln "Server Event Subscriptions Complete (32 events)."
 end
 
 // ============================================================================

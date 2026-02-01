@@ -1,12 +1,12 @@
 main:
-    conprintf "TEST: Starting // curl_post check..."
+    dprintln "TEST: Starting // curl_post check..."
     // Try to hit the API health endpoint
     // Payload is empty string
     // Callback is local
-    // curl_post "http://localhost:8084/api/v1/health" "" "callback"
-end
+curl_post "http://localhost:8084/api/v1/health" "" "callback"
+    end
 
 callback local.success local.response local.code:
-conprintf ("TEST: // curl_post callback triggered!")
-        conprintf ("TEST: Success=" + local.success + " Code=" + local.code)
-    end
+dprintln ("TEST: // curl_post callback triggered!")
+            dprintln ("TEST: Success=" + local.success + " Code=" + local.code)
+        end
