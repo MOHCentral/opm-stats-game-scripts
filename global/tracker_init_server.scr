@@ -166,6 +166,7 @@ wrapper_actor_spawn:
 end
 
 wrapper_actor_killed local.attacker:
+iprintlnbold "wrapper_actor_killed"
     thread global/tracker_bot_ext.scr::on_actor_killed self local.attacker
 end
 
@@ -174,6 +175,7 @@ wrapper_bot_spawn:
 end
 
 wrapper_bot_killed local.attacker:
+    dprintln ("wrapper_bot_killed | attacker=" + local.attacker + " | type=" + typeof local.attacker)
     thread global/tracker_bot_ext.scr::on_bot_killed self local.attacker
 end
 

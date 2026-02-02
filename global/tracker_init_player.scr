@@ -111,6 +111,7 @@ end
 
 // Combat wrappers
 wrapper_player_kill local.attacker2 local.victim local.inflictor local.location local.meansofdeath:
+iprintlnbold "wrapper_player_kill"
     thread global/tracker_combat_ext.scr::on_player_kill self local.attacker2 local.victim local.inflictor local.location local.meansofdeath
 end
 
