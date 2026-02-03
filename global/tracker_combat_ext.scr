@@ -167,7 +167,7 @@ on_player_kill local.attacker local.attacker2 local.victim local.inflictor local
             if (local.mod == NIL) { local.mod = "unknown" }
 
                 local.payload = waitthread global/tracker_common.scr::build_base_payload "player_kill"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
+    local.payload = local.payload + waitthread global/2.scr::build_player_payload local.attacker "attacker"
     local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.victim "victim"
     local.payload = local.payload + "&inflictor=" + local.inflictor
     local.payload = local.payload + "&hitlocation=" + local.hitloc
@@ -265,14 +265,15 @@ on_weapon_hit local.player local.target local.location:
     thread global/tracker_common.scr::queue_event local.payload
 end
 
+// ============================================================================
+// DEPRECATED: Headshots are now derived from hitloc in player_kill events.
+// The API computes isHeadshot = (hitloc == "head" || hitloc == "helmet")
+// This handler is kept for backwards compatibility but sends NO event.
+// Remove calls to this from tracker_init_player.scr and seeder.scr
+// ============================================================================
 on_player_headshot local.attacker local.victim local.weapon:
-    if (local.weapon == NIL) { local.weapon = "unknown" }
-        local.payload = waitthread global/tracker_common.scr::build_base_payload "headshot"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.attacker "attacker"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.victim "victim"
-    local.payload = local.payload + "&weapon=" + local.weapon
-
-    thread global/tracker_common.scr::queue_event local.payload
+    // DEPRECATED: No-op. Headshot stats are derived from player_kill hitloc.
+    // waitthread global/tracker_common.scr::debug_log_var "DEPRECATED: on_player_headshot called - ignoring"
 end
 
 on_weapon_reload local.owner local.weapon:

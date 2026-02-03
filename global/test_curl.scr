@@ -3,8 +3,8 @@ main:
     // Try to hit the API health endpoint
     // Payload is empty string
     // Callback is local
-curl_post "http://localhost:8084/api/v1/health" "" "callback"
-    end
+    curl_post "http://localhost:8084/api/v1/health" NIL "" "callback"
+end
 
 callback local.success local.response local.code:
 dprintln ("TEST: // curl_post callback triggered!")

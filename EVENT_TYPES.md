@@ -1,6 +1,6 @@
 # OpenMOHAA Event Types Reference
 
-> **Generated at:** 2026-02-02T08:59:04.114778
+> **Generated at:** 2026-02-02T21:53:10.463236
 > 
 > **Source of Truth:** `opm-stats-api/web/static/openapi.yaml`
 > 
@@ -30,7 +30,6 @@ When sending events via `build_base_payload`, use these exact type names.
 | `death` | Combat |  |
 | `damage` | Combat |  |
 | `player_pain` | Player |  |
-| `headshot` | Combat |  |
 | `player_suicide` | Player |  |
 | `player_crushed` | Player |  |
 | `player_telefragged` | Player |  |

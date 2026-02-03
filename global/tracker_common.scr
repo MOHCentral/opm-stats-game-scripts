@@ -11,8 +11,8 @@ level.api_base_url = "http://127.0.0.1:8084"
     level.server_id = "f39f24c9-1d69-4f3b-84f1-3180c6d418c6"
     level.tracker_debug = 0
 
-    // Batching Globals
-    level.event_queue = ""
+    // Batching Globals (JSON Array Format)
+    level.event_queue = "[" // Start with array opening bracket
     level.batch_size = 0
     level.max_batch_size = 20 // Flush immediately if this size reached
 
@@ -182,71 +182,169 @@ build_player_payload_compact local.player local.prefix:
             end local.payload
 
             // ============================================================================
-            // BATCHING SYSTEM
+            // JSON BUILDING HELPERS
             // ============================================================================
 
-queue_event local.payload:
-            // Guard against NIL payload
-                if (local.payload == NIL) { end }
-                    if (local.payload == "") { end }
+json_escape local.str:
+            // Basic JSON string escaping
+            if (local.str == NIL) { end "" }
+            local.result = local.str
+            // TODO: Properly escape quotes, backslashes, newlines if engine supports string replacement
+            // For now, assume game data doesn't contain problematic chars
+            end local.result
+        end
 
-                        // Ensure globals are initialized
-                if (level.event_queue == NIL) {
-                    level.event_queue = ""
-                }
-                if (level.batch_size == NIL) {
-                    level.batch_size = 0
-                }
-                if (level.max_batch_size == NIL) {
-                    level.max_batch_size = 1
-                }
-                if (level.server_token == NIL || level.server_token == "" || level.server_token == "MISSING_TOKEN") {
-                    level.server_token = "5dc879b4-f748-4d77-8742-87f41224d9f8"
-                }
+build_json_field local.key local.value local.is_string:
+            // Build a JSON key-value pair
+            if (local.value == NIL) { end "" }
+            
+            local.escaped_val = waitthread json_escape local.value
+            
+            if (local.is_string == 1) {
+                local.result = "\"" + local.key + "\":\"" + local.escaped_val + "\""
+                end local.result
+            } else {
+                local.result = "\"" + local.key + "\":" + local.escaped_val
+                end local.result
+            }
+        end
 
-                if (level.server_id == NIL || level.server_id == "" || level.server_id == "0") {
-                    level.server_id = "f39f24c9-1d69-4f3b-84f1-3180c6d418c6"
-                }
+build_player_json local.player local.prefix:
+            // Build JSON fields for player data
+            local.fields = ""
+            
+            if (local.player == NIL || local.player == NULL || typeof local.player != "listener") {
+                end local.fields
+            }
+            
+            local.name = local.player.netname
+            if (local.name == NIL) { end local.fields }
+            
+            local.guid = ""
+            if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL && local.player.smf_member_id > 0) {
+                local.guid = local.player.smf_member_id
+            } else {
+                local.guid = "unauth_" + (getclientnum local.player)
+            }
+            
+            // Build comma-separated JSON fields
+            local.fields = waitthread build_json_field (local.prefix + "_name") local.name 1
+            local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_guid") local.guid 1)
+            
+            if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
+                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_smf_id") local.player.smf_member_id 0)
+            }
+            
+            if (local.player.team != NIL && local.player.team != "") {
+                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_team") local.player.team 1)
+            }
+            
+            if (local.player.origin != NIL) {
+                local.pos = local.player.origin
+                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_x") local.pos[0] 0)
+                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_y") local.pos[1] 0)
+                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_z") local.pos[2] 0)
+            }
+            
+            if (local.player.angles != NIL) {
+                local.ang = local.player.angles
+                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_pitch") local.ang[0] 0)
+                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_yaw") local.ang[1] 0)
+            }
+            
+            local.stance = "stand"
+            if (local.player.tracker_stance != NIL) {
+                local.stance = local.player.tracker_stance
+            }
+            local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_stance") local.stance 1)
+            
+            end local.fields
+        end
 
-                // Append server identification to each event
-                local.full_payload = local.payload + "&server_token=" + level.server_token
-                local.full_payload = local.full_payload + "&server_id=" + level.server_id
+build_base_json local.event_type:
+            // Build base JSON object with type, match_id, session_id, timestamp
+            local.json = "{"
+            local.json = local.json + (waitthread build_json_field "type" local.event_type 1)
+            
+            if (level.match_id != NIL && level.match_id != "") {
+                local.json = local.json + "," + (waitthread build_json_field "match_id" level.match_id 1)
+            }
+            
+            if (level.session_id != NIL && level.session_id != "") {
+                local.json = local.json + "," + (waitthread build_json_field "session_id" level.session_id 1)
+            }
+            
+            local.json = local.json + "," + (waitthread build_json_field "timestamp" level.time 0)
+            
+            end local.json
+        end
 
-                if (level.event_queue == NIL || level.event_queue == "") {
-                    level.event_queue = local.full_payload
-                } else {
-                    level.event_queue = level.event_queue + "\n" + local.full_payload
-                }
-    
-                level.batch_size++
-    
-                if (level.batch_size >= level.max_batch_size) {
-                    thread flush_queue
-                }
-            end
+            // ============================================================================
+            // BATCHING SYSTEM (JSON Array Format)
+            // ============================================================================
+
+queue_event local.json_obj:
+            // Guard against NIL object
+            if (local.json_obj == NIL || local.json_obj == "") { end }
+            
+            // Ensure globals are initialized
+            if (level.event_queue == NIL) {
+                level.event_queue = "["
+            }
+            if (level.batch_size == NIL) {
+                level.batch_size = 0
+            }
+            if (level.max_batch_size == NIL) {
+                level.max_batch_size = 20
+            }
+            
+            // Close the JSON object (caller provides open brace)
+            local.complete_obj = local.json_obj + "}"
+            
+            // Add to array (comma separator if not first item)
+            if (level.batch_size == 0) {
+                level.event_queue = "[" + local.complete_obj
+            } else {
+                level.event_queue = level.event_queue + "," + local.complete_obj
+            }
+            
+            level.batch_size++
+            
+            if (level.batch_size >= level.max_batch_size) {
+                thread flush_queue
+            }
+        end
 
 flush_queue:
-                if (level.event_queue == NIL || level.event_queue == "") {
-                    end
-                }
-
-                local.payload_to_send = level.event_queue
-                level.event_queue = ""
-                level.batch_size = 0
-
-                local.url = level.api_base_url + level.api_events_endpoint + "?server_token=" + level.server_token
-    
-                if (level.tracker_debug) {
-                    dprintln ("API BATCH FLUSH: " + local.url)
-                    dprintln ("PAYLOAD PREVIEW: " + local.payload_to_send)
-                }
-    
-                if (level.tracker_debug) {
-                    dprintln ("[OPM] POST batch: " + local.url)
-                }
-                
-                curl_post local.url local.payload_to_send on_http_callback
-            end
+            if (level.event_queue == NIL || level.event_queue == "" || level.event_queue == "[") {
+                end
+            }
+            
+            if (level.batch_size == 0) {
+                end
+            }
+            
+            // Close JSON array
+            local.json_array = level.event_queue + "]"
+            level.event_queue = "["
+            level.batch_size = 0
+            
+            local.url = level.api_base_url + level.api_events_endpoint
+            
+            // Build headers with authentication
+            local.headers = makearray
+                "Content-Type" "application/json"
+                "X-Server-Token" level.server_token
+            endarray
+            
+            if (level.tracker_debug) {
+                dprintln ("API BATCH FLUSH: " + local.url)
+                dprintln ("PAYLOAD PREVIEW: " + local.json_array)
+            }
+            
+            // New curl_post signature: curl_post url headers body callback
+            curl_post local.url local.headers local.json_array on_http_callback
+        end
 
 flush_loop:
                 while (1) {

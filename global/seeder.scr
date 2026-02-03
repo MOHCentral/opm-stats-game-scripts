@@ -1,26 +1,23 @@
 // ============================================================================
-// OpenMOHAA MEGA Telemetry Seeder v4.0 (1,000,000% Coverage)
-// Generates comprehensive simulated game events covering EVERY stat displayed
-// in the SMF integration including:
-// - All 94 event types
-// - All 19 hitbox locations
-// - All weapons with realistic usage patterns
-// - All maps in rotation
-// - All movement analytics (distance, stances, jumps, ladders, swimming)
-// - All accuracy tracking (shots fired vs hits)
-// - All special kill types (headshots, bash, grenades, roadkills, telefrags)
-// - Achievement patterns (killstreaks, multikills, clutches)
-// - Objective completions (bomb plant/defuse, flag capture)
-// - Vehicle interactions (enter/exit/collision/death)
-// - Team and FFA game modes with wins/losses
+// OpenMOHAA MEGA Telemetry Seeder v5.0 - Direct Handler Calls
+// Generates comprehensive simulated game events by calling tracker handlers
+// directly with fake parameters, mimicking real event flow.
+//
+// Instead of: event_subscribe "player_kill" on_player_kill
+// We call:    waitthread global/tracker_combat_ext.scr::on_player_kill ...
+//
+// This exercises the full event pipeline including all 94+ event handlers.
 // ============================================================================
 
+// ============================================================================
+// INIT DATA - Weapon, Map, Hitbox Databases
+// ============================================================================
 init_data:
     if (level.seeder_data_initialized) { end }
-        level.seeder_data_initialized = 1
+    level.seeder_data_initialized = 1
 
     // ========================================================================
-    // WEAPON DATABASE - All MOHAA weapons with stats
+    // WEAPON DATABASE - All MOHAA weapons
     // ========================================================================
     level.weapons[1]  = "M1 Garand"
     level.weapons[2]  = "Kar98"
@@ -39,7 +36,6 @@ init_data:
     level.weapons[15] = "Stielhandgranate"
     level.weapons[16] = "MG42"
     level.weapons[17] = "30cal"
-
     level.weapon_count = 17
 
     // ========================================================================
@@ -64,11 +60,10 @@ init_data:
     level.hitbox[16] = "left_hand"
     level.hitbox[17] = "right_foot"
     level.hitbox[18] = "left_foot"
-
     level.hitbox_count = 19
 
     // ========================================================================
-    // MAP DATABASE - Common MOHAA maps
+    // MAP DATABASE
     // ========================================================================
     level.maps[1]  = "dm/mohdm1"
     level.maps[2]  = "dm/mohdm2"
@@ -85,7 +80,6 @@ init_data:
     level.maps[13] = "tdm/mohdm2"
     level.maps[14] = "tdm/mohdm3"
     level.maps[15] = "lib/lib_team1"
-
     level.map_count = 15
 
     // ========================================================================
@@ -97,7 +91,6 @@ init_data:
     level.gametypes[4] = "objective"
     level.gametypes[5] = "liberation"
     level.gametypes[6] = "tow"
-
     level.gametype_count = 6
 
     // ========================================================================
@@ -109,7 +102,6 @@ init_data:
     level.vehicles[4] = "Sherman_Tank"
     level.vehicles[5] = "Halftrack"
     level.vehicles[6] = "Flak88"
-
     level.vehicle_count = 6
 
     // ========================================================================
@@ -119,7 +111,6 @@ init_data:
     level.turrets[2] = "MG42_Jeep"
     level.turrets[3] = "Flak88_Gun"
     level.turrets[4] = "30cal_Nest"
-
     level.turret_count = 4
 
     // ========================================================================
@@ -132,7 +123,6 @@ init_data:
     level.items[5] = "Binoculars"
     level.items[6] = "Papers"
     level.items[7] = "KeyCard"
-
     level.item_count = 7
 
     // ========================================================================
@@ -150,20 +140,10 @@ init_data:
     level.mods[10] = "MOD_FALLING"
     level.mods[11] = "MOD_EXPLOSION"
     level.mods[12] = "MOD_VEHICLE"
-
     level.mod_count = 12
 
     // ========================================================================
-    // ACHIEVEMENT PATTERNS - For triggering achievement-related events
-    // ========================================================================
-    level.kill_streak_thresholds[1] = 3   // triple kill
-    level.kill_streak_thresholds[2] = 5   // killing spree
-    level.kill_streak_thresholds[3] = 10  // rampage
-    level.kill_streak_thresholds[4] = 15  // unstoppable
-    level.kill_streak_thresholds[5] = 20  // godlike
-
-    // ========================================================================
-    // PLAYER ROSTER - 24 varied players for realistic simulation
+    // PLAYER ROSTER - 24 varied players
     // ========================================================================
     level.player_names[1]  = "Major_Kain"
     level.player_names[2]  = "Pvt_Ryan"
@@ -189,40 +169,39 @@ init_data:
     level.player_names[22] = "Crimson_Tide"
     level.player_names[23] = "Delta_Force"
     level.player_names[24] = "Omega_Red"
-
     level.player_name_count = 24
 end
 
-// Entry point for the "seed" command
+// ============================================================================
+// ENTRY POINT - "seed" console command
+// ============================================================================
 cmd_seed local.player local.args:
     waitthread init_data
     if (level.seeder_running) {
-        local.player iprint "Seeder is already running!"
+        if (local.player) { local.player iprint "Seeder is already running!" }
         end
     }
 
-    local.count = 10 // Default matches
-    
-    if (local.args != NIL) {
-        if (local.args) {
-            local.count = int(local.args)
-            if (local.count == NIL) { local.count = 10 }
-                if (local.count < 1) { local.count = 1 }
-                    if (local.count > 100) { local.count = 100 }
-        }
+    local.count = 10
+    if (local.args != NIL && local.args != "") {
+        local.count = int(local.args)
+        if (local.count == NIL) { local.count = 10 }
+        if (local.count < 1) { local.count = 1 }
+        if (local.count > 100) { local.count = 100 }
     }
 
     if (local.player) {
         local.player iprint "=============================================="
-        local.player iprint "MEGA SEEDER v4.0 - 1,000,000% COVERAGE"
+        local.player iprint "MEGA SEEDER v5.0 - Direct Handler Calls"
         local.player iprint "=============================================="
         local.player iprint ("Starting simulation of " + local.count + " full matches...")
     }
-    local.player iprint ("MEGA SEED: " + local.count + " matches")
     
     level.seeder_running = 1
+    level.seed_total_events = 0
+    level.seed_total_kills = 0
+    level.seed_total_headshots = 0
     
-    // Run in a separate thread to not block the game loop
     thread run_mega_simulation local.count local.player
 
     while (level.seeder_running) {
@@ -230,51 +209,44 @@ cmd_seed local.player local.args:
     }
 end
 
+// ============================================================================
+// MAIN SIMULATION LOOP
+// ============================================================================
 run_mega_simulation local.count local.player:
-// Guard against NIL count
     if (local.count == NIL) { local.count = 10 }
-        if (local.count < 1) { local.count = 1 }
+    if (local.count < 1) { local.count = 1 }
     
-            // Setup fake players with varied skill levels
-    local.players = waitthread create_mega_player_roster
+    // Create fake player roster
+    local.players = waitthread create_fake_player_roster
     if (local.players == NIL) {
-        dprintln "MEGA SEEDER: Failed to create player roster!"
+        dprintln "SEEDER: Failed to create player roster!"
         level.seeder_running = 0
         end
     }
     
-    dprintln ("MEGA SEEDER: Created " + local.players.size + " simulated players")
+    dprintln ("SEEDER: Created " + local.players.size + " simulated players")
 
-    // Track global stats for reporting
-    level.seed_total_kills = 0
-    level.seed_total_headshots = 0
-    level.seed_total_events = 0
+    // ==== LIFECYCLE: server_process_start (once per session) ====
+    waitthread call_server_process_start
 
     for (local.i = 1; local.i <= local.count; local.i++) {
         dprintln ""
         dprintln ("=== MATCH " + local.i + "/" + local.count + " ===")
         
-        // Rotate maps and gametypes
-        local.map_idx = 1
-        if (level.map_count != NIL && level.map_count > 0) {
-            local.map_idx = 1 + ((local.i - 1) % level.map_count)
-        }
-        
-        local.gt_idx = 1
-        if (level.gametype_count != NIL && level.gametype_count > 0) {
-            local.gt_idx = 1 + ((local.i - 1) % level.gametype_count)
-        }
-        
-        local.map_name = "dm/mohdm1"
-        if (level.maps[local.map_idx] != NIL) { local.map_name = level.maps[local.map_idx] }
-        
-            local.gametype = "ffa"
-        if (level.gametypes[local.gt_idx] != NIL) { local.gametype = level.gametypes[local.gt_idx] }
+        local.map_idx = 1 + ((local.i - 1) % level.map_count)
+        local.gt_idx = 1 + ((local.i - 1) % level.gametype_count)
+        local.map_name = level.maps[local.map_idx]
+        local.gametype = level.gametypes[local.gt_idx]
+        if (local.map_name == NIL) { local.map_name = "dm/mohdm1" }
+        if (local.gametype == NIL) { local.gametype = "ffa" }
 
-            waitthread simulate_full_match local.players local.i local.map_name local.gametype
+        waitthread simulate_full_match local.players local.i local.map_name local.gametype
         
-        wait 0.2 // Small delay between matches
+        wait 0.2
     }
+
+    // ==== LIFECYCLE: server_process_quit (once per session) ====
+    waitthread call_server_process_quit
 
     dprintln ""
     dprintln "=============================================="
@@ -287,848 +259,1148 @@ run_mega_simulation local.count local.player:
         local.player iprint "MEGA SEED Complete!"
     }
     
-    waitthread cleanup_mega_players local.players
+    waitthread cleanup_fake_players local.players
     level.seeder_running = 0
 end
 
-// ========================================================================
-// CREATE MEGA PLAYER ROSTER - 24 players with varied stats
-// ========================================================================
-create_mega_player_roster:
+// ============================================================================
+// CREATE FAKE PLAYER ROSTER
+// ============================================================================
+create_fake_player_roster:
     local.list[1] = NIL
     local.name_count = level.player_name_count
-    
-    // Robust Fallback
-    if (local.name_count == NIL || local.name_count < 1) { 
-        local.name_count = 10 
-        dprintln "MEGA SEEDER: WARNING - player_name_count missing. Defaulting to 10 players."
-    }
+    if (local.name_count == NIL || local.name_count < 1) { local.name_count = 10 }
 
     for (local.i = 1; local.i <= local.name_count; local.i++) {
         local.list[local.i] = spawn info_notnull
-        
-        // Name Fallback
-        if (level.player_names != NIL && level.player_names[local.i] != NIL) {
-            local.list[local.i].name = level.player_names[local.i]
-        } else {
-            local.list[local.i].name = "SimPlayer_" + local.i
-        }
-        local.list[local.i].smf_id = 100 + local.i
+        local.list[local.i].netname = level.player_names[local.i]
+        if (local.list[local.i].netname == NIL) { local.list[local.i].netname = "SimPlayer_" + local.i }
+        local.list[local.i].smf_member_id = 100 + local.i
+        local.list[local.i].is_authenticated = 1
+        local.list[local.i].smf_member_name = local.list[local.i].netname
         local.list[local.i].guid = "sim_" + (100 + local.i)
-        local.list[local.i].skill = 50 + (randomint 50)  // 50-100 skill
+        local.list[local.i].cl_guid = "SIM_GUID_" + (100 + local.i)
+        local.list[local.i].skill = 50 + (randomint 50)
         local.list[local.i].kills = 0
         local.list[local.i].deaths = 0
         local.list[local.i].killstreak = 0
         local.list[local.i].headshots = 0
-        
-        // Alternate teams
+        local.list[local.i].shots_fired = 0
+        local.list[local.i].shots_hit = 0
+        local.list[local.i].tracker_stance = "stand"
+        local.list[local.i].origin = '0 0 0'
         if (local.i <= 12) {
-            local.list[local.i].team = "allies"
+            local.list[local.i].dmteam = "allies"
         } else {
-            local.list[local.i].team = "axis"
+            local.list[local.i].dmteam = "axis"
         }
     }
     end local.list
 
-cleanup_mega_players local.players:
-        if (local.players) {
-            for (local.i = 1; local.i <= local.players.size; local.i++) {
-                if (local.players[local.i]) {
-                    local.players[local.i] remove
-                }
+cleanup_fake_players local.players:
+    if (local.players) {
+        for (local.i = 1; local.i <= local.players.size; local.i++) {
+            if (local.players[local.i]) {
+                local.players[local.i] remove
             }
         }
-    end
+    }
+end
 
-simulate_match local.players local.match_num:
-        local.map_name = "obj/obj_team1" // Default map
-        local.gametype = 4 // Objective
-    
-        // Generate match ID
-        local.match_id = "sim_match_" + level.time + "_" + local.match_num
-    
-        // Backup & Override
-        local.original_match_id = level.match_id
-        level.match_id = local.match_id
-        level.map_name = local.map_name
+// ============================================================================
+// SIMULATE FULL MATCH - Calls all event handlers
+// ============================================================================
+simulate_full_match local.players local.match_num local.map_name local.gametype:
+    local.match_id = "sim_match_" + level.time + "_" + local.match_num
+    local.original_match_id = level.match_id
+    level.match_id = local.match_id
+    level.map_name = local.map_name
 
-        // 1. MATCH START & GAMEFLOW
-        waitthread send_event "match_start" ("&server_id=" + level.server_id + "&map_name=" + local.map_name + "&gametype=" + local.gametype + "&maxclients=32")
-        waitthread send_event "server_init" ""
-        waitthread send_event "game_init" ""
-        waitthread send_event "game_start" ""
-        waitthread send_event "warmup_start" ""
-        waitthread send_event "warmup_end" ""
-    
-        // Map Load events
-        waitthread send_event "map_load_start" ("&map_name=" + local.map_name)
-        waitthread send_event "map_load_end" ("&map_name=" + local.map_name)
+    dprintln ("  Map: " + local.map_name + " | GameType: " + local.gametype)
 
-        // 2. CLIENT CONNECT PHASE
-        local.p_size = local.players.size
-        if (local.p_size == NIL) { local.p_size = 0 }
-            for (local.i = 1; local.i <= local.p_size; local.i++) {
-            waitthread send_player_event "client_connect" local.players[local.i] "player" "&ip=127.0.0.1"
-            waitthread send_player_event "client_begin" local.players[local.i] "player" ""
-            // Initial userinfo
-            waitthread send_player_event "client_userinfo_changed" local.players[local.i] "player" "&key=rate&value=25000"
-        }
+    // ========================================================================
+    // MAP LIFECYCLE EVENTS
+    // ========================================================================
+    waitthread call_map_load_start local.map_name
+    waitthread call_map_init
+    waitthread call_map_start
+    waitthread call_map_ready local.map_name local.gametype
+    waitthread call_map_load_end local.map_name local.gametype
 
-        local.allies_score = 0
-        local.axis_score = 0
-    
-        // Simulate Rounds (Objective usually takes 2 rounds, one each side)
-        for (local.r = 1; local.r <= 2; local.r++) {
-            level.round_number = local.r
-            waitthread simulate_round local.players local.r
+    // ========================================================================
+    // GAME FLOW EVENTS
+    // ========================================================================
+    waitthread call_game_init local.gametype
+    waitthread call_warmup_start local.map_name
+    wait 0.1
+    waitthread call_warmup_end local.map_name
+    waitthread call_game_start
+
+    // ========================================================================
+    // CLIENT CONNECT PHASE
+    // ========================================================================
+    local.p_size = local.players.size
+    for (local.i = 1; local.i <= local.p_size; local.i++) {
+        local.p = local.players[local.i]
+        waitthread call_client_connect local.p local.i
+        waitthread call_client_begin local.p
+        waitthread call_client_userinfo_changed local.p
+        waitthread call_team_join local.p "spectator" local.p.dmteam
+        waitthread call_player_spawn local.p
+        local.p.kills = 0
+        local.p.deaths = 0
+        local.p.killstreak = 0
+    }
+
+    // ========================================================================
+    // SIMULATE ROUNDS
+    // ========================================================================
+    local.allies_score = 0
+    local.axis_score = 0
+    local.round_count = 2
+    if (local.gametype == "ffa") { local.round_count = 1 }
+
+    for (local.r = 1; local.r <= local.round_count; local.r++) {
+        level.round_number = local.r
+        waitthread simulate_round local.players local.r local.gametype
         
-            // Random outcome
+        if (local.gametype != "ffa") {
             if (randomint 100 > 50) {
                 local.allies_score++
-                waitthread send_event "objective_capture" ("&team=allies&objective_name=flak_88")
+                waitthread call_team_win 1
             } else {
                 local.axis_score++
-                waitthread send_event "objective_capture" ("&team=axis&objective_name=bridge")
+                waitthread call_team_win 2
             }
         }
-
-        // 3. MATCH END
-        local.winning_team = "allies"
-        if (local.axis_score > local.allies_score) { local.winning_team = "axis" }
-
-            waitthread send_event "match_end" ("&winning_team=" + local.winning_team + "&allies_score=" + local.allies_score + "&axis_score=" + local.axis_score + "&duration=1200")
-        waitthread send_event "game_end" ""
-
-        // 4. CLIENT DISCONNECT PHASE
-        local.p_size = local.players.size
-        if (local.p_size == NIL) { local.p_size = 0 }
-            for (local.i = 1; local.i <= local.p_size; local.i++) {
-            waitthread send_player_event "client_disconnect" local.players[local.i] "player" ""
-        }
-        // Restore ID
-        level.match_id = local.original_match_id
-    end
+    }
 
     // ========================================================================
-    // SIMULATE FULL MATCH - Comprehensive match simulation
+    // BOT/ACTOR EVENTS
     // ========================================================================
-simulate_full_match local.players local.match_num local.map_name local.gametype:
-    // Generate match ID
-        local.match_id = "sim_match_" + level.time + "_" + local.match_num
-    
-        // Backup & Override
-        local.original_match_id = level.match_id
-        level.match_id = local.match_id
-        level.map_name = local.map_name
-
-        dprintln ("  Map: " + local.map_name + " | GameType: " + local.gametype)
-
-        // 1. MAP LOAD EVENTS
-        waitthread send_event "map_load_start" ("&map_name=" + local.map_name)
-        waitthread send_event "map_init" ""
-        waitthread send_event "map_start" ""
-        waitthread send_event "map_ready" ("&map_name=" + local.map_name + "&gametype=" + local.gametype)
-        waitthread send_event "map_load_end" ("&map_name=" + local.map_name + "&gametype=" + local.gametype)
-
-        // 2. GAME INITIALIZATION
-        waitthread send_event "game_init" ("&gametype=" + local.gametype)
-        waitthread send_event "warmup_start" ("&map_name=" + local.map_name)
-        wait 0.2
-        waitthread send_event "warmup_end" ("&map_name=" + local.map_name)
-        waitthread send_event "game_start" ""
-
-        // 3. CLIENT CONNECT PHASE - All players join
-        local.p_size = local.players.size
-        if (local.p_size == NIL) { local.p_size = 0 }
-            for (local.i = 1; local.i <= local.p_size; local.i++) {
-            local.p = local.players[local.i]
-            waitthread send_player_event "client_connect" local.p "player" "&ip=127.0.0.1"
-            waitthread send_player_event "client_begin" local.p "player" ""
-            waitthread send_player_event "team_join" local.p "player" ("&old_team=spectator&new_team=" + local.p.team)
-            waitthread send_player_event "player_spawn" local.p "player" ""
-        
-            // Reset per-match stats
-            local.p.kills = 0
-            local.p.deaths = 0
-            local.p.killstreak = 0
-        }
-
-        local.allies_score = 0
-        local.axis_score = 0
-        local.round_count = 2
-        if (local.gametype == "ffa") { local.round_count = 1 }
-    
-            // 4. SIMULATE ROUNDS
-        for (local.r = 1; local.r <= local.round_count; local.r++) {
-            level.round_number = local.r
-            waitthread simulate_round_full local.players local.r local.gametype
-        
-            // Random outcome for team modes
-            if (local.gametype != "ffa") {
-                if (randomint 100 > 50) {
-                    local.allies_score++
-                    waitthread send_event "team_win" "&winning_team=1"
-                } else {
-                    local.axis_score++
-                    waitthread send_event "team_win" "&winning_team=2"
-                }
-            }
-        }
-
-        // 5. BOT EVENTS - Simulate AI activity in the match
-        waitthread simulate_bot_events local.players
-    
-        // 6. ACTOR EVENTS - NPCs in objective maps
-        if (local.gametype == "objective") {
-            waitthread simulate_actor_events local.players
-        }
-
-        // 7. MATCH END
-        local.winning_team = "allies"
-        if (local.axis_score > local.allies_score) { local.winning_team = "axis" }
-    
-            waitthread send_event "intermission_start" ("&map_name=" + local.map_name + "&gametype=" + local.gametype)
-        waitthread send_event "match_end" ("&map_name=" + local.map_name + "&gametype=" + local.gametype + "&winning_team=" + local.winning_team)
-        waitthread send_event "game_end" ""
-
-        // 8. CLIENT DISCONNECT PHASE
-        local.p_size = local.players.size
-        if (local.p_size == NIL) { local.p_size = 0 }
-            for (local.i = 1; local.i <= local.p_size; local.i++) {
-            waitthread send_player_event "client_disconnect" local.players[local.i] "player" ""
-        }
-    
-        // 9. MAP SHUTDOWN
-        waitthread send_event "map_shutdown" ""
-        if (local.match_num < 10) {
-            local.next_map_idx = 1
-            if (level.map_count != NIL && level.map_count > 0) {
-                local.next_map_idx = 1 + (local.match_num % level.map_count)
-            }
-            local.next_map_name = "dm/mohdm1"
-            if (level.maps[local.next_map_idx] != NIL) { local.next_map_name = level.maps[local.next_map_idx] }
-            
-                waitthread send_event "map_change_start" ("&current_map=" + local.map_name + "&next_map=" + local.next_map_name)
-        }
-    
-        // Restore ID
-        level.match_id = local.original_match_id
-    
-        // Update global stats
-        local.p_size = local.players.size
-        if (local.p_size == NIL) { local.p_size = 0 }
-            for (local.i = 1; local.i <= local.p_size; local.i++) {
-            level.seed_total_kills = level.seed_total_kills + local.players[local.i].kills
-            level.seed_total_headshots = level.seed_total_headshots + local.players[local.i].headshots
-        }
-    end
+    waitthread simulate_bot_events local.players
+    if (local.gametype == "objective") {
+        waitthread simulate_actor_events local.players
+    }
 
     // ========================================================================
-    // SIMULATE ROUND FULL - Complete round with all event types
+    // MATCH END
     // ========================================================================
-simulate_round_full local.players local.round_num local.gametype:
-        waitthread send_event "round_start" ""
+    local.winning_team = "allies"
+    if (local.axis_score > local.allies_score) { local.winning_team = "axis" }
 
-        // Simulate Combat & Activity (30-60 seconds of activity)
-        local.active_time = 30 + (randomint 30)
-        for (local.t = 0; local.t < local.active_time; local.t++) {
+    waitthread call_intermission_start local.map_name local.gametype
+    waitthread call_match_end local.map_name local.gametype local.winning_team
+    waitthread call_game_end
+
+    // ========================================================================
+    // CLIENT DISCONNECT PHASE
+    // ========================================================================
+    for (local.i = 1; local.i <= local.p_size; local.i++) {
+        waitthread call_client_disconnect local.players[local.i]
+    }
+
+    // ========================================================================
+    // MAP SHUTDOWN
+    // ========================================================================
+    waitthread call_map_shutdown
+    if (local.match_num < local.p_size) {
+        local.next_idx = 1 + (local.match_num % level.map_count)
+        local.next_map = level.maps[local.next_idx]
+        if (local.next_map == NIL) { local.next_map = "dm/mohdm2" }
+        waitthread call_map_change_start local.map_name local.next_map
+    }
+
+    level.match_id = local.original_match_id
+
+    // Update global stats
+    for (local.i = 1; local.i <= local.p_size; local.i++) {
+        level.seed_total_kills = level.seed_total_kills + local.players[local.i].kills
+        level.seed_total_headshots = level.seed_total_headshots + local.players[local.i].headshots
+    }
+end
+
+// ============================================================================
+// SIMULATE ROUND - Combat, Movement, Vehicles, World, Objectives
+// ============================================================================
+simulate_round local.players local.round_num local.gametype:
+    waitthread call_round_start
+
+    local.active_time = 20 + (randomint 30)
+    for (local.t = 0; local.t < local.active_time; local.t++) {
+        // Combat events (10 per tick)
+        for (local.c = 0; local.c < 10; local.c++) {
+            waitthread simulate_combat local.players
+        }
         
-            // HIGH VOLUME COMBAT - 10 combat events per tick
-            for (local.c = 0; local.c < 10; local.c++) {
-                waitthread simulate_combat_mega local.players
-            }
-        
-            // MOVEMENT ANALYTICS - Every player moves each tick
-            local.p_size = local.players.size
-            if (local.p_size == NIL) { local.p_size = 0 }
-                for (local.m = 1; local.m <= local.p_size; local.m++) {
-                if (randomint 3 == 0) {
-                    waitthread simulate_movement_full local.players[local.m]
-                }
-            }
-        
-            // VEHICLE INTERACTIONS - 20% chance per tick
-            if (randomint 100 < 20) {
-                waitthread simulate_vehicle_events local.players
-            }
-        
-            // WORLD INTERACTIONS - 30% chance per tick
+        // Movement events (each player has 30% chance)
+        local.p_size = local.players.size
+        for (local.m = 1; local.m <= local.p_size; local.m++) {
             if (randomint 100 < 30) {
-                waitthread simulate_world_events local.players
-            }
-        
-            // SOCIAL/GAMEFLOW - 10% chance per tick
-            if (randomint 100 < 10) {
-                waitthread simulate_gameflow_events local.players
-            }
-        
-            // OBJECTIVE EVENTS - For objective gametype
-            if (local.gametype == "objective" || local.gametype == "tow") {
-                if (randomint 100 < 15) {
-                    waitthread simulate_objective_events local.players
-                }
-            }
-        
-            level.seed_total_events = level.seed_total_events + 1
-        }
-
-        // ROUND END
-        local.winner = "allies"
-        if (randomint 100 > 50) { local.winner = "axis" }
-            waitthread send_event "round_end" ""
-    end
-
-simulate_round local.players local.round_num:
-    // ROUND START
-        waitthread send_event "round_start" ("&round_number=" + local.round_num)
-
-        // Simulate Combat & Activity
-        local.active_time = 10 + (randomint 20)
-        for (local.t = 0; local.t < local.active_time; local.t++) {
-        
-            // High volume combat
-            for (local.c = 0; local.c < 5; local.c++) {
-                waitthread simulate_combat_extended local.players
-            }
-        
-            // Movement & Physics
-            waitthread simulate_movement_extended local.players
-        
-            // Vehicle Interactions
-            if (randomint 100 > 80) {
-                waitthread simulate_vehicle_events local.players
-            }
-        
-            // World Events
-            if (randomint 100 > 70) { // Increased freq
-                waitthread simulate_world_events local.players
-            }
-        
-            // Gameflow Events
-            if (randomint 100 > 90) { // Increased freq
-                waitthread simulate_gameflow_events local.players
-            }
-
-            // Periodic Heartbeat
-            if (local.t % 5 == 0) {
-                waitthread send_event "heartbeat" ("&round_number=" + local.round_num + "&player_count=" + local.players.size)
+                waitthread simulate_movement local.players[local.m]
             }
         }
+        
+        // Vehicle events (20% chance)
+        if (randomint 100 < 20) {
+            waitthread simulate_vehicle_events local.players
+        }
+        
+        // World events (30% chance)
+        if (randomint 100 < 30) {
+            waitthread simulate_world_events local.players
+        }
+        
+        // Gameflow/social events (15% chance)
+        if (randomint 100 < 15) {
+            waitthread simulate_gameflow_events local.players
+        }
+        
+        // Objective events (15% chance for objective modes)
+        if (local.gametype == "objective" || local.gametype == "tow") {
+            if (randomint 100 < 15) {
+                waitthread simulate_objective_events local.players
+            }
+        }
+        
+        level.seed_total_events = level.seed_total_events + 1
+    }
 
-        // ROUND END
-        local.winner = "allies"
-        if (randomint 100 > 50) { local.winner = "axis" }
-            waitthread send_event "round_end" ("&round_number=" + local.round_num + "&winning_team=" + local.winner)
-    end
+    local.winner = "allies"
+    if (randomint 100 > 50) { local.winner = "axis" }
+    waitthread call_round_end
+end
 
-    // ========================================================================
-    // SIMULATE COMBAT MEGA - Full weapon/hitbox coverage
-    // ========================================================================
-simulate_combat_mega local.players:
-    // Pick random attacker and victim
-        local.p_size = local.players.size
-        if (local.p_size == NIL || local.p_size == 0) { end }
-    
-            local.attacker = local.players[1 + (randomint local.p_size)]
+// ============================================================================
+// SIMULATE COMBAT - Calls combat handlers directly
+// ============================================================================
+simulate_combat local.players:
+    local.p_size = local.players.size
+    if (local.p_size == NIL || local.p_size < 2) { end }
+
+    local.attacker = local.players[1 + (randomint local.p_size)]
+    local.victim = local.players[1 + (randomint local.p_size)]
+    while (local.attacker == local.victim) {
         local.victim = local.players[1 + (randomint local.p_size)]
-        while (local.attacker == local.victim) {
-            local.victim = local.players[1 + (randomint local.p_size)]
-        }
+    }
 
-        // Pick random weapon from full database
-        local.weapon_idx = 1 + (randomint level.weapon_count)
-        local.weapon = level.weapons[local.weapon_idx]
-    
-        // Pick random hitbox from all 19 locations
-        local.hitbox_idx = randomint level.hitbox_count
-        local.hitloc = level.hitbox[local.hitbox_idx]
-    
-        // Pick random means of death
-        local.mod_idx = 1 + (randomint level.mod_count)
-        local.mod = level.mods[local.mod_idx]
-    
-        local.damage = 10 + (randomint 90)
-        local.type = randomint 20  // 20 combat variations
-    
-        // ======================
-        // STANDARD GUNFIRE (50% of combat)
-        // ======================
-        if (local.type < 10) {
-            // Weapon ready/raise sequence
-            if (randomint 4 == 0) {
-                waitthread send_player_event "weapon_ready" local.attacker "player" ("&weapon=" + local.weapon)
-            }
-            if (randomint 4 == 0) {
-                waitthread send_player_event "weapon_raise" local.attacker "player" ("&weapon=" + local.weapon)
-            }
-
-            // WEAPON FIRE - Track accuracy
-            local.shots = 1 + (randomint 5)  // 1-5 shots
-            local.hits = 0
-            for (local.s = 0; local.s < local.shots; local.s++) {
-                waitthread send_player_event "weapon_fire" local.attacker "player" ("&weapon=" + local.weapon + "&ammo_remaining=" + (30 - local.s))
-            
-                // Hit chance based on skill
-                if (randomint 100 < local.attacker.skill) {
-                    local.hits++
-                    waitthread send_combat_event "weapon_hit" local.attacker local.victim ("&hit_location=" + local.hitloc + "&weapon=" + local.weapon)
-                    waitthread send_combat_event "player_damage" local.attacker local.victim ("&damage=" + local.damage + "&meansofdeath=" + local.mod)
-                    waitthread send_combat_event "player_pain" local.attacker local.victim ("&damage=" + local.damage + "&meansofdeath=" + local.mod + "&hit_location=" + local.hitloc)
-                }
-            }
-        
-            // Kill if enough damage
-            if (local.hits >= 2 || (local.hits >= 1 && local.hitloc == "head")) {
-                local.is_headshot = 0
-                if (local.hitloc == "head" || local.hitloc == "helmet" || local.hitloc == "neck") {
-                    local.is_headshot = 1
-                    waitthread send_combat_event "player_headshot" local.attacker local.victim ("&weapon=" + local.weapon)
-                    local.attacker.headshots++
-                }
-            
-                waitthread send_combat_event "player_kill" local.attacker local.victim ("&inflictor=" + local.weapon + "&location=" + local.hitloc + "&meansofdeath=" + local.mod)
-                waitthread send_player_event "player_death" local.victim "player" ("&inflictor=" + local.weapon)
-            
-                // Track kills/deaths and streaks
-                local.attacker.kills++
-                local.attacker.killstreak++
-                local.victim.deaths++
-                local.victim.killstreak = 0
-            
-                // Score change events
-                waitthread send_player_event "score_change" local.attacker "player" ("&score_type=kills&delta=1&new_total=" + local.attacker.kills)
-                waitthread send_player_event "score_change" local.victim "player" ("&score_type=deaths&delta=1&new_total=" + local.victim.deaths)
-            
-                // Respawn victim
-                waitthread send_player_event "player_respawn" local.victim "player" ""
-            
-                // Weapon drop on death
-                if (randomint 3 == 0) {
-                    waitthread send_player_event "weapon_drop" local.victim "player" ("&weapon=" + local.weapon)
-                }
-            
-                level.seed_total_kills++
-                if (local.is_headshot) level.seed_total_headshots++
-            } else {
-                // Survived - ammo/reload events
-                if (randomint 10 == 0) {
-                    waitthread send_player_event "weapon_no_ammo" local.attacker "player" ("&weapon=" + local.weapon)
-                }
-                if (randomint 5 == 0) {
-                    waitthread send_player_event "weapon_reload" local.attacker "player" ("&weapon=" + local.weapon)
-                    if (randomint 2 == 0) {
-                        waitthread send_player_event "weapon_reload_done" local.attacker "player" ("&weapon=" + local.weapon)
-                    }
-                }
-            }
-        }
-        // ======================
-        // MELEE BASH (5%)
-        // ======================
-        else if (local.type == 10) {
-            waitthread send_combat_event "player_bash" local.attacker local.victim "&mod=MOD_BASH"
-            waitthread send_combat_event "player_kill" local.attacker local.victim "&inflictor=bash&meansofdeath=MOD_BASH"
-            waitthread send_player_event "player_death" local.victim "player" "&inflictor=bash"
-            local.attacker.kills++
-            local.victim.deaths++
-            waitthread send_player_event "player_respawn" local.victim "player" ""
-            level.seed_total_kills++
-        }
-        // ======================
-        // GRENADE (10%)
-        // ======================
-        else if (local.type == 11 || local.type == 12) {
-            local.nade = "Frag Grenade"
-            if (randomint 2 == 0) local.nade = "Stielhandgranate"
-        
-                if (local.attacker != NIL) {
-                waitthread send_player_event "grenade_throw" local.attacker "player" ("&projectile=" + local.nade)
-                waitthread send_player_event "grenade_explode" local.attacker "player" ("&projectile=" + local.nade)
-                waitthread send_event "explosion" ("&attacker=" + local.attacker.name + "&damage=200&radius=500")
-            }
-        
-            // Grenade can hurt multiple victims
-            local.victims_hit = 1 + (randomint 3)
-            for (local.v = 0; local.v < local.victims_hit; local.v++) {
-                local.splash_victim = local.players[1 + (randomint local.players.size)]
-                if (local.splash_victim != local.attacker) {
-                    waitthread send_combat_event "player_damage" local.attacker local.splash_victim "&damage=75&meansofdeath=MOD_GRENADE"
-                    if (randomint 2 == 0) {
-                        waitthread send_combat_event "player_kill" local.attacker local.splash_victim "&inflictor=grenade&meansofdeath=MOD_GRENADE"
-                        waitthread send_player_event "player_death" local.splash_victim "player" "&inflictor=grenade"
-                        local.attacker.kills++
-                        local.splash_victim.deaths++
-                        waitthread send_player_event "player_respawn" local.splash_victim "player" ""
-                        level.seed_total_kills++
-                    }
-                }
-            }
-        }
-        // ======================
-        // ROADKILL (5%)
-        // ======================
-        else if (local.type == 13) {
-            local.veh = level.vehicles[1 + (randomint level.vehicle_count)]
-            waitthread send_combat_event "player_roadkill" local.attacker local.victim ("&vehicle=" + local.veh + "&meansofdeath=MOD_VEHICLE")
-            waitthread send_player_event "player_death" local.victim "player" ("&inflictor=" + local.veh)
-            local.attacker.kills++
-            local.victim.deaths++
-            waitthread send_player_event "player_respawn" local.victim "player" ""
-            level.seed_total_kills++
-        }
-        // ======================
-        // TELEFRAG (2%)
-        // ======================
-        else if (local.type == 14) {
-            waitthread send_combat_event "player_telefragged" local.attacker local.victim "&meansofdeath=MOD_TELEFRAG"
-            waitthread send_player_event "player_death" local.victim "player" "&inflictor=telefrag"
-            local.attacker.kills++
-            local.victim.deaths++
-            waitthread send_player_event "player_respawn" local.victim "player" ""
-            level.seed_total_kills++
-        }
-        // ======================
-        // CRUSHED (2%)
-        // ======================
-        else if (local.type == 15) {
-            waitthread send_combat_event "player_crushed" local.attacker local.victim "&meansofdeath=MOD_CRUSH"
-            waitthread send_player_event "player_death" local.victim "player" "&inflictor=world"
-            local.victim.deaths++
-            waitthread send_player_event "player_respawn" local.victim "player" ""
-        }
-        // ======================
-        // SUICIDE (3%)
-        // ======================
-        else if (local.type == 16) {
-            waitthread send_player_event "player_suicide" local.attacker "player" "&meansofdeath=MOD_SUICIDE"
-            waitthread send_player_event "player_death" local.attacker "player" "&inflictor=self"
-            local.attacker.deaths++
-            local.attacker.killstreak = 0
-            waitthread send_player_event "player_respawn" local.attacker "player" ""
-        }
-        // ======================
-        // TEAM KILL (3%)
-        // ======================
-        else if (local.type == 17) {
-            // Find teammate
-            local.teammate = local.attacker
-            local.p_size = local.players.size
-            if (local.p_size == NIL) { local.p_size = 0 }
-                for (local.t = 1; local.t <= local.p_size; local.t++) {
-                if (local.players[local.t].team == local.attacker.team && local.players[local.t] != local.attacker) {
-                    local.teammate = local.players[local.t]
-                }
-            }
-            if (local.teammate != local.attacker) {
-                waitthread send_combat_event "player_teamkill" local.attacker local.teammate ("&weapon=" + local.weapon + "&meansofdeath=" + local.mod)
-                waitthread send_player_event "player_death" local.teammate "player" ("&inflictor=" + local.weapon)
-                local.teammate.deaths++
-                waitthread send_player_event "player_respawn" local.teammate "player" ""
-            
-                // Chance of kick
-                if (randomint 5 == 0) {
-                    waitthread send_player_event "teamkill_kick" local.attacker "player" "&teamkill_count=3"
-                }
-            }
-        }
-        // ======================
-        // WEAPON SWITCH/HOLSTER (5%)
-        // ======================
-        else if (local.type == 18) {
-            local.old_weapon = level.weapons[1 + (randomint level.weapon_count)]
-            local.new_weapon = level.weapons[1 + (randomint level.weapon_count)]
-            waitthread send_player_event "weapon_holster" local.attacker "player" ("&weapon=" + local.old_weapon)
-            waitthread send_player_event "weapon_change" local.attacker "player" ("&old_weapon=" + local.old_weapon + "&new_weapon=" + local.new_weapon + "&client_num=" + local.attacker.smf_id)
-            waitthread send_player_event "weapon_raise" local.attacker "player" ("&weapon=" + local.new_weapon)
-            waitthread send_player_event "weapon_ready" local.attacker "player" ("&weapon=" + local.new_weapon)
-        }
-        // ======================
-        // SNIPER HEADSHOT
-        // ======================
-        else {
-            // Precision kill with sniper
-            local.sniper = "Springfield"
-            if (randomint 2 == 0) local.sniper = "Kar98 Sniper"
-        
-                waitthread send_player_event "weapon_fire" local.attacker "player" ("&weapon=" + local.sniper + "&ammo_remaining=5")
-            waitthread send_combat_event "weapon_hit" local.attacker local.victim "&hit_location=head"
-            waitthread send_combat_event "player_headshot" local.attacker local.victim ("&weapon=" + local.sniper)
-            waitthread send_combat_event "player_kill" local.attacker local.victim ("&inflictor=" + local.sniper + "&location=head&meansofdeath=MOD_RIFLE")
-            waitthread send_player_event "player_death" local.victim "player" ("&inflictor=" + local.sniper)
-            local.attacker.kills++
-            local.attacker.headshots++
-            local.victim.deaths++
-            waitthread send_player_event "player_respawn" local.victim "player" ""
-            level.seed_total_kills++
-            level.seed_total_headshots++
-        }
-    end
-
-simulate_combat_extended local.players:
-        waitthread simulate_combat_mega local.players
-    end
+    local.weapon_idx = 1 + (randomint level.weapon_count)
+    local.weapon = level.weapons[local.weapon_idx]
+    local.hitbox_idx = randomint level.hitbox_count
+    local.hitloc = level.hitbox[local.hitbox_idx]
+    local.mod_idx = 1 + (randomint level.mod_count)
+    local.mod = level.mods[local.mod_idx]
+    local.damage = 10 + (randomint 90)
+    local.type = randomint 20
 
     // ========================================================================
-    // SIMULATE MOVEMENT FULL - Per-player movement analytics
+    // STANDARD GUNFIRE (50%)
     // ========================================================================
-simulate_movement_full local.player:
-    // Distance tracking - varied by player behavior
-        local.walked = 50 + (randomint 200)
-        local.sprinted = 20 + (randomint 150)
-        local.swam = 0
-        local.driven = 0
-    
-        if (randomint 10 == 0) local.swam = 10 + (randomint 50)
-            if (randomint 5 == 0) local.driven = 100 + (randomint 500)
-    
-                waitthread send_player_event "player_distance" local.player "player" ("&walked=" + local.walked + "&sprinted=" + local.sprinted + "&swam=" + local.swam + "&driven=" + local.driven)
-    
-        // JUMPING
-        if (randomint 3 == 0) {
-            waitthread send_player_event "player_jump" local.player "player" ""
-            local.fall_vel = randomint 300
-            waitthread send_player_event "player_land" local.player "player" ("&fall_velocity=" + local.fall_vel)
+    if (local.type < 10) {
+        // Weapon events
+        if (randomint 4 == 0) {
+            waitthread call_weapon_ready local.attacker local.weapon
         }
-    
-        // STANCES - Track crouch/prone/stand transitions
-        local.stance = randomint 4
-        if (local.stance == 0) {
-            waitthread send_player_event "player_crouch" local.player "player" ""
-        } else if (local.stance == 1) {
-            waitthread send_player_event "player_prone" local.player "player" ""
-        } else if (local.stance == 2) {
-            waitthread send_player_event "player_stand" local.player "player" ""
+        if (randomint 4 == 0) {
+            waitthread call_weapon_raise local.attacker local.weapon
         }
-    
-        // LADDER interaction
-        if (randomint 10 == 0) {
-            waitthread send_player_event "ladder_mount" local.player "player" "&ladder_entity=ladder_1"
-            waitthread send_player_event "ladder_dismount" local.player "player" "&ladder_entity=ladder_1"
-        }
-    
-        // USE interaction
-        if (randomint 8 == 0) {
-            waitthread send_player_event "player_use" local.player "player" "&target_entity=door_1"
-            if (randomint 2 == 0) {
-                waitthread send_player_event "player_use_object_start" local.player "player" "&use_object=HealthCabinet"
-                waitthread send_player_event "player_use_object_finish" local.player "player" "&use_object=HealthCabinet"
+
+        local.shots = 1 + (randomint 5)
+        local.hits = 0
+        for (local.s = 0; local.s < local.shots; local.s++) {
+            waitthread call_weapon_fire local.attacker local.weapon (30 - local.s)
+            local.attacker.shots_fired++
+            
+            if (randomint 100 < local.attacker.skill) {
+                local.hits++
+                local.attacker.shots_hit++
+                waitthread call_weapon_hit local.attacker local.victim local.hitloc
+                waitthread call_player_damage local.victim local.attacker local.damage local.mod
+                waitthread call_player_pain local.victim local.attacker local.damage local.mod local.hitloc
             }
         }
-    end
 
-simulate_movement_extended local.players:
-        local.player = local.players[1 + (randomint local.players.size)]
-        waitthread simulate_movement_full local.player
-    end
+        if (local.hits >= 2 || (local.hits >= 1 && local.hitloc == "head")) {
+            local.is_headshot = 0
+            if (local.hitloc == "head" || local.hitloc == "helmet" || local.hitloc == "neck") {
+                local.is_headshot = 1
+                waitthread call_player_headshot local.attacker local.victim local.weapon
+                local.attacker.headshots++
+            }
 
-simulate_vehicle_events local.players:
-        local.player = local.players[1 + (randomint local.players.size)]
-    
-        waitthread send_player_event "vehicle_enter" local.player "player" "&entity=Jeep"
-        waitthread send_player_event "player_distance" local.player "player" ("&driven=" + (randomint 1000) + "&entity=Jeep")
-    
-        // Turret
-        waitthread send_player_event "turret_enter" local.player "player" "&entity=MG42_Jeep"
-        waitthread send_player_event "weapon_fire" local.player "player" "&weapon=MG42_Jeep"
-        waitthread send_player_event "turret_exit" local.player "player" "&entity=MG42_Jeep"
-    
-        waitthread send_player_event "vehicle_exit" local.player "player" "&entity=Jeep"
-    
-        if (randomint 20 == 0) {
-            waitthread send_player_event "vehicle_collision" local.player "player" "&velocity=500"
-            waitthread send_player_event "vehicle_death" local.player "player" "&entity=Jeep"
+            waitthread call_player_kill local.attacker local.victim local.weapon local.hitloc local.mod
+            waitthread call_player_death local.victim local.weapon
+
+            local.attacker.kills++
+            local.attacker.killstreak++
+            local.victim.deaths++
+            local.victim.killstreak = 0
+
+            waitthread call_score_change local.attacker "kills" 1 local.attacker.kills
+            waitthread call_score_change local.victim "deaths" 1 local.victim.deaths
+            waitthread call_player_respawn local.victim
+
+            if (randomint 3 == 0) {
+                waitthread call_weapon_drop local.victim local.weapon
+            }
+
+            level.seed_total_kills++
+            if (local.is_headshot) { level.seed_total_headshots++ }
+        } else {
+            if (randomint 10 == 0) {
+                waitthread call_weapon_no_ammo local.attacker local.weapon
+            }
+            if (randomint 5 == 0) {
+                waitthread call_weapon_reload local.attacker local.weapon
+                if (randomint 2 == 0) {
+                    waitthread call_weapon_reload_done local.attacker local.weapon
+                }
+            }
         }
-    end
+    }
+    // ========================================================================
+    // MELEE BASH (5%)
+    // ========================================================================
+    else if (local.type == 10) {
+        waitthread call_player_bash local.attacker local.victim
+        waitthread call_player_kill local.attacker local.victim "bash" "head" "MOD_BASH"
+        waitthread call_player_death local.victim "bash"
+        local.attacker.kills++
+        local.victim.deaths++
+        waitthread call_player_respawn local.victim
+        level.seed_total_kills++
+    }
+    // ========================================================================
+    // GRENADE (10%)
+    // ========================================================================
+    else if (local.type == 11 || local.type == 12) {
+        local.nade = "Frag Grenade"
+        if (randomint 2 == 0) { local.nade = "Stielhandgranate" }
 
-simulate_world_events local.players:
-        local.player = local.players[1 + (randomint local.players.size)]
-    
-        // Specific Pickups
+        waitthread call_grenade_throw local.attacker local.nade
+        waitthread call_grenade_explode local.attacker local.nade
+        waitthread call_explosion local.attacker local.attacker 200
+
+        local.victims_hit = 1 + (randomint 3)
+        for (local.v = 0; local.v < local.victims_hit; local.v++) {
+            local.splash_victim = local.players[1 + (randomint local.p_size)]
+            if (local.splash_victim != local.attacker) {
+                waitthread call_player_damage local.splash_victim local.attacker 75 "MOD_GRENADE"
+                if (randomint 2 == 0) {
+                    waitthread call_player_kill local.attacker local.splash_victim "grenade" "middle_torso" "MOD_GRENADE"
+                    waitthread call_player_death local.splash_victim "grenade"
+                    local.attacker.kills++
+                    local.splash_victim.deaths++
+                    waitthread call_player_respawn local.splash_victim
+                    level.seed_total_kills++
+                }
+            }
+        }
+    }
+    // ========================================================================
+    // ROADKILL (5%)
+    // ========================================================================
+    else if (local.type == 13) {
+        local.veh = level.vehicles[1 + (randomint level.vehicle_count)]
+        waitthread call_player_roadkill local.attacker local.victim local.veh
+        waitthread call_player_death local.victim local.veh
+        local.attacker.kills++
+        local.victim.deaths++
+        waitthread call_player_respawn local.victim
+        level.seed_total_kills++
+    }
+    // ========================================================================
+    // TELEFRAG (2%)
+    // ========================================================================
+    else if (local.type == 14) {
+        waitthread call_player_telefragged local.victim local.attacker
+        waitthread call_player_death local.victim "telefrag"
+        local.attacker.kills++
+        local.victim.deaths++
+        waitthread call_player_respawn local.victim
+        level.seed_total_kills++
+    }
+    // ========================================================================
+    // CRUSHED (2%)
+    // ========================================================================
+    else if (local.type == 15) {
+        waitthread call_player_crushed local.victim local.attacker
+        waitthread call_player_death local.victim "world"
+        local.victim.deaths++
+        waitthread call_player_respawn local.victim
+    }
+    // ========================================================================
+    // SUICIDE (3%)
+    // ========================================================================
+    else if (local.type == 16) {
+        waitthread call_player_suicide local.attacker
+        waitthread call_player_death local.attacker "self"
+        local.attacker.deaths++
+        local.attacker.killstreak = 0
+        waitthread call_player_respawn local.attacker
+    }
+    // ========================================================================
+    // TEAM KILL (3%)
+    // ========================================================================
+    else if (local.type == 17) {
+        local.teammate = NIL
+        for (local.t = 1; local.t <= local.p_size; local.t++) {
+            if (local.players[local.t].dmteam == local.attacker.dmteam && local.players[local.t] != local.attacker) {
+                local.teammate = local.players[local.t]
+                break
+            }
+        }
+        if (local.teammate != NIL) {
+            waitthread call_player_teamkill local.attacker local.teammate
+            waitthread call_player_death local.teammate local.weapon
+            local.teammate.deaths++
+            waitthread call_player_respawn local.teammate
+            if (randomint 5 == 0) {
+                waitthread call_teamkill_kick local.attacker 3
+            }
+        }
+    }
+    // ========================================================================
+    // WEAPON SWITCH (5%)
+    // ========================================================================
+    else if (local.type == 18) {
+        local.old_weapon = level.weapons[1 + (randomint level.weapon_count)]
+        local.new_weapon = level.weapons[1 + (randomint level.weapon_count)]
+        waitthread call_weapon_holster local.attacker local.old_weapon
+        waitthread call_weapon_change local.attacker local.old_weapon local.new_weapon local.attacker.smf_member_id
+        waitthread call_weapon_raise local.attacker local.new_weapon
+        waitthread call_weapon_ready local.attacker local.new_weapon
+    }
+    // ========================================================================
+    // SNIPER HEADSHOT
+    // ========================================================================
+    else {
+        local.sniper = "Springfield"
+        if (randomint 2 == 0) { local.sniper = "Kar98 Sniper" }
+
+        waitthread call_weapon_fire local.attacker local.sniper 5
+        waitthread call_weapon_hit local.attacker local.victim "head"
+        waitthread call_player_headshot local.attacker local.victim local.sniper
+        waitthread call_player_kill local.attacker local.victim local.sniper "head" "MOD_RIFLE"
+        waitthread call_player_death local.victim local.sniper
+        local.attacker.kills++
+        local.attacker.headshots++
+        local.victim.deaths++
+        waitthread call_player_respawn local.victim
+        level.seed_total_kills++
+        level.seed_total_headshots++
+    }
+end
+
+// ============================================================================
+// SIMULATE MOVEMENT - Calls movement handlers
+// ============================================================================
+simulate_movement local.player:
+    local.walked = 50 + (randomint 200)
+    local.sprinted = 20 + (randomint 150)
+    local.swam = 0
+    local.driven = 0
+    if (randomint 10 == 0) { local.swam = 10 + (randomint 50) }
+    if (randomint 5 == 0) { local.driven = 100 + (randomint 500) }
+
+    waitthread call_player_distance local.player local.walked local.sprinted local.swam local.driven
+
+    if (randomint 3 == 0) {
+        waitthread call_player_jump local.player
+        local.fall_vel = randomint 300
+        waitthread call_player_land local.player local.fall_vel
+    }
+
+    local.stance = randomint 4
+    if (local.stance == 0) {
+        waitthread call_player_crouch local.player
+    } else if (local.stance == 1) {
+        waitthread call_player_prone local.player
+    } else if (local.stance == 2) {
+        waitthread call_player_stand local.player
+    }
+
+    if (randomint 10 == 0) {
+        local.ladder = spawn info_notnull
+        waitthread call_ladder_mount local.player local.ladder
+        waitthread call_ladder_dismount local.player local.ladder
+        local.ladder remove
+    }
+
+    if (randomint 8 == 0) {
+        local.door = spawn info_notnull
+        waitthread call_player_use local.player local.door
+        local.door remove
         if (randomint 2 == 0) {
-            waitthread send_player_event "health_pickup" local.player "player" "&item_name=MedKit&count=25"
-        } else {
-            waitthread send_player_event "ammo_pickup" local.player "player" "&item_name=ThompsonAmmo&count=30"
+            waitthread call_player_use_object_start local.player "HealthCabinet"
+            waitthread call_player_use_object_finish local.player "HealthCabinet"
         }
-    
-        waitthread send_player_event "item_pickup" local.player "player" "&item_name=Binoculars" // Generic
-    
-        // Drops & Respawns
-        waitthread send_player_event "item_drop" local.player "player" "&item_name=MedKit"
-        waitthread send_event "item_respawn" "&item_name=MedKit"
-    
-        waitthread send_player_event "door_open" local.player "player" ""
-        waitthread send_player_event "door_close" local.player "player" ""
-        waitthread send_event "explosion" "&damage=200&radius=500"
-    end
+    }
+end
 
-    // ========================================================================
-    // SIMULATE OBJECTIVE EVENTS - Bomb plant/defuse, flag capture
-    // ========================================================================
+// ============================================================================
+// SIMULATE VEHICLE EVENTS
+// ============================================================================
+simulate_vehicle_events local.players:
+    local.p_size = local.players.size
+    if (local.p_size == NIL || local.p_size < 1) { end }
+    local.player = local.players[1 + (randomint local.p_size)]
+
+    local.veh = spawn info_notnull
+    local.veh.targetname = "Jeep"
+    local.turret = spawn info_notnull
+    local.turret.targetname = "MG42_Jeep"
+
+    waitthread call_vehicle_enter local.player local.veh
+    waitthread call_turret_enter local.player local.turret
+    waitthread call_weapon_fire local.player "MG42_Jeep" 100
+    waitthread call_turret_exit local.player local.turret
+    waitthread call_vehicle_exit local.player local.veh
+
+    if (randomint 20 == 0) {
+        waitthread call_vehicle_collision local.player local.veh
+        waitthread call_vehicle_death local.player local.player
+    }
+
+    local.veh remove
+    local.turret remove
+end
+
+// ============================================================================
+// SIMULATE WORLD EVENTS
+// ============================================================================
+simulate_world_events local.players:
+    local.p_size = local.players.size
+    if (local.p_size == NIL || local.p_size < 1) { end }
+    local.player = local.players[1 + (randomint local.p_size)]
+
+    if (randomint 2 == 0) {
+        waitthread call_health_pickup local.player 25
+    } else {
+        waitthread call_ammo_pickup local.player "ThompsonAmmo" 30
+    }
+
+    waitthread call_item_pickup local.player "Binoculars" 1
+    waitthread call_item_drop local.player "MedKit"
+    waitthread call_item_respawn NIL "MedKit"
+    waitthread call_armor_pickup local.player 50
+
+    local.door = spawn info_notnull
+    waitthread call_door_open local.door local.player
+    waitthread call_door_close local.door
+    local.door remove
+end
+
+// ============================================================================
+// SIMULATE OBJECTIVE EVENTS
+// ============================================================================
 simulate_objective_events local.players:
-        local.player = local.players[1 + (randomint local.players.size)]
-        local.type = randomint 5
-    
-        if (local.type == 0) {
-            // Bomb plant
-            waitthread send_player_event "player_use_object_start" local.player "player" "&use_object=bomb_site_a"
-            waitthread send_player_event "player_use_object_finish" local.player "player" "&use_object=bomb_site_a"
-            waitthread send_event "objective_update" "&objective_index=1&new_status=armed"
-        } else if (local.type == 1) {
-            // Bomb defuse
-            waitthread send_player_event "player_use_object_start" local.player "player" "&use_object=bomb_site_a"
-            waitthread send_player_event "player_use_object_finish" local.player "player" "&use_object=bomb_site_a"
-            waitthread send_event "objective_update" "&objective_index=1&new_status=defused"
-        } else if (local.type == 2) {
-            // Flag capture
-            waitthread send_event "objective_capture" ("&objective_entity=flag_allies&controller_team=" + local.player.team)
-        } else if (local.type == 3) {
-            // TOW capture
-            waitthread send_event "objective_capture" ("&objective_entity=tow_point_1&controller_team=" + local.player.team)
-        } else {
-            // Generic objective update
-            waitthread send_event "objective_update" ("&objective_index=" + (randomint 5) + "&new_status=complete")
-        }
-    end
+    local.p_size = local.players.size
+    if (local.p_size == NIL || local.p_size < 1) { end }
+    local.player = local.players[1 + (randomint local.p_size)]
+    local.type = randomint 5
 
-    // ========================================================================
-    // SIMULATE BOT EVENTS - AI bot activity
-    // ========================================================================
+    if (local.type == 0) {
+        waitthread call_player_use_object_start local.player "bomb_site_a"
+        waitthread call_player_use_object_finish local.player "bomb_site_a"
+        waitthread call_objective_update 1 "armed"
+    } else if (local.type == 1) {
+        waitthread call_player_use_object_start local.player "bomb_site_a"
+        waitthread call_player_use_object_finish local.player "bomb_site_a"
+        waitthread call_objective_update 1 "defused"
+    } else if (local.type == 2) {
+        waitthread call_objective_capture local.player local.player.dmteam
+    } else if (local.type == 3) {
+        waitthread call_objective_capture local.player local.player.dmteam
+    } else {
+        waitthread call_objective_update (randomint 5) "complete"
+    }
+end
+
+// ============================================================================
+// SIMULATE BOT EVENTS
+// ============================================================================
 simulate_bot_events local.players:
-    // Spawn some bots
-        for (local.b = 1; local.b <= 4; local.b++) {
-            waitthread send_event "bot_spawn" ("&bot_entity=bot_" + local.b)
-        
-            // Bot states
-            waitthread send_event "bot_roam" ("&bot_player=bot_" + local.b)
-            waitthread send_event "bot_curious" ("&bot_player=bot_" + local.b)
-            waitthread send_event "bot_attack" ("&bot_player=bot_" + local.b)
-        
-            // Bot killed by player
-            local.killer = local.players[1 + (randomint local.players.size)]
-            if (local.killer != NIL) {
-                waitthread send_event "bot_killed" ("&bot_entity=bot_" + local.b + "&attacker=" + local.killer.name)
-            }
-        }
-    end
+    for (local.b = 1; local.b <= 4; local.b++) {
+        local.bot = spawn info_notnull
+        local.bot.netname = "bot_" + local.b
+        local.bot.guid = "bot_guid_" + local.b
+        local.bot.dmteam = "axis"
+        local.bot.origin = '0 0 0'
 
-    // ========================================================================
-    // SIMULATE ACTOR EVENTS - NPC actors in maps
-    // ========================================================================
-simulate_actor_events local.players:
-    // Spawn some actors
-        for (local.a = 1; local.a <= 3; local.a++) {
-            waitthread send_event "actor_spawn" ("&actor=actor_" + local.a)
-    
-            // Actor killed by player
-            local.p_size = local.players.size
-            if (local.p_size == NIL || local.p_size == 0) { continue }
-                local.killer = local.players[1 + (randomint local.p_size)]
-            if (local.killer != NIL) {
-                waitthread send_event "actor_killed" ("&actor=actor_" + local.a + "&attacker=" + local.killer.name)
-            }
-        }
-    end
+        waitthread call_bot_spawn local.bot
+        waitthread call_bot_roam local.bot
+        waitthread call_bot_curious local.bot
+        waitthread call_bot_attack local.bot
 
-simulate_gameflow_events local.players:
         local.p_size = local.players.size
-        if (local.p_size == NIL || local.p_size == 0) { end }
-            local.idx = 1 + (randomint local.p_size)
-        local.player = local.players[local.idx]
-        if (local.player == NIL) { end }
-    
-            local.type = randomint 8
-    
-        if (local.type == 0) {
-            // Vote
-            local.vote_map = level.maps[1 + (randomint level.map_count)]
-            waitthread send_player_event "vote_start" local.player "player" ("&vote_name=map&vote_string=" + local.vote_map)
-            if (randomint 100 > 50) {
-                waitthread send_event "vote_passed" ("&vote_name=map&vote_string=" + local.vote_map + "&yes_count=8&no_count=4")
-            } else {
-                waitthread send_event "vote_failed" ("&vote_name=map&fail_reason=not enough votes&yes_count=3&no_count=9")
-            }
-        } else if (local.type == 1) {
-            // Userinfo change
-            waitthread send_player_event "client_userinfo_changed" local.player "player" "&key=rate&value=25000"
-        } else if (local.type == 2) {
-            // Team swap
-            local.old_team = local.player.team
-            local.new_team = "spectator"
-            waitthread send_player_event "team_join" local.player "player" ("&old_team=" + local.old_team + "&new_team=" + local.new_team)
-        } else if (local.type == 3) {
-            // Inactivity drop
-            waitthread send_player_event "player_inactivity_drop" local.player "player" ""
-        } else if (local.type == 4) {
-            // Spectate
-            waitthread send_player_event "player_spectate" local.player "player" ""
-        } else if (local.type == 5) {
-            // Chat messages
-            local.messages[1] = "Nice shot!"
-            local.messages[2] = "gg"
-            local.messages[3] = "lol"
-            local.messages[4] = "camping!"
-            local.messages[5] = "headshot!"
-            local.msg = local.messages[1 + (randomint 5)]
-            waitthread send_player_event "player_say" local.player "player" ("&message_text=" + local.msg)
-        } else if (local.type == 6) {
-            // Freeze
-            waitthread send_player_event "player_freeze" local.player "player" "&frozen_state=1"
-            waitthread send_player_event "player_freeze" local.player "player" "&frozen_state=0"
+        if (local.p_size > 0) {
+            local.killer = local.players[1 + (randomint local.p_size)]
+            waitthread call_bot_killed local.bot local.killer
+        }
+
+        local.bot remove
+    }
+end
+
+// ============================================================================
+// SIMULATE ACTOR EVENTS
+// ============================================================================
+simulate_actor_events local.players:
+    for (local.a = 1; local.a <= 3; local.a++) {
+        local.actor = spawn info_notnull
+        local.actor.netname = "actor_" + local.a
+        local.actor.origin = '0 0 0'
+
+        waitthread call_actor_spawn local.actor
+
+        local.p_size = local.players.size
+        if (local.p_size > 0) {
+            local.killer = local.players[1 + (randomint local.p_size)]
+            waitthread call_actor_killed local.actor local.killer
+        }
+
+        local.actor remove
+    }
+end
+
+// ============================================================================
+// SIMULATE GAMEFLOW/SOCIAL EVENTS
+// ============================================================================
+simulate_gameflow_events local.players:
+    local.p_size = local.players.size
+    if (local.p_size == NIL || local.p_size < 1) { end }
+    local.player = local.players[1 + (randomint local.p_size)]
+    local.type = randomint 8
+
+    if (local.type == 0) {
+        local.vote_map = level.maps[1 + (randomint level.map_count)]
+        waitthread call_vote_start local.player "map" local.vote_map
+        if (randomint 100 > 50) {
+            waitthread call_vote_passed "map" local.vote_map 8 4
         } else {
-            // Server console command
-            waitthread send_event "server_console_command" "&command_string=status"
+            waitthread call_vote_failed "map" "not enough votes" 3 9
         }
-    end
+    } else if (local.type == 1) {
+        waitthread call_client_userinfo_changed local.player
+    } else if (local.type == 2) {
+        waitthread call_team_join local.player local.player.dmteam "spectator"
+    } else if (local.type == 3) {
+        waitthread call_player_inactivity_drop local.player
+    } else if (local.type == 4) {
+        waitthread call_player_spectate local.player
+    } else if (local.type == 5) {
+        local.messages[1] = "Nice shot!"
+        local.messages[2] = "gg"
+        local.messages[3] = "lol"
+        local.messages[4] = "camping!"
+        local.messages[5] = "headshot!"
+        local.msg = local.messages[1 + (randomint 5)]
+        waitthread call_player_say local.player local.msg
+    } else if (local.type == 6) {
+        waitthread call_player_freeze local.player 1
+        waitthread call_player_freeze local.player 0
+    } else {
+        waitthread call_server_console_command "status"
+    }
+end
 
-    // ===================================
-    // GENERIC SEND HELPERS
-    // ===================================
+// ============================================================================
+// DIRECT HANDLER CALL WRAPPERS
+// These call the tracker handlers directly with fake parameters
+// ============================================================================
 
-send_event local.type local.extra:
-        local.payload = waitthread global/tracker_common.scr::build_base_payload local.type
-        if (local.extra != NIL) { local.payload = local.payload + local.extra }
-            thread global/tracker_common.scr::queue_event local.payload
-    end
+// ==== LIFECYCLE EVENTS ====
+call_server_process_start:
+    thread global/tracker.scr::on_server_process_start
+    level.seed_total_events++
+end
 
-send_player_event local.type local.player local.prefix local.extra:
-        local.payload = waitthread global/tracker_common.scr::build_base_payload local.type
-        local.payload = local.payload + waitthread build_sim_player_payload local.player local.prefix
-        if (local.extra != NIL) { local.payload = local.payload + local.extra }
-            thread global/tracker_common.scr::queue_event local.payload
-    end
+call_server_process_quit:
+    thread global/tracker.scr::on_server_process_quit
+    level.seed_total_events++
+end
 
-send_combat_event local.type local.attacker local.victim local.extra:
-        local.payload = waitthread global/tracker_common.scr::build_base_payload local.type
-        local.payload = local.payload + waitthread build_sim_player_payload local.attacker "attacker"
-        local.payload = local.payload + waitthread build_sim_player_payload local.victim "victim"
-        if (local.extra != NIL) { local.payload = local.payload + local.extra }
-            thread global/tracker_common.scr::queue_event local.payload
-    end
+// ==== MAP EVENTS ====
+call_map_init:
+    thread global/tracker.scr::on_map_init
+    level.seed_total_events++
+end
 
-    // ===================================
-    // DATA HELPERS
-    // ===================================
+call_map_start:
+    thread global/tracker.scr::on_map_start NIL
+    level.seed_total_events++
+end
 
-build_sim_player_payload local.sim_player local.prefix:
-        if (local.sim_player == NIL) {
-            end ""
-        }
-        if (local.prefix == NIL) {
-            local.prefix = "player"
-        }
-    
-        local.payload = "&" + local.prefix + "_name=" + local.sim_player.name
-        local.payload = local.payload + "&" + local.prefix + "_guid=" + local.sim_player.guid
-        local.payload = local.payload + "&" + local.prefix + "_smf_id=" + local.sim_player.smf_id
-        local.payload = local.payload + "&" + local.prefix + "_team=" + local.sim_player.team
-        local.payload = local.payload + "&" + local.prefix + "_x=" + (randomint 1000)
-        local.payload = local.payload + "&" + local.prefix + "_y=" + (randomint 1000)
-        local.payload = local.payload + "&" + local.prefix + "_z=0"
-        local.payload = local.payload + "&" + local.prefix + "_pitch=0"
-        local.payload = local.payload + "&" + local.prefix + "_yaw=0"
-        local.payload = local.payload + "&" + local.prefix + "_stance=stand"
-        end local.payload
-    
+call_map_ready local.map_name local.gametype:
+    thread global/tracker.scr::on_map_ready NIL
+    level.seed_total_events++
+end
+
+call_map_shutdown:
+    thread global/tracker.scr::on_map_shutdown
+    level.seed_total_events++
+end
+
+call_map_load_start local.map_name:
+    thread global/tracker_gameflow_ext.scr::on_map_load_start local.map_name
+    level.seed_total_events++
+end
+
+call_map_load_end local.map_name local.gametype:
+    thread global/tracker_gameflow_ext.scr::on_map_load_end local.map_name local.gametype
+    level.seed_total_events++
+end
+
+call_map_change_start local.current_map local.next_map:
+    thread global/tracker_gameflow_ext.scr::on_map_change_start local.current_map local.next_map
+    level.seed_total_events++
+end
+
+call_map_restart local.map_name:
+    thread global/tracker_gameflow_ext.scr::on_map_restart local.map_name
+    level.seed_total_events++
+end
+
+// ==== GAME FLOW EVENTS ====
+call_game_init local.gametype:
+    thread global/tracker_gameflow_ext.scr::on_game_init local.gametype
+    level.seed_total_events++
+end
+
+call_game_start:
+    thread global/tracker_gameflow_ext.scr::on_game_start
+    level.seed_total_events++
+end
+
+call_game_end:
+    thread global/tracker_gameflow_ext.scr::on_game_end
+    level.seed_total_events++
+end
+
+call_round_start:
+    thread global/tracker_gameflow_ext.scr::on_round_start
+    level.seed_total_events++
+end
+
+call_round_end:
+    thread global/tracker_gameflow_ext.scr::on_round_end
+    level.seed_total_events++
+end
+
+call_team_win local.winning_team_num:
+    thread global/tracker_gameflow_ext.scr::on_team_win local.winning_team_num
+    level.seed_total_events++
+end
+
+call_match_end local.map_name local.gametype local.winning_team:
+    thread global/tracker_gameflow_ext.scr::on_match_end local.map_name local.gametype local.winning_team
+    level.seed_total_events++
+end
+
+call_intermission_start local.map_name local.gametype:
+    thread global/tracker_gameflow_ext.scr::on_intermission_start local.map_name local.gametype
+    level.seed_total_events++
+end
+
+call_warmup_start local.map_name:
+    thread global/tracker_gameflow_ext.scr::on_warmup_start local.map_name
+    level.seed_total_events++
+end
+
+call_warmup_end local.map_name:
+    thread global/tracker_gameflow_ext.scr::on_warmup_end local.map_name
+    level.seed_total_events++
+end
+
+call_objective_update local.objective_index local.new_status:
+    thread global/tracker_gameflow_ext.scr::on_objective_update local.objective_index local.new_status
+    level.seed_total_events++
+end
+
+call_objective_capture local.player local.controller_team:
+    thread global/tracker_gameflow_ext.scr::on_objective_capture local.player local.controller_team
+    level.seed_total_events++
+end
+
+call_server_console_command local.command_string:
+    thread global/tracker_gameflow_ext.scr::on_server_console_command local.command_string
+    level.seed_total_events++
+end
+
+// ==== CLIENT EVENTS ====
+call_client_connect local.player local.client_num:
+    thread global/tracker.scr::on_client_connect local.client_num
+    level.seed_total_events++
+end
+
+call_client_begin local.player:
+    thread global/tracker.scr::on_client_begin local.player
+    level.seed_total_events++
+end
+
+call_client_disconnect local.player:
+    thread global/tracker.scr::on_client_disconnect local.player
+    level.seed_total_events++
+end
+
+call_client_userinfo_changed local.player:
+    thread global/tracker_client_ext.scr::on_client_userinfo_changed local.player
+    level.seed_total_events++
+end
+
+call_player_inactivity_drop local.player:
+    thread global/tracker_client_ext.scr::on_player_inactivity_drop local.player
+    level.seed_total_events++
+end
+
+// ==== TEAM/VOTE EVENTS ====
+call_team_join local.player local.old_team local.new_team:
+    thread global/tracker.scr::on_team_join local.player local.old_team local.new_team
+    level.seed_total_events++
+end
+
+call_vote_start local.player local.vote_name local.vote_string:
+    thread global/tracker_client_ext.scr::on_vote_start local.player local.vote_name local.vote_string
+    level.seed_total_events++
+end
+
+call_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
+    thread global/tracker_client_ext.scr::on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count
+    level.seed_total_events++
+end
+
+call_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count:
+    thread global/tracker_client_ext.scr::on_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count
+    level.seed_total_events++
+end
+
+// ==== COMBAT EVENTS ====
+call_player_kill local.attacker local.victim local.inflictor local.location local.meansofdeath:
+    thread global/tracker_combat_ext.scr::on_player_kill local.attacker local.attacker local.victim local.inflictor local.location local.meansofdeath
+    level.seed_total_events++
+end
+
+call_player_death local.player local.inflictor:
+    thread global/tracker_combat_ext.scr::on_player_death local.player local.inflictor
+    level.seed_total_events++
+end
+
+call_player_damage local.victim local.attacker local.damage local.meansofdeath:
+    thread global/tracker_combat_ext.scr::on_player_damage local.victim local.attacker local.damage local.meansofdeath
+    level.seed_total_events++
+end
+
+call_player_pain local.victim local.attacker local.damage local.meansofdeath local.hit_location:
+    thread global/tracker_combat_ext.scr::on_player_pain local.victim local.attacker local.damage local.meansofdeath local.hit_location
+    level.seed_total_events++
+end
+
+call_player_headshot local.attacker local.victim local.weapon:
+    thread global/tracker_combat_ext.scr::on_player_headshot local.attacker local.victim local.weapon
+    level.seed_total_events++
+end
+
+call_player_suicide local.player:
+    thread global/tracker_combat_ext.scr::on_player_suicide local.player
+    level.seed_total_events++
+end
+
+call_player_crushed local.victim local.attacker:
+    thread global/tracker_combat_ext.scr::on_player_crushed local.victim local.attacker
+    level.seed_total_events++
+end
+
+call_player_telefragged local.victim local.attacker:
+    thread global/tracker_combat_ext.scr::on_player_telefragged local.victim local.attacker
+    level.seed_total_events++
+end
+
+call_player_roadkill local.attacker local.victim local.vehicle:
+    thread global/tracker_combat_ext.scr::on_player_roadkill local.attacker local.victim
+    level.seed_total_events++
+end
+
+call_player_bash local.attacker local.victim:
+    thread global/tracker_combat_ext.scr::on_player_bash local.attacker local.victim
+    level.seed_total_events++
+end
+
+call_player_teamkill local.attacker local.victim:
+    thread global/tracker_combat_ext.scr::on_player_teamkill local.attacker local.victim
+    level.seed_total_events++
+end
+
+// ==== WEAPON EVENTS ====
+call_weapon_fire local.player local.weapon_name local.ammo_remaining:
+    thread global/tracker_combat_ext.scr::on_weapon_fire local.player local.weapon_name local.ammo_remaining
+    level.seed_total_events++
+end
+
+call_weapon_hit local.attacker local.target local.hit_location:
+    thread global/tracker_combat_ext.scr::on_weapon_hit local.attacker local.target local.hit_location
+    level.seed_total_events++
+end
+
+call_weapon_reload local.player local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_reload local.player local.weapon_name
+    level.seed_total_events++
+end
+
+call_weapon_reload_done local.player local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_reload_done local.player local.weapon_name
+    level.seed_total_events++
+end
+
+call_weapon_change local.player local.old_weapon local.new_weapon local.client_num:
+    thread global/tracker_combat_ext.scr::on_weapon_change local.player local.old_weapon local.new_weapon local.client_num
+    level.seed_total_events++
+end
+
+call_weapon_ready local.player local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_ready local.player local.weapon_name
+    level.seed_total_events++
+end
+
+call_weapon_no_ammo local.player local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_no_ammo local.player local.weapon_name
+    level.seed_total_events++
+end
+
+call_weapon_holster local.player local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_holster local.player local.weapon_name
+    level.seed_total_events++
+end
+
+call_weapon_raise local.player local.weapon_name:
+    thread global/tracker_combat_ext.scr::on_weapon_raise local.player local.weapon_name
+    level.seed_total_events++
+end
+
+call_weapon_drop local.player local.weapon_entity:
+    thread global/tracker_combat_ext.scr::on_weapon_drop local.player local.weapon_entity
+    level.seed_total_events++
+end
+
+call_grenade_throw local.player local.projectile_entity:
+    thread global/tracker_combat_ext.scr::on_grenade_throw local.player local.projectile_entity
+    level.seed_total_events++
+end
+
+call_grenade_explode local.player local.grenade_entity:
+    thread global/tracker_combat_ext.scr::on_grenade_explode local.player local.grenade_entity
+    level.seed_total_events++
+end
+
+// ==== MOVEMENT EVENTS ====
+call_player_spawn local.player:
+    thread global/tracker_movement_ext.scr::on_player_spawn local.player
+    level.seed_total_events++
+end
+
+call_player_respawn local.player:
+    thread global/tracker_movement_ext.scr::on_player_respawn local.player
+    level.seed_total_events++
+end
+
+call_player_jump local.player:
+    thread global/tracker.scr::on_player_jump local.player
+    level.seed_total_events++
+end
+
+call_player_land local.player local.fall_velocity:
+    thread global/tracker.scr::on_player_land local.player local.fall_velocity
+    level.seed_total_events++
+end
+
+call_player_crouch local.player:
+    thread global/tracker.scr::on_player_crouch local.player
+    level.seed_total_events++
+end
+
+call_player_prone local.player:
+    thread global/tracker.scr::on_player_prone local.player
+    level.seed_total_events++
+end
+
+call_player_stand local.player:
+    thread global/tracker_movement_ext.scr::on_player_stand local.player
+    level.seed_total_events++
+end
+
+call_player_distance local.player local.walked local.sprinted local.swam local.driven:
+    thread global/tracker.scr::on_player_distance local.player local.walked local.sprinted local.swam local.driven
+    level.seed_total_events++
+end
+
+call_ladder_mount local.player local.ladder_entity:
+    thread global/tracker.scr::on_ladder_mount local.player local.ladder_entity
+    level.seed_total_events++
+end
+
+call_ladder_dismount local.player local.ladder_entity:
+    thread global/tracker.scr::on_ladder_dismount local.player local.ladder_entity
+    level.seed_total_events++
+end
+
+// ==== INTERACTION EVENTS ====
+call_player_use local.player local.target_entity:
+    thread global/tracker.scr::on_player_use local.player local.target_entity
+    level.seed_total_events++
+end
+
+call_player_use_object_start local.player local.use_object:
+    thread global/tracker_interaction_ext.scr::on_player_use_object_start local.player local.use_object
+    level.seed_total_events++
+end
+
+call_player_use_object_finish local.player local.use_object:
+    thread global/tracker_interaction_ext.scr::on_player_use_object_finish local.player local.use_object
+    level.seed_total_events++
+end
+
+call_player_spectate local.player:
+    thread global/tracker_interaction_ext.scr::on_player_spectate local.player
+    level.seed_total_events++
+end
+
+call_player_freeze local.player local.frozen_state:
+    thread global/tracker_interaction_ext.scr::on_player_freeze local.player local.frozen_state
+    level.seed_total_events++
+end
+
+call_player_say local.player local.message_text:
+    thread global/tracker_interaction_ext.scr::on_player_say local.player local.message_text
+    level.seed_total_events++
+end
+
+// ==== ITEM EVENTS ====
+call_item_pickup local.player local.item_name local.amount:
+    thread global/tracker_items_ext.scr::on_item_pickup local.player local.item_name local.amount
+    level.seed_total_events++
+end
+
+call_item_drop local.player local.item_name:
+    thread global/tracker_items_ext.scr::on_item_drop local.player local.item_name
+    level.seed_total_events++
+end
+
+call_item_respawn local.player local.item_name:
+    thread global/tracker_items_ext.scr::on_item_respawn local.player local.item_name
+    level.seed_total_events++
+end
+
+call_health_pickup local.player local.heal_amount:
+    thread global/tracker_items_ext.scr::on_health_pickup local.player local.heal_amount
+    level.seed_total_events++
+end
+
+call_ammo_pickup local.player local.ammo_name local.amount:
+    thread global/tracker_items_ext.scr::on_ammo_pickup local.player local.ammo_name local.amount
+    level.seed_total_events++
+end
+
+call_armor_pickup local.player local.armor_amount:
+    thread global/tracker_items_ext.scr::on_armor_pickup local.player local.armor_amount
+    level.seed_total_events++
+end
+
+// ==== VEHICLE/TURRET EVENTS ====
+call_vehicle_enter local.player local.vehicle_entity:
+    thread global/tracker_vehicle_ext.scr::on_vehicle_enter local.player local.vehicle_entity
+    level.seed_total_events++
+end
+
+call_vehicle_exit local.player local.vehicle_entity:
+    thread global/tracker_vehicle_ext.scr::on_vehicle_exit local.player local.vehicle_entity
+    level.seed_total_events++
+end
+
+call_vehicle_death local.player local.attacker:
+    thread global/tracker_vehicle_ext.scr::on_vehicle_death local.player local.attacker
+    level.seed_total_events++
+end
+
+call_vehicle_collision local.player local.other_entity:
+    thread global/tracker_vehicle_ext.scr::on_vehicle_collision local.player local.other_entity
+    level.seed_total_events++
+end
+
+call_turret_enter local.player local.turret_entity:
+    thread global/tracker_vehicle_ext.scr::on_turret_enter local.player local.turret_entity
+    level.seed_total_events++
+end
+
+call_turret_exit local.player local.turret_entity:
+    thread global/tracker_vehicle_ext.scr::on_turret_exit local.player local.turret_entity
+    level.seed_total_events++
+end
+
+// ==== WORLD EVENTS ====
+call_door_open local.door_entity local.activator:
+    thread global/tracker_world_ext.scr::on_door_open local.door_entity local.activator
+    level.seed_total_events++
+end
+
+call_door_close local.door_entity:
+    thread global/tracker_world_ext.scr::on_door_close local.door_entity
+    level.seed_total_events++
+end
+
+call_explosion local.location local.attacker local.damage:
+    thread global/tracker_world_ext.scr::on_explosion local.location local.attacker local.damage
+    level.seed_total_events++
+end
+
+// ==== BOT/ACTOR EVENTS ====
+call_actor_spawn local.actor:
+    thread global/tracker_bot_ext.scr::on_actor_spawn local.actor
+    level.seed_total_events++
+end
+
+call_actor_killed local.actor local.attacker:
+    thread global/tracker_bot_ext.scr::on_actor_killed local.actor local.attacker
+    level.seed_total_events++
+end
+
+call_bot_spawn local.bot:
+    thread global/tracker_bot_ext.scr::on_bot_spawn local.bot
+    level.seed_total_events++
+end
+
+call_bot_killed local.bot local.attacker:
+    thread global/tracker_bot_ext.scr::on_bot_killed local.bot local.attacker
+    level.seed_total_events++
+end
+
+call_bot_roam local.bot:
+    thread global/tracker_bot_ext.scr::on_bot_roam local.bot
+    level.seed_total_events++
+end
+
+call_bot_curious local.bot:
+    thread global/tracker_bot_ext.scr::on_bot_curious local.bot
+    level.seed_total_events++
+end
+
+call_bot_attack local.bot:
+    thread global/tracker_bot_ext.scr::on_bot_attack local.bot
+    level.seed_total_events++
+end
+
+// ==== SCORE EVENTS ====
+call_score_change local.player local.score_type local.delta local.new_total:
+    thread global/tracker_score_ext.scr::on_score_change local.player local.score_type local.delta local.new_total
+    level.seed_total_events++
+end
+
+call_teamkill_kick local.player local.teamkill_count:
+    thread global/tracker_score_ext.scr::on_teamkill_kick local.player local.teamkill_count
+    level.seed_total_events++
+end
+
+// ============================================================================
+// DEPRECATED ALIASES (for backwards compatibility)
+// ============================================================================
 get_fake_players:
-        // Deprecated - use create_mega_player_roster instead
-            end waitthread create_mega_player_roster
+    end waitthread create_fake_player_roster

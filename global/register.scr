@@ -6,10 +6,7 @@
 // ============================================================================
 
 check_registration:
-    local.token = getcvar "opm_server_token"
-    
-    local.token = getcvar "opm_server_token"
-
+    local.token = getcvar "opm_server_token"    
     local.id = getcvar "opm_server_id"
 
     if (local.token == "" || local.token == "MISSING_TOKEN") {
@@ -31,7 +28,7 @@ end
 register_server:
     if (level.opm_registered) { end }
     
-        // Build registration payload
+    // Build registration payload
     local.name = getcvar "sv_hostname"
     if (local.name == "") {
         local.name = "OpenMOHAA Server"
@@ -56,10 +53,9 @@ register_server:
     // Use JSON payload
     local.json = "{\"name\":\"" + local.name + "\",\"ip_address\":\"" + local.ip + "\",\"port\":" + local.port + "}"
     
-    // TODO: // curl_post not available in this engine build
     dprintln ("[STUB] Would POST registration to: " + local.url)
     
-    curl_post local.url local.json on_register_response
+    curl_post local.url NIL local.json on_register_response
 end
 
 on_register_response local.success local.response local.http_code:
@@ -99,7 +95,7 @@ end
 save_registration local.id local.token:
     if (level.opm_registration_in_progress) { end }
     
-        // Build config content
+    // Build config content
     local.content = "// Automatically generated OPM Stats Registration\n"
     local.content = local.content + "set opm_server_id \"" + local.id + "\"\n"
     local.content = local.content + "set opm_server_token \"" + local.token + "\"\n"
