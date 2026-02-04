@@ -15,18 +15,18 @@ check_registration:
         dprintln "------------------------------------------------"
         thread register_server
     } else {
-        // Ensure level variables are populated even if loaded from config
-        level.server_id = local.id
-        level.server_token = local.token
+        // Ensure game variables are populated even if loaded from config
+        game.server_id = local.id
+        game.server_token = local.token
         
-        if (level.tracker_debug) {
+        if (game.tracker_debug) {
             dprintln ("OPM TRACKER: Server identifies as: " + local.id)
         }
     }
 end
 
 register_server:
-    if (level.opm_registered) { end }
+    if (game.opm_registered) { end }
     
     // Build registration payload
     local.name = getcvar "sv_hostname"
@@ -48,14 +48,19 @@ register_server:
     local.data = local.data + "&ip_address=" + local.ip
     local.data = local.data + "&port=" + local.port
 
-    local.url = level.api_base_url + "/api/v1/servers/register"
+    local.url = game.api_base_url + "/api/v1/servers/register"
 
     // Use JSON payload
     local.json = "{\"name\":\"" + local.name + "\",\"ip_address\":\"" + local.ip + "\",\"port\":" + local.port + "}"
     
+    local.headers = makearray
+    "Content-Type" "application/json"
+    endarray
+
     dprintln ("[STUB] Would POST registration to: " + local.url)
     
-    curl_post local.url NIL local.json on_register_response
+    // curl_post calling convention: url, headers, body, callback
+    curl_post local.url local.headers local.json on_register_response
 end
 
 on_register_response local.success local.response local.http_code:
@@ -70,9 +75,9 @@ on_register_response local.success local.response local.http_code:
             setcvar "opm_server_id" local.id
             setcvar "opm_server_token" local.token
             
-            // Update local level variables immediately
-            level.server_id = local.id
-            level.server_token = local.token
+            // Update game variables immediately
+            game.server_id = local.id
+            game.server_token = local.token
 
             dprintln ("OPM TRACKER: Assigned ID: " + local.id)
             dprintln "OPM TRACKER: Credentials saved in memory."
@@ -93,7 +98,7 @@ on_register_response local.success local.response local.http_code:
 end
 
 save_registration local.id local.token:
-    if (level.opm_registration_in_progress) { end }
+    if (game.opm_registration_in_progress) { end }
     
     // Build config content
     local.content = "// Automatically generated OPM Stats Registration\n"

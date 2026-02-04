@@ -5,29 +5,29 @@
 on_score_change local.player local.type local.delta local.total:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_score_change | Player: " local.player " | Type: " local.type " | Delta: " local.delta " | Total: " local.total
     if (local.player == NIL) { end }
-        if (typeof local.player != "listener") { end }
-            if (local.type == NIL) { local.type = "unknown" }
-                if (local.delta == NIL) { local.delta = 0 }
-                    if (local.total == NIL) { local.total = 0 }
+    if (typeof local.player != "listener") { end }
+    if (local.type == NIL) { local.type = "unknown" }
+    if (local.delta == NIL) { local.delta = 0 }
+    if (local.total == NIL) { local.total = 0 }
 
-                        local.payload = waitthread global/tracker_common.scr::build_base_payload "score_change"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&score_type=" + local.type
-    local.payload = local.payload + "&delta=" + local.delta
-    local.payload = local.payload + "&new_total=" + local.total
+    local.json = waitthread global/tracker_common.scr::build_base_json "score_change"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "score_type" local.type 1)
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "delta" local.delta 0)
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "new_total" local.total 0)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_teamkill_kick local.player local.count:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_teamkill_kick | Player: " local.player " | Count: " local.count
     if (local.player == NIL) { end }
-        if (typeof local.player != "listener") { end }
-            if (local.count == NIL) { local.count = 0 }
+    if (typeof local.player != "listener") { end }
+    if (local.count == NIL) { local.count = 0 }
 
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "teamkill_kick"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&count=" + local.count
+    local.json = waitthread global/tracker_common.scr::build_base_json "teamkill_kick"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "count" local.count 0)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end

@@ -5,471 +5,488 @@
 // ============================================================================
 // CONFIGURATION & GLOBALS
 // ============================================================================
-level.api_base_url = "http://127.0.0.1:8084"
-    level.api_events_endpoint = "/api/v1/ingest/events"
-    level.server_token = "5dc879b4-f748-4d77-8742-87f41224d9f8"
-    level.server_id = "f39f24c9-1d69-4f3b-84f1-3180c6d418c6"
-    level.tracker_debug = 0
+// NOTE: Using game.* instead of level.* for cross-script variable sharing.
+// level.* variables are script-local and do NOT persist across script files!
+game.api_base_url = "http://127.0.0.1:8084"
+game.api_events_endpoint = "/api/v1/ingest/events"
+game.server_token = NIL
+game.server_id = NIL
+game.tracker_debug = 1
 
-    // Batching Globals (JSON Array Format)
-    level.event_queue = "[" // Start with array opening bracket
-    level.batch_size = 0
-    level.max_batch_size = 20 // Flush immediately if this size reached
+// Batching Globals (JSON Array Format)
+game.event_queue = "[" // Start with array opening bracket
+game.batch_size = 0
+game.max_batch_size = 20 // Flush immediately if this size reached
 
-    // ============================================================================
-    // HELPERS
-    // ============================================================================
+// ============================================================================
+// HELPERS
+// ============================================================================
 
 safestr local.val:
-        if (local.val == NIL) {
-            end "NIL"
+    if (local.val == NIL) {
+        end "NIL"
+    }
+    if (local.val == NULL) {
+        end "NULL"
+    }
+    // Check type - floats and ints need special handling
+    local.t = typeof local.val
+    if (local.t == "float" || local.t == "int" || local.t == "double") {
+        end ("" + local.val)  // Numeric to string via concatenation
+    }
+    if (local.t == "listener") {
+        // For listeners/entities, try to get netname or use targetname
+        if (local.val.netname != NIL) {
+            end local.val.netname
         }
-        if (local.val == NULL) {
-            end "NULL"
+        if (local.val.targetname != NIL) {
+            end local.val.targetname
         }
-        // Check type - floats and ints need special handling
-        local.t = typeof local.val
-        if (local.t == "float" || local.t == "int" || local.t == "double") {
-            end ("" + local.val)  // Numeric to string via concatenation
-        }
-        if (local.t == "listener") {
-            // For listeners/entities, try to get netname or use targetname
-            if (local.val.netname != NIL) {
-                end local.val.netname
-            }
-            if (local.val.targetname != NIL) {
-                end local.val.targetname
-            }
-            end "[entity]"
-        }
-        end ("" + local.val)
-    end
+        end "[entity]"
+    }
+end ("" + local.val) 
 
 debug_log_var local.a1 local.a2 local.a3 local.a4 local.a5 local.a6 local.a7 local.a8 local.a9 local.a10 local.a11 local.a12 local.a13 local.a14 local.a15 local.a16:
-        if (level.tracker_debug) {
-            local.msg = ""
-            if (local.a1 != NIL) { local.msg += (waitthread safestr local.a1) }
-                if (local.a2 != NIL) { local.msg += (waitthread safestr local.a2) }
-                    if (local.a3 != NIL) { local.msg += (waitthread safestr local.a3) }
-                        if (local.a4 != NIL) { local.msg += (waitthread safestr local.a4) }
-                            if (local.a5 != NIL) { local.msg += (waitthread safestr local.a5) }
-                                if (local.a6 != NIL) { local.msg += (waitthread safestr local.a6) }
-                                    if (local.a7 != NIL) { local.msg += (waitthread safestr local.a7) }
-                                        if (local.a8 != NIL) { local.msg += (waitthread safestr local.a8) }
-                                            if (local.a9 != NIL) { local.msg += (waitthread safestr local.a9) }
-                                                if (local.a10 != NIL) { local.msg += (waitthread safestr local.a10) }
-                                                    if (local.a11 != NIL) { local.msg += (waitthread safestr local.a11) }
-                                                        if (local.a12 != NIL) { local.msg += (waitthread safestr local.a12) }
-                                                            if (local.a13 != NIL) { local.msg += (waitthread safestr local.a13) }
-                                                                if (local.a14 != NIL) { local.msg += (waitthread safestr local.a14) }
-                                                                    if (local.a15 != NIL) { local.msg += (waitthread safestr local.a15) }
-                                                                        if (local.a16 != NIL) { local.msg += (waitthread safestr local.a16) }
+    if (game.tracker_debug) {
+        local.msg = ""
+        if (local.a1 != NIL) { local.msg += (waitthread safestr local.a1) }
+        if (local.a2 != NIL) { local.msg += (waitthread safestr local.a2) }
+        if (local.a3 != NIL) { local.msg += (waitthread safestr local.a3) }
+        if (local.a4 != NIL) { local.msg += (waitthread safestr local.a4) }
+        if (local.a5 != NIL) { local.msg += (waitthread safestr local.a5) }
+        if (local.a6 != NIL) { local.msg += (waitthread safestr local.a6) }
+        if (local.a7 != NIL) { local.msg += (waitthread safestr local.a7) }
+        if (local.a8 != NIL) { local.msg += (waitthread safestr local.a8) }
+        if (local.a9 != NIL) { local.msg += (waitthread safestr local.a9) }
+        if (local.a10 != NIL) { local.msg += (waitthread safestr local.a10) }
+        if (local.a11 != NIL) { local.msg += (waitthread safestr local.a11) }
+        if (local.a12 != NIL) { local.msg += (waitthread safestr local.a12) }
+        if (local.a13 != NIL) { local.msg += (waitthread safestr local.a13) }
+        if (local.a14 != NIL) { local.msg += (waitthread safestr local.a14) }
+        if (local.a15 != NIL) { local.msg += (waitthread safestr local.a15) }
+        if (local.a16 != NIL) { local.msg += (waitthread safestr local.a16) }
     
-                                                                            dprintln ("[" + level.time + "] [OPM] " + local.msg)
-        }
-    end
+        dprintln ("[" + gettime + "] [OPM] " + local.msg)
+    }
+end
 
-    // ============================================================================
-    // PLAYER PAYLOAD BUILDER
-    // ============================================================================
+// ============================================================================
+// PLAYER PAYLOAD BUILDER
+// ============================================================================
 build_player_payload local.player local.prefix:
-        local.payload = ""
+    local.payload = ""
 
-        // Check if player is valid - MUST be a listener/entity type
-        if (local.player == NIL || local.player == NULL) {
-            end local.payload
-        }
-        
-        // Critical type check - prevent float/int being treated as entity
-        local.ptype = typeof local.player
-        if (local.ptype != "listener") {
-            // Not an entity - could be -1, float, or other invalid type
-            end local.payload
-        }
-        
-        // Now safe to dereference .netname
-        local.name = local.player.netname
-        if (local.name == NIL) {
-            end local.payload
-        }
-
-        local.guid = ""
-        // PRIORITIZE PERSISTENT IDENTITY
-        if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL && local.player.smf_member_id > 0) {
-            local.guid = local.player.smf_member_id
-        } else {
-            // Fallback for unauthenticated players: "clientnum" is not persistent, but "name" is spoofable.
-            // We use clientnum for unique match tracking.
-            local.guid = "unauth_" + (getclientnum local.player)
-        }
-
-        // Core Identity
-        local.payload = "&" + local.prefix + "_name=" + local.name
-        local.payload = local.payload + "&" + local.prefix + "_guid=" + local.guid
-
-        // SMF Identity (Explicit field)
-        if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
-            local.payload = local.payload + "&" + local.prefix + "_smf_id=" + local.player.smf_member_id
-        }
-
-        // Team
-        if (local.player.team != NIL && local.player.team != "") {
-            local.payload = local.payload + "&" + local.prefix + "_team=" + local.player.team
-        }
-
-        // Location
-        if (local.player.origin != NIL) {
-            local.pos = local.player.origin
-            local.payload = local.payload + "&" + local.prefix + "_x=" + local.pos[0]
-            local.payload = local.payload + "&" + local.prefix + "_y=" + local.pos[1]
-            local.payload = local.payload + "&" + local.prefix + "_z=" + local.pos[2]
-        }
-
-        // Angles
-        if (local.player.angles != NIL) {
-            local.ang = local.player.angles
-            local.payload = local.payload + "&" + local.prefix + "_pitch=" + local.ang[0]
-            local.payload = local.payload + "&" + local.prefix + "_yaw=" + local.ang[1]
-        }
-        
-        // Stance
-        local.stance = "stand"
-        if (local.player.tracker_stance != NIL) {
-            local.stance = local.player.tracker_stance
-        }
-        local.payload = local.payload + "&" + local.prefix + "_stance=" + local.stance
-
+    // Check if player is valid - MUST be a listener/entity type
+    if (local.player == NIL || local.player == NULL) {
         end local.payload
+    }
+        
+    // Critical type check - prevent float/int being treated as entity
+    local.ptype = typeof local.player
+    if (local.ptype != "listener") {
+        // Not an entity - could be -1, float, or other invalid type
+        end local.payload
+    }
+        
+    // Now safe to dereference .netname
+    local.name = local.player.netname
+    if (local.name == NIL) {
+        end local.payload
+    }
+
+    local.guid = ""
+    // PRIORITIZE PERSISTENT IDENTITY
+    if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL && local.player.smf_member_id > 0) {
+        local.guid = local.player.smf_member_id
+    } else {
+        // Fallback for unauthenticated players: "clientnum" is not persistent, but "name" is spoofable.
+        // We use clientnum for unique match tracking.
+        local.guid = "unauth_" + (getclientnum local.player)
+    }
+
+    // Core Identity
+    local.payload = "&" + local.prefix + "_name=" + local.name
+    local.payload = local.payload + "&" + local.prefix + "_guid=" + local.guid
+
+    // SMF Identity (Explicit field)
+    if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
+        local.payload = local.payload + "&" + local.prefix + "_smf_id=" + local.player.smf_member_id
+    }
+
+    // Team
+    if (local.player.team != NIL && local.player.team != "") {
+        local.payload = local.payload + "&" + local.prefix + "_team=" + local.player.team
+    }
+
+    // Location
+    if (local.player.origin != NIL) {
+        local.pos = local.player.origin
+        local.payload = local.payload + "&" + local.prefix + "_x=" + local.pos[0]
+        local.payload = local.payload + "&" + local.prefix + "_y=" + local.pos[1]
+        local.payload = local.payload + "&" + local.prefix + "_z=" + local.pos[2]
+    }
+
+    // Angles
+    if (local.player.angles != NIL) {
+        local.ang = local.player.angles
+        local.payload = local.payload + "&" + local.prefix + "_pitch=" + local.ang[0]
+        local.payload = local.payload + "&" + local.prefix + "_yaw=" + local.ang[1]
+    }
+        
+    // Stance
+    local.stance = "stand"
+    if (local.player.tracker_stance != NIL) {
+        local.stance = local.player.tracker_stance
+    }
+    local.payload = local.payload + "&" + local.prefix + "_stance=" + local.stance
+
+end local.payload
 
 build_player_payload_compact local.player local.prefix:
-            local.payload = ""
+    local.payload = ""
 
-            // Check if player is valid - MUST be a listener/entity type
-            if (local.player == NIL || local.player == NULL || typeof local.player != "listener") {
-                end local.payload
-            }
+    // Check if player is valid - MUST be a listener/entity type
+    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") {
+        end local.payload
+    }
             
-            // Critical type check - prevent float/int being treated as entity
-            local.ptype = typeof local.player
-            if (local.ptype != "listener") {
-                end local.payload
-            }
+    // Critical type check - prevent float/int being treated as entity
+    local.ptype = typeof local.player
+    if (local.ptype != "listener") {
+        end local.payload
+    }
 
-            // Now safe to dereference .netname
-            local.name = local.player.netname
-            if (local.name == NIL) {
-                end local.payload
-            }
+    // Now safe to dereference .netname
+    local.name = local.player.netname
+    if (local.name == NIL) {
+        end local.payload
+    }
 
-            local.guid = ""
-            if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL && local.player.smf_member_id > 0) {
-                local.guid = local.player.smf_member_id
-            } else {
-                local.guid = "unauth_" + (getclientnum local.player)
-            }
+    local.guid = ""
+    if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL && local.player.smf_member_id > 0) {
+        local.guid = local.player.smf_member_id
+    } else {
+        local.guid = "unauth_" + (getclientnum local.player)
+    }
 
-            local.payload = "&" + local.prefix + "_name=" + local.name
-            local.payload = local.payload + "&" + local.prefix + "_guid=" + local.guid
+    local.payload = "&" + local.prefix + "_name=" + local.name
+    local.payload = local.payload + "&" + local.prefix + "_guid=" + local.guid
 
-            if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
-                local.payload = local.payload + "&" + local.prefix + "_smf_id=" + local.player.smf_member_id
-            }
+    if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
+        local.payload = local.payload + "&" + local.prefix + "_smf_id=" + local.player.smf_member_id
+    }
 
-            if (local.player.team != NIL && local.player.team != "") {
-                local.payload = local.payload + "&" + local.prefix + "_team=" + local.player.team
-            }
+    if (local.player.team != NIL && local.player.team != "") {
+        local.payload = local.payload + "&" + local.prefix + "_team=" + local.player.team
+    }
 
-            end local.payload
+end local.payload
 
-            // ============================================================================
-            // JSON BUILDING HELPERS
-            // ============================================================================
+// ============================================================================
+// JSON BUILDING HELPERS
+// ============================================================================
 
 json_escape local.str:
-            // Basic JSON string escaping
-            if (local.str == NIL) { end "" }
-            local.result = local.str
-            // TODO: Properly escape quotes, backslashes, newlines if engine supports string replacement
-            // For now, assume game data doesn't contain problematic chars
-            end local.result
-        end
+// Basic JSON string escaping
+    if (local.str == NIL) { end "" }
+    local.result = local.str
+    // TODO: Properly escape quotes, backslashes, newlines if engine supports string replacement
+    // For now, assume game data doesn't contain problematic chars
+end local.result
+end
 
 build_json_field local.key local.value local.is_string:
-            // Build a JSON key-value pair
-            if (local.value == NIL) { end "" }
+// Build a JSON key-value pair
+    if (local.value == NIL) { end "" }
             
-            local.escaped_val = waitthread json_escape local.value
+    local.escaped_val = waitthread json_escape local.value
             
-            if (local.is_string == 1) {
-                local.result = "\"" + local.key + "\":\"" + local.escaped_val + "\""
-                end local.result
-            } else {
-                local.result = "\"" + local.key + "\":" + local.escaped_val
-                end local.result
-            }
-        end
+    if (local.is_string == 1) {
+        local.result = "\"" + local.key + "\":\"" + local.escaped_val + "\""
+        end local.result
+    } else {
+        local.result = "\"" + local.key + "\":" + local.escaped_val
+        end local.result
+    }
+end
 
 build_player_json local.player local.prefix:
-            // Build JSON fields for player data
-            local.fields = ""
+// Build JSON fields for player data
+    local.fields = ""
             
-            if (local.player == NIL || local.player == NULL || typeof local.player != "listener") {
-                end local.fields
-            }
+    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") {
+        end local.fields
+    }
             
-            local.name = local.player.netname
-            if (local.name == NIL) { end local.fields }
+    local.name = local.player.netname
+    if (local.name == NIL) { end local.fields }
             
-            local.guid = ""
-            if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL && local.player.smf_member_id > 0) {
-                local.guid = local.player.smf_member_id
-            } else {
-                local.guid = "unauth_" + (getclientnum local.player)
-            }
+    local.guid = ""
+    if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL && local.player.smf_member_id > 0) {
+        local.guid = local.player.smf_member_id
+    } else {
+        local.guid = "unauth_" + (getclientnum local.player)
+    }
             
-            // Build comma-separated JSON fields
-            local.fields = waitthread build_json_field (local.prefix + "_name") local.name 1
-            local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_guid") local.guid 1)
+    // Build comma-separated JSON fields
+    local.fields = waitthread build_json_field (local.prefix + "_name") local.name 1
+    local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_guid") local.guid 1)
             
-            if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
-                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_smf_id") local.player.smf_member_id 0)
-            }
+    if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
+        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_smf_id") local.player.smf_member_id 0)
+    }
             
-            if (local.player.team != NIL && local.player.team != "") {
-                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_team") local.player.team 1)
-            }
+    if (local.player.team != NIL && local.player.team != "") {
+        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_team") local.player.team 1)
+    }
             
-            if (local.player.origin != NIL) {
-                local.pos = local.player.origin
-                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_x") local.pos[0] 0)
-                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_y") local.pos[1] 0)
-                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_z") local.pos[2] 0)
-            }
+    if (local.player.origin != NIL) {
+        local.pos = local.player.origin
+        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_x") local.pos[0] 0)
+        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_y") local.pos[1] 0)
+        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_z") local.pos[2] 0)
+    }
             
-            if (local.player.angles != NIL) {
-                local.ang = local.player.angles
-                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_pitch") local.ang[0] 0)
-                local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_yaw") local.ang[1] 0)
-            }
+    if (local.player.angles != NIL) {
+        local.ang = local.player.angles
+        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_pitch") local.ang[0] 0)
+        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_yaw") local.ang[1] 0)
+    }
             
-            local.stance = "stand"
-            if (local.player.tracker_stance != NIL) {
-                local.stance = local.player.tracker_stance
-            }
-            local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_stance") local.stance 1)
+    local.stance = "stand"
+    if (local.player.tracker_stance != NIL) {
+        local.stance = local.player.tracker_stance
+    }
+    local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_stance") local.stance 1)
             
-            end local.fields
-        end
+end local.fields
+end
+
+add_player_json_fields local.json local.player local.prefix:
+    if (local.json == NIL) { local.json = "" }
+    
+    local.player_fields = waitthread build_player_json local.player local.prefix
+    if (local.player_fields != NIL && local.player_fields != "") {
+        local.json = local.json + "," + local.player_fields
+    }
+end local.json
+end
 
 build_base_json local.event_type:
-            // Build base JSON object with type, match_id, session_id, timestamp
-            local.json = "{"
-            local.json = local.json + (waitthread build_json_field "type" local.event_type 1)
+// Build base JSON object with type, match_id, session_id, timestamp
+    local.json = "{"
+    local.json = local.json + (waitthread build_json_field "type" local.event_type 1)
             
-            if (level.match_id != NIL && level.match_id != "") {
-                local.json = local.json + "," + (waitthread build_json_field "match_id" level.match_id 1)
-            }
+    local.match_id = game.match_id
+    if (local.match_id == NIL || local.match_id == "") {
+        local.match_id = "no_match"
+    }
+    local.json = local.json + "," + (waitthread build_json_field "match_id" local.match_id 1)
             
-            if (level.session_id != NIL && level.session_id != "") {
-                local.json = local.json + "," + (waitthread build_json_field "session_id" level.session_id 1)
-            }
+    if (game.session_id != NIL && game.session_id != "") {
+        local.json = local.json + "," + (waitthread build_json_field "session_id" game.session_id 1)
+    }
             
-            local.json = local.json + "," + (waitthread build_json_field "timestamp" level.time 0)
+    local.json = local.json + "," + (waitthread build_json_field "timestamp" gettime 0)
             
-            end local.json
-        end
+end local.json
+end
 
-            // ============================================================================
-            // BATCHING SYSTEM (JSON Array Format)
-            // ============================================================================
+// ============================================================================
+// BATCHING SYSTEM (JSON Array Format)
+// ============================================================================
 
 queue_event local.json_obj:
-            // Guard against NIL object
-            if (local.json_obj == NIL || local.json_obj == "") { end }
+// Guard against NIL object
+    if (local.json_obj == NIL || local.json_obj == "") { end }
             
-            // Ensure globals are initialized
-            if (level.event_queue == NIL) {
-                level.event_queue = "["
-            }
-            if (level.batch_size == NIL) {
-                level.batch_size = 0
-            }
-            if (level.max_batch_size == NIL) {
-                level.max_batch_size = 20
-            }
+    // Ensure globals are initialized
+    if (game.event_queue == NIL) {
+        game.event_queue = "["
+    }
+    if (game.batch_size == NIL) {
+        game.batch_size = 0
+    }
+    if (game.max_batch_size == NIL) {
+        game.max_batch_size = 20
+    }
             
-            // Close the JSON object (caller provides open brace)
-            local.complete_obj = local.json_obj + "}"
+    // Close the JSON object (caller provides open brace)
+    local.complete_obj = local.json_obj + "}"
             
-            // Add to array (comma separator if not first item)
-            if (level.batch_size == 0) {
-                level.event_queue = "[" + local.complete_obj
-            } else {
-                level.event_queue = level.event_queue + "," + local.complete_obj
-            }
+    // Add to array (comma separator if not first item)
+    if (game.batch_size == 0) {
+        game.event_queue = "[" + local.complete_obj
+    } else {
+        game.event_queue = game.event_queue + "," + local.complete_obj
+    }
             
-            level.batch_size++
+    game.batch_size++
             
-            if (level.batch_size >= level.max_batch_size) {
-                thread flush_queue
-            }
-        end
+    if (game.batch_size >= game.max_batch_size) {
+        thread flush_queue
+    }
+end
 
 flush_queue:
-            if (level.event_queue == NIL || level.event_queue == "" || level.event_queue == "[") {
-                end
-            }
-            
-            if (level.batch_size == 0) {
-                end
-            }
-            
-            // Close JSON array
-            local.json_array = level.event_queue + "]"
-            level.event_queue = "["
-            level.batch_size = 0
-            
-            local.url = level.api_base_url + level.api_events_endpoint
-            
-            // Build headers with authentication
-            local.headers = makearray
-                "Content-Type" "application/json"
-                "X-Server-Token" level.server_token
-            endarray
-            
-            if (level.tracker_debug) {
-                dprintln ("API BATCH FLUSH: " + local.url)
-                dprintln ("PAYLOAD PREVIEW: " + local.json_array)
-            }
-            
-            // New curl_post signature: curl_post url headers body callback
-            curl_post local.url local.headers local.json_array on_http_callback
+    if (game.event_queue == NIL || game.event_queue == "" || game.event_queue == "[") {
         end
+    }
+            
+    if (game.batch_size == 0) {
+        end
+    }
+            
+    // Close JSON array
+    local.json_array = game.event_queue + "]"
+    game.event_queue = "["
+    game.batch_size = 0
+            
+    local.url = game.api_base_url + game.api_events_endpoint
+
+    // Refresh token from cvar (in case it was updated by register.scr)
+    game.server_token = getcvar "opm_server_token"
+     
+    // Safe token retrieval
+    local.token = game.server_token
+    if (local.token == NIL) { local.token = "" }
+
+    local.headers = makearray
+    "Content-Type"     "application/json"    
+    "X-Server-Token"   local.token
+    endarray
+ 
+    if (game.tracker_debug) {
+        dprintln ("API BATCH FLUSH: " + local.url)
+        dprintln ("PAYLOAD PREVIEW: " + local.json_array)
+        dprintln ("PAYLOAD headers: " + local.headers.size + " items")                
+    }
+            
+    // curl_post calling convention: url, headers, body, callback
+    curl_post local.url local.headers local.json_array on_http_callback
+end
 
 flush_loop:
-                while (1) {
-                    wait 2
-                    thread flush_queue
-                }
-            end
+    while (1) {
+        wait 2
+        thread flush_queue
+    }
+end
 
 
 
-            // ============================================================================
-            // HELPERS
-            // ============================================================================
+// ============================================================================
+// HELPERS
+// ============================================================================
 
 on_http_callback local.success local.response local.http_code:
-                if (level.tracker_debug) {
-                    if (local.success) {
-                        dprintln ("HTTP OK [" + local.http_code + "]")
-                    } else {
-                        dprintln ("HTTP FAIL [" + local.http_code + "]: " + local.response)
-                    }
-                }
+    if (game.tracker_debug) {
+        if (local.success) {
+            dprintln ("HTTP OK [" + local.http_code + "]")
+        } else {
+            dprintln ("HTTP FAIL [" + local.http_code + "]: " + local.response)
+        }
+    }
 
-                // Auto-recover from invalid token
-                if (local.http_code == 401) {
-                    dprintln "[OPM] Server token rejected. Triggering re-registration..."
-                    level.server_token = NIL
-                    setcvar "opm_server_token" "" // Force register.scr to generate new
-                    // exec global/register.scr // Prevent recursion loop
-                }
-            end
+    // Auto-recover from invalid token
+    if (local.http_code == 401) {
+        dprintln "[OPM] Server token rejected." 
+    }
+end
 
 build_base_payload local.event_type:
-                if (local.event_type == NIL) { local.event_type = "unknown" }
-                    local.payload = "type=" + local.event_type
+    if (local.event_type == NIL) { local.event_type = "unknown" }
+    local.payload = "type=" + local.event_type
     
-                local.match_id = level.match_id
-                if (local.match_id == NIL || local.match_id == "") { local.match_id = "no_match" }
-                    local.payload = local.payload + "&match_id=" + local.match_id
+    local.match_id = game.match_id
+    if (local.match_id == NIL || local.match_id == "") { local.match_id = "no_match" }
+    local.payload = local.payload + "&match_id=" + local.match_id
     
-                local.payload = local.payload + "&timestamp=" + level.time
+    local.payload = local.payload + "&timestamp=" + gettime
 
-                if (level.session_id != NIL && level.session_id != "") {
-                    local.payload = local.payload + "&session_id=" + level.session_id
-                }
+    if (game.session_id != NIL && game.session_id != "") {
+        local.payload = local.payload + "&session_id=" + game.session_id
+    }
 
-                if (level.map_name != NIL && level.map_name != "") {
-                    local.payload = local.payload + "&map_name=" + level.map_name
-                }
+    if (game.map_name != NIL && game.map_name != "") {
+        local.payload = local.payload + "&map_name=" + game.map_name
+    }
 
-                end local.payload
+end local.payload
 
 debug_log local.message:
-                    if (level.tracker_debug) {
-                        local.safe_msg = waitthread safestr local.message
-                        dprintln ("[" + level.time + "] [OPM] " + local.safe_msg)
-                    }
-                end
+    if (game.tracker_debug) {
+        local.safe_msg = waitthread safestr local.message
+        dprintln ("[" + gettime + "] [OPM] " + local.safe_msg)
+    }
+end
 
-                // ============================================================================
-                // STRING HELPERS
-                // ============================================================================
-                // Returns the index of 'search' within 'str', starting from 'start'
+// ============================================================================
+// STRING HELPERS
+// ============================================================================
+// Returns the index of 'search' within 'str', starting from 'start'
 str_indexof local.str local.search local.start:
-                    if (local.start == NIL) { local.start = 0 }
-                        if (local.str == NIL || local.search == NIL) { end -1 }
+    if (local.start == NIL) { local.start = 0 }
+    if (local.str == NIL || local.search == NIL) { end -1 }
     
-                            local.str_len = local.str.size
-                    local.search_len = local.search.size
+    local.str_len = local.str.size
+    local.search_len = local.search.size
     
-                    if (local.str_len == NIL || local.search_len == NIL) { end -1 }
-                        if (local.search_len == 0) { end local.start }
-                            if (local.search_len > local.str_len) { end -1 }
+    if (local.str_len == NIL || local.search_len == NIL) { end -1 }
+    if (local.search_len == 0) { end local.start }
+    if (local.search_len > local.str_len) { end -1 }
     
-                                local.end_idx = (local.str_len - local.search_len)
-                    if (local.end_idx == NIL) { end -1 }
+    local.end_idx = (local.str_len - local.search_len)
+    if (local.end_idx == NIL) { end -1 }
 
-                        for (local.i = local.start; local.i <= local.end_idx; local.i++) {
-                        local.found = 1
-                        for (local.j = 0; local.j < local.search_len; local.j++) {
-                            if (local.str[local.i + local.j] != local.search[local.j]) {
-                                local.found = 0
-                                break
-                            }
-                        }
-                        if (local.found) { end local.i }
-                    }
-                    end -1
+    for (local.i = local.start; local.i <= local.end_idx; local.i++) {
+        local.found = 1
+        for (local.j = 0; local.j < local.search_len; local.j++) {
+            if (local.str[local.i + local.j] != local.search[local.j]) {
+                local.found = 0
+                break
+            }
+        }
+        if (local.found) { end local.i }
+    }
+end -1
 
-                    // ============================================================================
-                    // JSON HELPERS (Powered by ScriptYAML Engine)
-                    // ============================================================================
+// ============================================================================
+// JSON HELPERS (Powered by ScriptYAML Engine)
+// ============================================================================
 
 json_get_string local.json local.key:
-                        if (local.json == NIL || local.json == "" || local.key == NIL) { end "" }
-                            local.parser = spawn ScriptYAML
-                        local.success = local.parser parse local.json
-                        local.val = ""
-                        if (local.success) {
-                            local.val = local.parser get local.key
-                        }
-                        local.parser remove
-                        if (local.val == NIL) { end "" }
-                            end (string local.val)
+    if (local.json == NIL || local.json == "" || local.key == NIL) { end "" }
+    local.parser = spawn ScriptYAML
+    local.success = local.parser parse local.json
+    local.val = ""
+    if (local.success) {
+        local.val = local.parser get local.key
+    }
+    local.parser remove
+    if (local.val == NIL) { end "" }
+end (string local.val)
 
 json_get_int local.json local.key:
-                            if (local.json == NIL || local.json == "" || local.key == NIL) { end 0 }
-                                local.parser = spawn ScriptYAML
-                            local.success = local.parser parse local.json
-                            local.val = 0
-                            if (local.success) {
-                                local.val = local.parser get local.key
-                            }
-                            local.parser remove
-                            if (local.val == NIL) { end 0 }
-                                end (int local.val)
+    if (local.json == NIL || local.json == "" || local.key == NIL) { end 0 }
+    local.parser = spawn ScriptYAML
+    local.success = local.parser parse local.json
+    local.val = 0
+    if (local.success) {
+        local.val = local.parser get local.key
+    }
+    local.parser remove
+    if (local.val == NIL) { end 0 }
+end (int local.val)
 
 json_get_float local.json local.key:
-                                if (local.json == NIL || local.json == "" || local.key == NIL) { end 0.0 }
-                                    local.parser = spawn ScriptYAML
-                                local.success = local.parser parse local.json
-                                local.val = 0.0
-                                if (local.success) {
-                                    local.val = local.parser get local.key
-                                }
-                                local.parser remove
-                                if (local.val == NIL) { end 0.0 }
-                                    end (float local.val)
+    if (local.json == NIL || local.json == "" || local.key == NIL) { end 0.0 }
+    local.parser = spawn ScriptYAML
+    local.success = local.parser parse local.json
+    local.val = 0.0
+    if (local.success) {
+        local.val = local.parser get local.key
+    }
+    local.parser remove
+    if (local.val == NIL) { end 0.0 }
+end (float local.val)

@@ -5,80 +5,80 @@
 on_health_pickup local.player local.amount:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_health_pickup | Player: " local.player " | Amount: " local.amount
     if (local.player == NIL) { end }
-        if (typeof local.player != "listener") { end }
-            if (local.amount == NIL) { local.amount = 0 }
+    if (typeof local.player != "listener") { end }
+    if (local.amount == NIL) { local.amount = 0 }
 
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "health_pickup"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&count=" + local.amount
+    local.json = waitthread global/tracker_common.scr::build_base_json "health_pickup"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "count" local.amount 0)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_ammo_pickup local.player local.item_name local.amount:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_ammo_pickup | Player: " local.player " | Item: " local.item_name " | Amt: " local.amount
     if (local.player == NIL) { end }
-        if (typeof local.player != "listener") { end }
-            if (local.item_name == NIL) { local.item_name = "unknown" }
-                if (local.amount == NIL) { local.amount = 0 }
+    if (typeof local.player != "listener") { end }
+    if (local.item_name == NIL) { local.item_name = "unknown" }
+    if (local.amount == NIL) { local.amount = 0 }
 
-                    local.payload = waitthread global/tracker_common.scr::build_base_payload "ammo_pickup"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&item_name=" + local.item_name
-    local.payload = local.payload + "&count=" + local.amount
+    local.json = waitthread global/tracker_common.scr::build_base_json "ammo_pickup"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "item_name" local.item_name 1)
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "count" local.amount 0)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_armor_pickup local.player local.amount:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_armor_pickup | Player: " local.player " | Amount: " local.amount
     if (local.player == NIL) { end }
-        if (typeof local.player != "listener") { end }
-            if (local.amount == NIL) { local.amount = 0 }
+    if (typeof local.player != "listener") { end }
+    if (local.amount == NIL) { local.amount = 0 }
 
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "armor_pickup"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&count=" + local.amount
+    local.json = waitthread global/tracker_common.scr::build_base_json "armor_pickup"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "count" local.amount 0)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_item_respawn local.entity local.item_name:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_item_respawn | Entity: " local.entity " | Item: " local.item_name
     if (local.entity == NIL) { local.entity = "unknown" }
-        if (local.item_name == NIL) { local.item_name = "unknown" }
+    if (local.item_name == NIL) { local.item_name = "unknown" }
 
-            local.payload = waitthread global/tracker_common.scr::build_base_payload "item_respawn"
-    local.payload = local.payload + "&entity=" + local.entity
-    local.payload = local.payload + "&item_name=" + local.item_name
+    local.json = waitthread global/tracker_common.scr::build_base_json "item_respawn"
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "entity" local.entity 1)
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "item_name" local.item_name 1)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_item_pickup local.player local.item local.count:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_item_pickup | Player: " local.player " | Item: " local.item " | Count: " local.count
     if (local.player == NIL) { end }
-        if (typeof local.player != "listener") { end }
-            if (local.item == NIL) { local.item = "unknown" }
-                if (local.count == NIL) { local.count = 0 }
+    if (typeof local.player != "listener") { end }
+    if (local.item == NIL) { local.item = "unknown" }
+    if (local.count == NIL) { local.count = 0 }
 
-                    local.payload = waitthread global/tracker_common.scr::build_base_payload "item_pickup"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&item_name=" + local.item
-    local.payload = local.payload + "&count=" + local.count
+    local.json = waitthread global/tracker_common.scr::build_base_json "item_pickup"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "item_name" local.item 1)
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "count" local.count 0)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_item_drop local.player local.item:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_item_drop | Player: " local.player " | Item: " local.item
     if (local.player == NIL) { end }
-        if (typeof local.player != "listener") { end }
-            if (local.item == NIL) { local.item = "unknown" }
+    if (typeof local.player != "listener") { end }
+    if (local.item == NIL) { local.item = "unknown" }
 
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "item_drop"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&item_name=" + local.item
+    local.json = waitthread global/tracker_common.scr::build_base_json "item_drop"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "item_name" local.item 1)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end

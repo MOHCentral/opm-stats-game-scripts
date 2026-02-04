@@ -1,0 +1,11 @@
+main:
+    // Using game.* for cross-script sharing (level.* is script-local)
+    game.server_token = "super_secret_token"
+
+    local.headers = makearray
+    "Content-Type"     "application/json"    
+    "X-Server-Token"   game.server_token  
+    endarray
+       
+    println (local.headers[2][2]) // Output the server token header value super_secret_token
+end

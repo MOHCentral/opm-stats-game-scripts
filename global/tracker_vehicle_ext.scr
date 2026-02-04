@@ -8,11 +8,11 @@ on_vehicle_enter local.player local.vehicle:
         if (typeof local.player != "listener") { end }
             if (local.vehicle == NIL) { local.vehicle = "unknown" }
 
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "vehicle_enter"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&vehicle=" + local.vehicle
+                local.json = waitthread global/tracker_common.scr::build_base_json "vehicle_enter"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "vehicle" local.vehicle)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_vehicle_exit local.player local.vehicle:
@@ -21,21 +21,21 @@ on_vehicle_exit local.player local.vehicle:
         if (typeof local.player != "listener") { end }
             if (local.vehicle == NIL) { local.vehicle = "unknown" }
 
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "vehicle_exit"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&vehicle=" + local.vehicle
+                local.json = waitthread global/tracker_common.scr::build_base_json "vehicle_exit"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "vehicle" local.vehicle)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_vehicle_change local.vehicle:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_vehicle_change | Vehicle: " local.vehicle
     if (local.vehicle == NIL) { local.vehicle = "unknown" }
 
-        local.payload = waitthread global/tracker_common.scr::build_base_payload "vehicle_change"
-    local.payload = local.payload + "&vehicle=" + local.vehicle
+        local.json = waitthread global/tracker_common.scr::build_base_json "vehicle_change"
+    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "vehicle" local.vehicle)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_vehicle_crash local.vehicle local.other:
@@ -61,11 +61,11 @@ on_vehicle_crash local.vehicle local.other:
     }
     if (local.other_name == NIL) { local.other_name = "entity" }
 
-        local.payload = waitthread global/tracker_common.scr::build_base_payload "vehicle_crash"
-    local.payload = local.payload + "&vehicle=" + local.vehicle_name
-    local.payload = local.payload + "&other=" + local.other_name
+        local.json = waitthread global/tracker_common.scr::build_base_json "vehicle_crash"
+    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "vehicle" local.vehicle_name)
+    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "other" local.other_name)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_turret_enter local.player local.turret:
@@ -74,11 +74,11 @@ on_turret_enter local.player local.turret:
         if (typeof local.player != "listener") { end }
             if (local.turret == NIL) { local.turret = "unknown" }
 
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "turret_enter"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&turret=" + local.turret
+                local.json = waitthread global/tracker_common.scr::build_base_json "turret_enter"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "turret" local.turret)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end
 
 on_turret_exit local.player local.turret:
@@ -87,9 +87,9 @@ on_turret_exit local.player local.turret:
         if (typeof local.player != "listener") { end }
             if (local.turret == NIL) { local.turret = "unknown" }
 
-                local.payload = waitthread global/tracker_common.scr::build_base_payload "turret_exit"
-    local.payload = local.payload + waitthread global/tracker_common.scr::build_player_payload local.player "player"
-    local.payload = local.payload + "&turret=" + local.turret
+                local.json = waitthread global/tracker_common.scr::build_base_json "turret_exit"
+    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "turret" local.turret)
 
-    thread global/tracker_common.scr::queue_event local.payload
+    thread global/tracker_common.scr::queue_event local.json
 end

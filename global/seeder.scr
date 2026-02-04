@@ -311,10 +311,10 @@ end
 // SIMULATE FULL MATCH - Calls all event handlers
 // ============================================================================
 simulate_full_match local.players local.match_num local.map_name local.gametype:
-    local.match_id = "sim_match_" + level.time + "_" + local.match_num
-    local.original_match_id = level.match_id
-    level.match_id = local.match_id
-    level.map_name = local.map_name
+    local.match_id = "sim_match_" + uuid_string + "_" + local.match_num
+    local.original_match_id = game.match_id
+    game.match_id = local.match_id
+    game.map_name = local.map_name
 
     dprintln ("  Map: " + local.map_name + " | GameType: " + local.gametype)
 
@@ -361,7 +361,7 @@ simulate_full_match local.players local.match_num local.map_name local.gametype:
     if (local.gametype == "ffa") { local.round_count = 1 }
 
     for (local.r = 1; local.r <= local.round_count; local.r++) {
-        level.round_number = local.r
+        game.round_number = local.r
         waitthread simulate_round local.players local.r local.gametype
         
         if (local.gametype != "ffa") {
@@ -411,7 +411,7 @@ simulate_full_match local.players local.match_num local.map_name local.gametype:
         waitthread call_map_change_start local.map_name local.next_map
     }
 
-    level.match_id = local.original_match_id
+    game.match_id = local.original_match_id
 
     // Update global stats
     for (local.i = 1; local.i <= local.p_size; local.i++) {
