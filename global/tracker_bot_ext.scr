@@ -7,20 +7,19 @@ on_actor_spawn local.actor:
     if (local.actor == NIL) { end }
     if (typeof local.actor != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "actor_spawn"
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "actor_spawn"
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_actor_killed local.actor local.attacker:
-iprintlnbold "on_actor_killed"
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_actor_killed | Actor: " local.actor " | Attacker: " local.attacker
     if (local.actor == NIL) { end }
     if (typeof local.actor != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "actor_killed"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
+    local.data = waitthread global/tracker_common.scr::init_event "actor_killed"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_bot_spawn local.bot:
@@ -28,10 +27,10 @@ on_bot_spawn local.bot:
     if (local.bot == NIL) { end }
     if (typeof local.bot != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "bot_spawn"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.bot "player"
+    local.data = waitthread global/tracker_common.scr::init_event "bot_spawn"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.bot "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_bot_killed local.bot local.attacker:
@@ -39,15 +38,15 @@ on_bot_killed local.bot local.attacker:
     if (local.bot == NIL) { end }
     if (typeof local.bot != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "bot_killed"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.bot "victim"
+    local.data = waitthread global/tracker_common.scr::init_event "bot_killed"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.bot "victim"
     
     // Attacker may be NIL, world, or invalid - only add if valid entity
     if (local.attacker != NIL && typeof local.attacker == "listener") {
-        local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
+        local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
     }
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_bot_roam local.bot:
@@ -55,10 +54,10 @@ on_bot_roam local.bot:
     if (local.bot == NIL) { end }
     if (typeof local.bot != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "bot_roam"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.bot "player"
+    local.data = waitthread global/tracker_common.scr::init_event "bot_roam"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.bot "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_bot_curious local.bot:
@@ -66,10 +65,10 @@ on_bot_curious local.bot:
     if (local.bot == NIL) { end }
     if (typeof local.bot != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "bot_curious"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.bot "player"
+    local.data = waitthread global/tracker_common.scr::init_event "bot_curious"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.bot "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_bot_attack local.bot:
@@ -77,8 +76,8 @@ on_bot_attack local.bot:
     if (local.bot == NIL) { end }
     if (typeof local.bot != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "bot_attack"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.bot "player"
+    local.data = waitthread global/tracker_common.scr::init_event "bot_attack"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.bot "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end

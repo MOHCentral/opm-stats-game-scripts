@@ -183,123 +183,132 @@ build_player_payload_compact local.player local.prefix:
 end local.payload
 
 // ============================================================================
-// JSON BUILDING HELPERS
+// JSON BUILDING HELPERS - Using make_json engine command
 // ============================================================================
 
-json_escape local.str:
-// Basic JSON string escaping
-    if (local.str == NIL) { end "" }
-    local.result = local.str
-    // TODO: Properly escape quotes, backslashes, newlines if engine supports string replacement
-    // For now, assume game data doesn't contain problematic chars
-end local.result
-end
-
-build_json_field local.key local.value local.is_string:
-// Build a JSON key-value pair
-    if (local.value == NIL) { end "" }
-            
-    local.escaped_val = waitthread json_escape local.value
-            
-    if (local.is_string == 1) {
-        local.result = "\"" + local.key + "\":\"" + local.escaped_val + "\""
-        end local.result
-    } else {
-        local.result = "\"" + local.key + "\":" + local.escaped_val
-        end local.result
+get_entity_name local.entity:
+// Extract a usable name from an entity or return string as-is
+    if (local.entity == NIL) { end "unknown" }
+    
+    // If it's already a string, return it
+    if (typeof local.entity == "string") { end local.entity }
+    
+    // If it's a listener/entity, try to get a name property
+    if (typeof local.entity == "listener") {
+        if (local.entity.targetname != NIL && local.entity.targetname != "") {
+            end local.entity.targetname
+        }
+        if (local.entity.classname != NIL && local.entity.classname != "") {
+            end local.entity.classname
+        }
+        if (local.entity.model != NIL && local.entity.model != "") {
+            end local.entity.model
+        }
+        end "entity"
     }
+    
+    end ("" + local.entity)
 end
 
-build_player_json local.player local.prefix:
-// Build JSON fields for player data
-    local.fields = ""
-            
+// Creates base event data array with common fields
+init_event local.event_type:
+    local.data["type"] = local.event_type
+    
+    local.match_id = game.match_id
+    if (local.match_id == NIL || local.match_id == "") {
+        local.match_id = "no_match"
+    }
+    local.data["match_id"] = local.match_id
+    
+    if (game.session_id != NIL && game.session_id != "") {
+        local.data["session_id"] = game.session_id
+    }
+    
+    local.data["timestamp"] = level.time
+end local.data
+
+// Adds player fields to event data array
+add_player local.data local.player local.prefix:
     if (local.player == NIL || local.player == NULL || typeof local.player != "listener") {
-        end local.fields
+        end local.data
     }
-            
+    
     local.name = local.player.netname
-    if (local.name == NIL) { end local.fields }
-            
+    if (local.name == NIL) { end local.data }
+    
     local.guid = ""
     if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL && local.player.smf_member_id > 0) {
         local.guid = local.player.smf_member_id
     } else {
         local.guid = "unauth_" + (getclientnum local.player)
     }
-            
-    // Build comma-separated JSON fields
-    local.fields = waitthread build_json_field (local.prefix + "_name") local.name 1
-    local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_guid") local.guid 1)
-            
+    
+    local.data[local.prefix + "_name"] = local.name
+    local.data[local.prefix + "_guid"] = local.guid
+    
     if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
-        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_smf_id") local.player.smf_member_id 0)
+        local.data[local.prefix + "_smf_id"] = local.player.smf_member_id
     }
-            
+    
     if (local.player.team != NIL && local.player.team != "") {
-        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_team") local.player.team 1)
+        local.data[local.prefix + "_team"] = local.player.team
     }
-            
+    
     if (local.player.origin != NIL) {
         local.pos = local.player.origin
-        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_x") local.pos[0] 0)
-        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_y") local.pos[1] 0)
-        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_z") local.pos[2] 0)
+        local.data[local.prefix + "_x"] = local.pos[0]
+        local.data[local.prefix + "_y"] = local.pos[1]
+        local.data[local.prefix + "_z"] = local.pos[2]
     }
-            
+    
     if (local.player.angles != NIL) {
         local.ang = local.player.angles
-        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_pitch") local.ang[0] 0)
-        local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_yaw") local.ang[1] 0)
+        local.data[local.prefix + "_pitch"] = local.ang[0]
+        local.data[local.prefix + "_yaw"] = local.ang[1]
     }
-            
+    
     local.stance = "stand"
     if (local.player.tracker_stance != NIL) {
         local.stance = local.player.tracker_stance
     }
-    local.fields = local.fields + "," + (waitthread build_json_field (local.prefix + "_stance") local.stance 1)
-            
-end local.fields
-end
+    local.data[local.prefix + "_stance"] = local.stance
+end local.data
 
-add_player_json_fields local.json local.player local.prefix:
-    if (local.json == NIL) { local.json = "" }
+// Adds player fields (compact version - no position/angles)
+add_player_compact local.data local.player local.prefix:
+    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") {
+        end local.data
+    }
     
-    local.player_fields = waitthread build_player_json local.player local.prefix
-    if (local.player_fields != NIL && local.player_fields != "") {
-        local.json = local.json + "," + local.player_fields
+    local.name = local.player.netname
+    if (local.name == NIL) { end local.data }
+    
+    local.guid = ""
+    if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL && local.player.smf_member_id > 0) {
+        local.guid = local.player.smf_member_id
+    } else {
+        local.guid = "unauth_" + (getclientnum local.player)
     }
-end local.json
-end
-
-build_base_json local.event_type:
-// Build base JSON object with type, match_id, session_id, timestamp
-    local.json = "{"
-    local.json = local.json + (waitthread build_json_field "type" local.event_type 1)
-            
-    local.match_id = game.match_id
-    if (local.match_id == NIL || local.match_id == "") {
-        local.match_id = "no_match"
+    
+    local.data[local.prefix + "_name"] = local.name
+    local.data[local.prefix + "_guid"] = local.guid
+    
+    if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
+        local.data[local.prefix + "_smf_id"] = local.player.smf_member_id
     }
-    local.json = local.json + "," + (waitthread build_json_field "match_id" local.match_id 1)
-            
-    if (game.session_id != NIL && game.session_id != "") {
-        local.json = local.json + "," + (waitthread build_json_field "session_id" game.session_id 1)
+    
+    if (local.player.team != NIL && local.player.team != "") {
+        local.data[local.prefix + "_team"] = local.player.team
     }
-            
-    local.json = local.json + "," + (waitthread build_json_field "timestamp" gettime 0)
-            
-end local.json
-end
+end local.data
 
 // ============================================================================
 // BATCHING SYSTEM (JSON Array Format)
 // ============================================================================
 
-queue_event local.json_obj:
-// Guard against NIL object
-    if (local.json_obj == NIL || local.json_obj == "") { end }
-            
+queue_event local.event:
+    if (local.event == NIL) { end }
+    
     // Ensure globals are initialized
     if (game.event_queue == NIL) {
         game.event_queue = "["
@@ -310,19 +319,21 @@ queue_event local.json_obj:
     if (game.max_batch_size == NIL) {
         game.max_batch_size = 20
     }
-            
-    // Close the JSON object (caller provides open brace)
-    local.complete_obj = local.json_obj + "}"
-            
+    
+    // Convert array to JSON string
+    local.json_str = make_json local.event
+    
+    if (local.json_str == NIL || local.json_str == "" || local.json_str == "{}") { end }
+    
     // Add to array (comma separator if not first item)
     if (game.batch_size == 0) {
-        game.event_queue = "[" + local.complete_obj
+        game.event_queue = "[" + local.json_str
     } else {
-        game.event_queue = game.event_queue + "," + local.complete_obj
+        game.event_queue = game.event_queue + "," + local.json_str
     }
-            
+    
     game.batch_size++
-            
+    
     if (game.batch_size >= game.max_batch_size) {
         thread flush_queue
     }

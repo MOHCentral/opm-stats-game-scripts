@@ -9,10 +9,10 @@ on_player_respawn local.player:
     if (typeof local.player != "listener") { end }
     
     local.player.tracker_stance = "stand"
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_respawn"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.data = waitthread global/tracker_common.scr::init_event "player_respawn"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_stand local.player:
@@ -21,20 +21,22 @@ on_player_stand local.player:
     if (typeof local.player != "listener") { end }
     
     local.player.tracker_stance = "stand"
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_stand"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.data = waitthread global/tracker_common.scr::init_event "player_stand"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_spawn local.player:
+    iprintlnbold ("[Tracker] Player Spawned: " + local.player)
+    
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_spawn | Player: " local.player
     if (local.player == NIL) { end }
     if (typeof local.player != "listener") { end }
     
     local.player.tracker_stance = "stand"
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_spawn"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.data = waitthread global/tracker_common.scr::init_event "player_spawn"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end

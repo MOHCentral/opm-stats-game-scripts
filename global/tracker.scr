@@ -80,11 +80,11 @@ main:
     dprintln local.api_msg
     
     // Register console commands
-    registercmd "login" "cmd_login"
-    registercmd "logout" "cmd_logout"
-    registercmd "claim" "cmd_claim"
-    registercmd "stats" "cmd_stats"
-    registercmd "whoami" "cmd_whoami"
+    registercmd "login" cmd_login
+    registercmd "logout" cmd_logout
+    registercmd "claim" cmd_claim
+    registercmd "stats" cmd_stats
+    registercmd "whoami" cmd_whoami
     registercmd "seed" seed_cmd_wrapper
 
     // ========================================================================
@@ -103,9 +103,6 @@ main:
     
     dprintln "Subscribed to all 94 events."
     
-    // Send match_start event (Generates unique match_id)
-    // thread send_match_start  // <-- Moved to on_map_start handler
-    
     // Start heartbeat loop (every 30 seconds)
     thread heartbeat_loop
         
@@ -123,29 +120,28 @@ main:
         wait 2
         thread global/seeder.scr::cmd_seed NIL local.seed_count
     }
+end
 
-    
-    // ============================================================================
-    // PLAYER HUD MANAGER 
-    // ============================================================================
-    // Note: HUD Draw implementation deferred until engine support confirmed.
-    // Currently using ihuddraw and iprint for notifications.
-    // ============================================================================
+// ============================================================================
+// PLAYER HUD MANAGER 
+// ============================================================================
+// Note: HUD Draw implementation deferred until engine support confirmed.
+// Currently using ihuddraw and iprint for notifications.
+// ============================================================================
 
-    player_hud_manager:
-    // Empty placeholder - waiting for hud_draw documentation/examples
-    // When implemented, this will:
-    // 1. Track active players and their HUD elements
-    // 2. Update kill/death counters on HUD
-    // 3. Show achievement notifications
-    // 4. Display session stats
+player_hud_manager:
+// Empty placeholder - waiting for hud_draw documentation/examples
+// When implemented, this will:
+// 1. Track active players and their HUD elements
+// 2. Update kill/death counters on HUD
+// 3. Show achievement notifications
+// 4. Display session stats
     end
 
-    // ============================================================================
-    // HUD NOTIFICATION SYSTEM
-    // ============================================================================
-
-    show_hud_notification local.player local.message local.r local.g local.b:
+// ============================================================================
+// HUD NOTIFICATION SYSTEM
+// ============================================================================
+show_hud_notification local.player local.message local.r local.g local.b:
     if (!local.player) { end }
     if (local.message == NIL || local.message == "") { end }
 
@@ -183,7 +179,6 @@ end
 cmd_login local.player local.args:
     dprintln "cmd_login called"
 
-           
     if (local.args.size < 1) {
         local.player iprint "Usage: login <token>"
         local.player iprint "Get your token from the forum: /action=mohaatoken"
@@ -202,21 +197,20 @@ cmd_login local.player local.args:
     // This verifies the token and returns the SMF member_id
     local.url = game.api_base_url + "/api/v1/auth/verify"
 
-    // Construct JSON payload manually
-    local.data = "{"
-    local.data = local.data + "\"token\": \"" + local.token + "\","
-    local.data = local.data + "\"player_guid\": \"" + (getclientnum local.player) + "\"," // TODO: Use real GUID if available
-    local.data = local.data + "\"player_name\": \"" + local.player.netname + "\","
-    local.data = local.data + "\"server_id\": \"" + game.server_id + "\","
-    local.data = local.data + "\"server_ip\": \"" + (getcvar "net_ip") + "\","
-    local.data = local.data + "\"server_port\": " + (getcvar "net_port")
-    local.data = local.data + "}"
+    // Build payload using make_json
+    local.data["token"] = local.token
+    local.data["player_guid"] = (getclientnum local.player)
+    local.data["player_name"] = local.player.netname
+    local.data["server_id"] = game.server_id
+    local.data["server_ip"] = (getcvar "net_ip")
+    local.data["server_port"] = (int (getcvar "net_port"))
+    local.json = make_json local.data
 
     // No longer storing global reference to avoid race conditions
     // level.pending_auth_player = local.player  <-- REMOVED
 
-    dprintln ("[OPM] POST auth verify: " + local.url + " DATA: " + local.data)
-    curl_post local.url NIL local.data on_smf_auth_verify
+    dprintln ("[OPM] POST auth verify: " + local.url + " DATA: " + local.json)
+    curl_post local.url NIL local.json on_smf_auth_verify
 end
 
 cmd_logout local.player local.args:
@@ -228,13 +222,13 @@ cmd_logout local.player local.args:
     // Send logout notification to SMF (JSON)
     local.url = game.api_base_url + "/api/v1/auth/smf-logout"
 
-    local.data = "{"
-    local.data = local.data + "\"forum_user_id\": " + local.player.smf_member_id + ","
-    local.data = local.data + "\"player_guid\": \"" + (getclientnum local.player) + "\"" // Sending clientnum/guid reference
-    local.data = local.data + "}"
+    // Build payload using make_json
+    local.data["forum_user_id"] = local.player.smf_member_id
+    local.data["player_guid"] = (getclientnum local.player)
+    local.json = make_json local.data
             
-    dprintln ("[OPM] POST logout: " + local.url + " DATA: " + local.data)
-    curl_post local.url NIL local.data on_smf_logout_response // Callback needed? Or just assume success.
+    dprintln ("[OPM] POST logout: " + local.url + " DATA: " + local.json)
+    curl_post local.url NIL local.json on_smf_logout_response
             
     // Clear local state immediately
     local.player.is_authenticated = 0
@@ -269,7 +263,7 @@ cmd_stats local.player local.args:
     
     dprintln ("[OPM] GET stats: " + local.url)
     local.headers = makearray
-        "Accept" "application/json"
+    "Accept" "application/json"
     endarray
 
     curl_get local.url local.headers on_stats_response
@@ -288,18 +282,14 @@ end
 // ============================================================================
 
 send_match_start:
-    local.rnd = uuid_string 16
-    game.match_id = "match_" + game.session_id + "_" + local.rnd
-    game.round_number = 1
+    local.data = waitthread global/tracker_common.scr::init_event "match_start"
+    local.data["map_name"] = game.map_name
+    local.data["gametype"] = (getcvar "g_gametype")
+    local.data["timelimit"] = (int (getcvar "timelimit"))
+    local.data["fraglimit"] = (int (getcvar "fraglimit"))
+    local.data["maxclients"] = (int (getcvar "sv_maxclients"))
     
-    local.json = waitthread global/tracker_common.scr::build_base_json "match_start"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "map_name" game.map_name 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "gametype" (getcvar "g_gametype") 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "timelimit" (getcvar "timelimit") 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "fraglimit" (getcvar "fraglimit") 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "maxclients" (getcvar "sv_maxclients") 0)
-    
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
     dprintln ("MATCH START: " + game.match_id)
 end
 
@@ -313,16 +303,17 @@ send_match_end local.winning_team local.allies_score local.axis_score:
     if (local.round == NIL) { local.round = 0 }
     if (local.map == NIL) { local.map = "unknown" }
     if (local.duration == NIL) { local.duration = 0 }
-    local.json = waitthread global/tracker_common.scr::build_base_json "match_end"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "server_id" game.server_id 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "map_name" local.map 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "duration" local.duration 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "winning_team" local.winning_team 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "allies_score" local.allies_score 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "axis_score" local.axis_score 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "total_rounds" local.round 0)
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "match_end"
+    local.data["server_id"] = game.server_id
+    local.data["map_name"] = local.map
+    local.data["duration"] = local.duration
+    local.data["winning_team"] = local.winning_team
+    local.data["allies_score"] = local.allies_score
+    local.data["axis_score"] = local.axis_score
+    local.data["total_rounds"] = local.round
+    
+    thread global/tracker_common.scr::queue_event local.data
     dprintln ("MATCH END: " + game.match_id + " Winner: " + local.winning_team)
 end
 
@@ -330,21 +321,22 @@ send_round_start:
     game.round_number = (game.round_number + 1)
     if (game.round_number == NIL) { game.round_number = 1 }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "round_start"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "round_number" game.round_number 0)
+    local.data = waitthread global/tracker_common.scr::init_event "round_start"
+    local.data["round_number"] = game.round_number
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 send_round_end local.winning_team:
     local.round = game.round_number
     if (local.round == NIL) { local.round = 0 }
     if (local.winning_team == NIL) { local.winning_team = "unknown" }
-    local.json = waitthread global/tracker_common.scr::build_base_json "round_end"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "round_number" local.round 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "winning_team" local.winning_team 1)
+    
+    local.data = waitthread global/tracker_common.scr::init_event "round_end"
+    local.data["round_number"] = local.round
+    local.data["winning_team"] = local.winning_team
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 heartbeat_loop:
@@ -359,13 +351,13 @@ heartbeat_loop:
     if (local.axis == NIL) { local.axis = 0 }
     if (local.pcount == NIL) { local.pcount = 0 }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "heartbeat"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "round_number" local.round 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "allies_score" local.allies 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "axis_score" local.axis 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "player_count" local.pcount 0)
+    local.data = waitthread global/tracker_common.scr::init_event "heartbeat"
+    local.data["round_number"] = local.round
+    local.data["allies_score"] = local.allies
+    local.data["axis_score"] = local.axis
+    local.data["player_count"] = local.pcount
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
     thread heartbeat_loop
 end
 
@@ -393,10 +385,11 @@ on_player_jump local.player:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_jump | Player: " local.player
     if (local.player == NIL) { end }
     if (!local.player) { end }
-    local.json = waitthread global/tracker_common.scr::build_base_json "jump"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "jump"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_land local.player local.height:
@@ -404,11 +397,12 @@ on_player_land local.player local.height:
     if (local.player == NIL) { end }
     if (!local.player) { end }
     if (local.height == NIL) { local.height = 0 }
-    local.json = waitthread global/tracker_common.scr::build_base_json "land"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "fall_height" local.height 0)
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "land"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["fall_height"] = local.height
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_crouch local.player:
@@ -416,10 +410,11 @@ on_player_crouch local.player:
     if (local.player == NIL) { end }
     if (!local.player) { end }
     local.player.tracker_stance = "crouch"
-    local.json = waitthread global/tracker_common.scr::build_base_json "crouch"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "crouch"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_prone local.player:
@@ -427,10 +422,11 @@ on_player_prone local.player:
     if (local.player == NIL) { end }
     if (!local.player) { end }
     local.player.tracker_stance = "prone"
-    local.json = waitthread global/tracker_common.scr::build_base_json "prone"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "prone"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_distance local.player local.walked local.sprinted local.swam local.driven:
@@ -441,14 +437,15 @@ on_player_distance local.player local.walked local.sprinted local.swam local.dri
     if (local.sprinted == NIL) { local.sprinted = 0 }
     if (local.swam == NIL) { local.swam = 0 }
     if (local.driven == NIL) { local.driven = 0 }
-    local.json = waitthread global/tracker_common.scr::build_base_json "distance"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "walked" local.walked 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "sprinted" local.sprinted 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "swam" local.swam 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "driven" local.driven 0)
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "distance"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["walked"] = local.walked
+    local.data["sprinted"] = local.sprinted
+    local.data["swam"] = local.swam
+    local.data["driven"] = local.driven
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_movement local.type local.time:
@@ -477,13 +474,13 @@ on_player_movement local.type local.time:
                 local.driven = 0.0
             }
     
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_movement"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "sprinted" local.sprinted 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "swam" local.swam 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "driven" local.driven 0)
+    local.data = waitthread global/tracker_common.scr::init_event "player_movement"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["sprinted"] = local.sprinted
+    local.data["swam"] = local.swam
+    local.data["driven"] = local.driven
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 // ============================================================================
@@ -494,20 +491,22 @@ on_ladder_mount local.player local.ladder:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_ladder_mount | Player: " local.player
     if (local.player == NIL) { end }
     if (!local.player) { end }
-    local.json = waitthread global/tracker_common.scr::build_base_json "ladder_mount"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "ladder_mount"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_ladder_dismount local.player local.ladder:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_ladder_dismount | Player: " local.player
     if (local.player == NIL) { end }
     if (!local.player) { end }
-    local.json = waitthread global/tracker_common.scr::build_base_json "ladder_dismount"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "ladder_dismount"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 // MOVED TO: global/tracker_items_ext.scr
@@ -517,11 +516,12 @@ on_player_use local.player local.entity:
     if (local.player == NIL) { end }
     if (!local.player) { end }
     if (local.entity == NIL) { local.entity = "unknown" }
-    local.json = waitthread global/tracker_common.scr::build_base_json "use"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "entity" local.entity 1)
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "use"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["entity"] = local.entity
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 // ============================================================================
@@ -531,21 +531,23 @@ end
 on_client_connect local.clientnum:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_client_connect | ClientNum: " local.clientnum
     if (local.clientnum == NIL) { local.clientnum = -1 }
-    local.json = waitthread global/tracker_common.scr::build_base_json "connect"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json self "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "client_num" local.clientnum 0)
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "connect"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["client_num"] = local.clientnum
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_client_disconnect local.player:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_client_disconnect | Player: " local.player
     if (local.player == NIL) { end }
     if (!local.player) { end }
-    local.json = waitthread global/tracker_common.scr::build_base_json "disconnect"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
     
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "disconnect"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_client_begin local.player:
@@ -559,10 +561,10 @@ on_client_begin local.player:
     // Initialize stance
     local.player.tracker_stance = "stand"
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "client_begin"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.data = waitthread global/tracker_common.scr::init_event "client_begin"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
     
     // Start per-player accuracy summary thread
     thread player_accuracy_loop local.player
@@ -575,12 +577,12 @@ player_accuracy_loop local.player:
         if (!local.player) { end }
 
         if (local.player.shots_fired > 0) {
-            local.json = waitthread global/tracker_common.scr::build_base_json "accuracy_summary"
-            local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-            local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "fired" local.player.shots_fired 0)
-            local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "hits" local.player.shots_hit 0)
+            local.data = waitthread global/tracker_common.scr::init_event "accuracy_summary"
+            local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+            local.data["fired"] = local.player.shots_fired
+            local.data["hits"] = local.player.shots_hit
             
-            thread global/tracker_common.scr::queue_event local.json
+            thread global/tracker_common.scr::queue_event local.data
         }
     }
 end
@@ -591,12 +593,13 @@ on_team_join local.player local.old_team local.new_team:
     if (!local.player) { end }
     if (local.old_team == NIL) { local.old_team = "unknown" }
     if (local.new_team == NIL) { local.new_team = "unknown" }
-    local.json = waitthread global/tracker_common.scr::build_base_json "team_join"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "old_team" local.old_team 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "new_team" local.new_team 1)
+    
+    local.data = waitthread global/tracker_common.scr::init_event "team_join"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["old_team"] = local.old_team
+    local.data["new_team"] = local.new_team
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 // on_player_say is handled in tracker_interaction_ext.scr
@@ -695,12 +698,12 @@ on_smf_auth_verify local.success local.response local.http_code:
 end
 
 send_player_auth_event local.player:
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_auth"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "smf_member_id" local.player.smf_member_id 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "smf_member_name" local.player.smf_member_name 1)
+    local.data = waitthread global/tracker_common.scr::init_event "player_auth"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["smf_member_id"] = local.player.smf_member_id
+    local.data["smf_member_name"] = local.player.smf_member_name
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_auth_verify local.success local.response local.http_code:
@@ -769,6 +772,9 @@ on_map_start:
     // Re-initialize map/round state
     game.round_number = 1
     game.match_start_time = gettime
+    
+    local.rnd = uuid_string 16
+    game.match_id = "match_" + local.rnd
     
     // Call extension and send match_start telemetry
     thread global/tracker_gameflow_ext.scr::on_map_start

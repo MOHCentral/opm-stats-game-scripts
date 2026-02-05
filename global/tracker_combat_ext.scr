@@ -1,306 +1,280 @@
 // ============================================================================
-// OpenMOHAA Telemetry Tracker - Combat Extensions
-// Additional ScriptDelegate combat events
+// OpenMOHAA Telemetry Tracker - Combat Extensions v2.0
+// Using make_json for clean event building
 // ============================================================================
-
 
 on_player_suicide local.player:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_suicide | Player: " local.player
-    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+    if (local.player == NIL || typeof local.player != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_suicide"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "player_suicide"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_crushed local.player local.attacker:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_crushed | Player: " local.player " | Attacker: " local.attacker
-    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+    if (local.player == NIL || typeof local.player != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_crushed"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
-
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "player_crushed"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_telefragged local.player local.attacker:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_telefragged | Player: " local.player " | Attacker: " local.attacker
-    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+    if (local.player == NIL || typeof local.player != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_telefragged"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
-
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "player_telefragged"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_roadkill local.attacker local.victim:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_roadkill | Attacker: " local.attacker " | Victim: " local.victim
-    if (local.attacker == NIL || local.attacker == NULL || typeof local.attacker != "listener") { end }
-    if (local.victim == NIL || local.victim == NULL || typeof local.victim != "listener") { end }
+    if (local.attacker == NIL || typeof local.attacker != "listener") { end }
+    if (local.victim == NIL || typeof local.victim != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_roadkill"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.victim "victim"
-
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "player_roadkill"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.victim "victim"
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_bash local.attacker local.victim:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_bash | Attacker: " local.attacker " | Victim: " local.victim
-    if (local.attacker == NIL || local.attacker == NULL || typeof local.attacker != "listener") { end }
-    if (local.victim == NIL || local.victim == NULL || typeof local.victim != "listener") { end }
+    if (local.attacker == NIL || typeof local.attacker != "listener") { end }
+    if (local.victim == NIL || typeof local.victim != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_bash"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.victim "victim"
-
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "player_bash"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.victim "victim"
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_teamkill local.killer local.victim:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_teamkill | Killer: " local.killer " | Victim: " local.victim
-    if (local.killer == NIL || local.killer == NULL || typeof local.killer != "listener") { end }
-    if (local.victim == NIL || local.victim == NULL || typeof local.victim != "listener") { end }
+    if (local.killer == NIL || typeof local.killer != "listener") { end }
+    if (local.victim == NIL || typeof local.victim != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_teamkill"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.killer "killer"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.victim "victim"
-
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "player_teamkill"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.killer "killer"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.victim "victim"
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_weapon_reload_done local.owner local.weapon_name:
-// This is owner/player
-    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+    if (local.owner == NIL || typeof local.owner != "listener") { end }
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_reload_done | Owner: " local.owner " | Weapon: " local.weapon_name
     if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-    
-    local.json = waitthread global/tracker_common.scr::build_base_json "weapon_reload_done"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.weapon_name 1)
 
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_reload_done"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_weapon_ready local.owner local.weapon_name:
-    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+    if (local.owner == NIL || typeof local.owner != "listener") { end }
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_ready | Owner: " local.owner " | Weapon: " local.weapon_name
     if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-    
-    local.json = waitthread global/tracker_common.scr::build_base_json "weapon_ready"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.weapon_name 1)
 
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_ready"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_weapon_no_ammo local.owner local.weapon_name:
-    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+    if (local.owner == NIL || typeof local.owner != "listener") { end }
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_no_ammo | Owner: " local.owner " | Weapon: " local.weapon_name
     if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-    
-    local.json = waitthread global/tracker_common.scr::build_base_json "weapon_no_ammo"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.weapon_name 1)
 
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_no_ammo"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_weapon_holster local.owner local.weapon_name:
-    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+    if (local.owner == NIL || typeof local.owner != "listener") { end }
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_holster | Owner: " local.owner " | Weapon: " local.weapon_name
     if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-    
-    local.json = waitthread global/tracker_common.scr::build_base_json "weapon_holster"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.weapon_name 1)
 
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_holster"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_weapon_raise local.owner local.weapon_name:
-    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
+    if (local.owner == NIL || typeof local.owner != "listener") { end }
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_raise | Owner: " local.owner " | Weapon: " local.weapon_name
     if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
-    
-    local.json = waitthread global/tracker_common.scr::build_base_json "weapon_raise"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.weapon_name 1)
 
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_raise"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
 end
 
-on_weapon_drop local.owner local.weapon:
-    if (local.owner == NIL || local.owner == NULL || typeof local.owner != "listener") { end }
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_drop | Owner: " local.owner " | Weapon: " local.weapon
+on_weapon_drop local.owner local.weapon_entity:
+    if (local.owner == NIL || typeof local.owner != "listener") { end }
+    local.weapon_name = waitthread global/tracker_common.scr::get_entity_name local.weapon_entity
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_drop | Owner: " local.owner " | Weapon: " local.weapon_name
+
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_drop"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// KILL/DEATH EVENTS
+// ============================================================================
+
+on_player_kill local.inflictor local.shooter local.victim local.weapon local.location local.meansofdeath:
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_kill | Shooter: " local.shooter " | Victim: " local.victim " | Weapon: " local.weapon
+    if (local.victim == NIL || typeof local.victim != "listener") { end }
     if (local.weapon == NIL) { local.weapon = "unknown" }
-    
-    local.json = waitthread global/tracker_common.scr::build_base_json "weapon_drop"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.weapon 1)
+    if (local.meansofdeath == NIL) { local.meansofdeath = "unknown" }
+    if (local.location == NIL) { local.location = "unknown" }
 
-    thread global/tracker_common.scr::queue_event local.json
-end
-
-// ============================================================================
-// MOVED FROM TRACKER.SCR (Combat Events)
-// ============================================================================
-
-on_player_kill local.attacker local.attacker2 local.victim local.inflictor local.hitloc local.mod:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_kill | Att: " local.attacker " | Vic: " local.victim " | Inf: " local.inflictor " | Loc: " local.hitloc " | Mod: " local.mod
-    
-    // Type-safe check for attacker entity
-    if (local.attacker != NIL && local.attacker != NULL && typeof local.attacker == "listener") {
-        if (local.attacker.shots_hit == NIL) { local.attacker.shots_hit = 0 }
-            local.attacker.shots_hit++
+    // Track accuracy
+    if (local.shooter != NIL && typeof local.shooter == "listener") {
+        if (local.shooter.shots_hit == NIL) { local.shooter.shots_hit = 0 }
+        local.shooter.shots_hit++
     }
-    
-    if (local.inflictor == NIL) { local.inflictor = "unknown" }
-    if (local.hitloc == NIL) { local.hitloc = "unknown" }
-    if (local.mod == NIL) { local.mod = "unknown" }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_kill"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.victim "victim"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "inflictor" local.inflictor 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "hitlocation" local.hitloc 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "mod" local.mod 1)
-
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "player_kill"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.shooter "attacker"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.victim "victim"
+    local.data["weapon"] = local.weapon
+    local.data["hitlocation"] = local.location
+    local.data["mod"] = local.meansofdeath
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_death local.victim local.inflictor:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_death | Victim: " local.victim " | Inflictor: " local.inflictor
-    if (local.victim == NIL || local.victim == NULL || typeof local.victim != "listener") { end }
-    if (local.inflictor == NIL) { local.inflictor = "unknown" }
+    if (local.victim == NIL || typeof local.victim != "listener") { end }
+    local.inflictor_name = waitthread global/tracker_common.scr::get_entity_name local.inflictor
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "death"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.victim "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "inflictor" local.inflictor 1)
-
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "death"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.victim "player"
+    local.data["inflictor"] = local.inflictor_name
+    thread global/tracker_common.scr::queue_event local.data
 end
 
-on_player_damage local.victim local.attacker local.amount local.mod:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_damage | Vic: " local.victim " | Att: " local.attacker " | Dmg: " local.amount " | Mod: " local.mod
-    if (local.amount == NIL) { local.amount = 0 }
-    if (local.mod == NIL) { local.mod = "unknown" }
-    
-    local.json = waitthread global/tracker_common.scr::build_base_json "damage"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.victim "victim"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
-    
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "damage" local.amount 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.mod 1)
-
-    thread global/tracker_common.scr::queue_event local.json
-end
-
-on_player_pain local.player local.attacker local.damage local.mod local.location:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_pain | Player: " local.player " | Att: " local.attacker " | Dmg: " local.damage " | Loc: " local.location
+on_player_damage local.victim local.attacker local.damage local.meansofdeath:
+    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_damage | Victim: " local.victim " | Attacker: " local.attacker " | Damage: " local.damage
+    if (local.victim == NIL || typeof local.victim != "listener") { end }
     if (local.damage == NIL) { local.damage = 0 }
-    if (local.mod == NIL) { local.mod = "unknown" }
-    if (local.location == NIL) { local.location = "unknown" }
-    
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_pain"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "victim"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
-    
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "damage" local.damage 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.mod 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "hitloc" local.location 1)
+    if (local.meansofdeath == NIL) { local.meansofdeath = "unknown" }
 
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "damage"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.victim "victim"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+    local.data["damage"] = local.damage
+    local.data["weapon"] = local.meansofdeath
+    thread global/tracker_common.scr::queue_event local.data
 end
+
+on_player_pain local.victim local.attacker local.damage local.meansofdeath local.hit_location:
+    if (local.victim == NIL || typeof local.victim != "listener") { end }
+    if (local.damage == NIL) { local.damage = 0 }
+    if (local.meansofdeath == NIL) { local.meansofdeath = "unknown" }
+    if (local.hit_location == NIL) { local.hit_location = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "player_pain"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.victim "victim"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+    local.data["damage"] = local.damage
+    local.data["weapon"] = local.meansofdeath
+    local.data["hitloc"] = local.hit_location
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// Headshots derived from hitloc in player_kill - this is kept for backwards compat
+on_player_headshot local.attacker local.victim local.weapon:
+end
+
+// ============================================================================
+// WEAPON FIRE/HIT EVENTS
+// ============================================================================
 
 on_weapon_fire local.player local.weapon_name local.ammo_left:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_fire | Player: " local.player " | Weapon: " local.weapon_name " | Ammo: " local.ammo_left
-    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+    if (local.player == NIL || typeof local.player != "listener") { end }
     if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
     if (local.ammo_left == NIL) { local.ammo_left = 0 }
-    
-    // Track localized accuracy
+
     if (local.player.shots_fired == NIL) { local.player.shots_fired = 0 }
-        local.player.shots_fired++
+    local.player.shots_fired++
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "weapon_fire"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.weapon_name 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "ammo_remaining" local.ammo_left 0)
-
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_fire"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["weapon"] = local.weapon_name
+    local.data["ammo_remaining"] = local.ammo_left
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_weapon_hit local.player local.target local.location:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_weapon_hit | Player: " local.player " | Target: " local.target " | Loc: " local.location
-    if (local.player == NIL || local.player == NULL || typeof local.player != "listener") { end }
+    if (local.player == NIL || typeof local.player != "listener") { end }
     if (local.location == NIL) { local.location = "unknown" }
-    
+
     if (local.player.shots_hit == NIL) { local.player.shots_hit = 0 }
-        local.player.shots_hit++
+    local.player.shots_hit++
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "weapon_hit"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.target "target"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "hitloc" local.location 1)
-
-    thread global/tracker_common.scr::queue_event local.json
-end
-
-// ============================================================================
-// DEPRECATED: Headshots are now derived from hitloc in player_kill events.
-// The API computes isHeadshot = (hitloc == "head" || hitloc == "helmet")
-// This handler is kept for backwards compatibility but sends NO event.
-// Remove calls to this from tracker_init_player.scr and seeder.scr
-// ============================================================================
-on_player_headshot local.attacker local.victim local.weapon:
-    // DEPRECATED: No-op. Headshot stats are derived from player_kill hitloc.
-    // waitthread global/tracker_common.scr::debug_log_var "DEPRECATED: on_player_headshot called - ignoring"
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_hit"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.target "target"
+    local.data["hitloc"] = local.location
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_weapon_reload local.owner local.weapon:
-    if (local.owner == NIL) { end }
-    if (typeof local.owner != "listener") { end }
+    if (local.owner == NIL || typeof local.owner != "listener") { end }
     if (local.weapon == NIL) { local.weapon = "unknown" }
-    local.json = waitthread global/tracker_common.scr::build_base_json "reload"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "weapon" local.weapon 1)
 
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "reload"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["weapon"] = local.weapon
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_weapon_change local.owner local.old local.new local.client_num:
-    if (local.owner == NIL) { end }
-    if (typeof local.owner != "listener") { end }
+    if (local.owner == NIL || typeof local.owner != "listener") { end }
     if (local.old == NIL) { local.old = "none" }
     if (local.new == NIL) { local.new = "unknown" }
-    local.json = waitthread global/tracker_common.scr::build_base_json "weapon_change"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "old_weapon" local.old 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "new_weapon" local.new 1)
 
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_change"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["old_weapon"] = local.old
+    local.data["new_weapon"] = local.new
+    thread global/tracker_common.scr::queue_event local.data
 end
 
-on_grenade_throw local.owner local.proj:
-    if (local.owner == NIL) { end }
-    if (typeof local.owner != "listener") { end }
-    if (local.proj == NIL) { local.proj = "unknown" }
-    local.json = waitthread global/tracker_common.scr::build_base_json "grenade_throw"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "projectile" local.proj 1)
+// ============================================================================
+// GRENADE EVENTS
+// ============================================================================
 
-    thread global/tracker_common.scr::queue_event local.json
+on_grenade_throw local.owner local.proj:
+    if (local.owner == NIL || typeof local.owner != "listener") { end }
+    local.proj_name = waitthread global/tracker_common.scr::get_entity_name local.proj
+
+    local.data = waitthread global/tracker_common.scr::init_event "grenade_throw"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["projectile"] = local.proj_name
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_grenade_explode local.owner local.proj:
-    if (local.proj == NIL) { local.proj = "unknown" }
-    local.json = waitthread global/tracker_common.scr::build_base_json "grenade_explode"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.owner "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "projectile" local.proj 1)
+    local.proj_name = waitthread global/tracker_common.scr::get_entity_name local.proj
 
-    thread global/tracker_common.scr::queue_event local.json
+    local.data = waitthread global/tracker_common.scr::init_event "grenade_explode"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.owner "player"
+    local.data["projectile"] = local.proj_name
+    thread global/tracker_common.scr::queue_event local.data
 end

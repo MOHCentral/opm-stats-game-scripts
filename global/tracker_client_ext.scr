@@ -7,10 +7,10 @@ on_client_userinfo_changed local.player:
     if (local.player == NIL) { end }
     if (typeof local.player != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "client_userinfo_changed"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.data = waitthread global/tracker_common.scr::init_event "client_userinfo_changed"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_player_inactivity_drop local.player:
@@ -18,10 +18,10 @@ on_player_inactivity_drop local.player:
     if (local.player == NIL) { end }
     if (typeof local.player != "listener") { end }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "player_inactivity_drop"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
+    local.data = waitthread global/tracker_common.scr::init_event "player_inactivity_drop"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_vote_start local.player local.vote_name local.vote_string:
@@ -31,12 +31,12 @@ on_vote_start local.player local.vote_name local.vote_string:
     if (local.vote_name == NIL) { local.vote_name = "unknown" }
     if (local.vote_string == NIL) { local.vote_string = "" }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "vote_start"
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.player "player"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "vote_name" local.vote_name 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "vote_string" local.vote_string 1)
+    local.data = waitthread global/tracker_common.scr::init_event "vote_start"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["vote_name"] = local.vote_name
+    local.data["vote_string"] = local.vote_string
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
@@ -46,13 +46,13 @@ on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
     if (local.yes_count == NIL) { local.yes_count = 0 }
     if (local.no_count == NIL) { local.no_count = 0 }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "vote_passed"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "vote_name" local.vote_name 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "vote_string" local.vote_string 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "yes_count" local.yes_count 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "no_count" local.no_count 0)
+    local.data = waitthread global/tracker_common.scr::init_event "vote_passed"
+    local.data["vote_name"] = local.vote_name
+    local.data["vote_string"] = local.vote_string
+    local.data["yes_count"] = local.yes_count
+    local.data["no_count"] = local.no_count
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count:
@@ -62,11 +62,11 @@ on_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count:
     if (local.yes_count == NIL) { local.yes_count = 0 }
     if (local.no_count == NIL) { local.no_count = 0 }
 
-    local.json = waitthread global/tracker_common.scr::build_base_json "vote_failed"
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "vote_name" local.vote_name 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "fail_reason" local.fail_reason 1)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "yes_count" local.yes_count 0)
-    local.json = local.json + "," + (waitthread global/tracker_common.scr::build_json_field "no_count" local.no_count 0)
+    local.data = waitthread global/tracker_common.scr::init_event "vote_failed"
+    local.data["vote_name"] = local.vote_name
+    local.data["fail_reason"] = local.fail_reason
+    local.data["yes_count"] = local.yes_count
+    local.data["no_count"] = local.no_count
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end

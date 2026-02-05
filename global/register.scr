@@ -44,14 +44,13 @@ register_server:
         local.port = "12203"
     }
 
-    local.data = "name=" + local.name
-    local.data = local.data + "&ip_address=" + local.ip
-    local.data = local.data + "&port=" + local.port
-
     local.url = game.api_base_url + "/api/v1/servers/register"
 
-    // Use JSON payload
-    local.json = "{\"name\":\"" + local.name + "\",\"ip_address\":\"" + local.ip + "\",\"port\":" + local.port + "}"
+    // Build payload using make_json
+    local.data["name"] = local.name
+    local.data["ip_address"] = local.ip
+    local.data["port"] = (int local.port)
+    local.json = make_json local.data
     
     local.headers = makearray
     "Content-Type" "application/json"

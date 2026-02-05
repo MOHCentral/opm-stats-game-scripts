@@ -5,32 +5,32 @@
 on_explosion local.entity local.attacker local.damage:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_explosion | Entity: " local.entity " | Attacker: " local.attacker " | Damage: " local.damage
     if (local.damage == NIL) { local.damage = 0 }
-        if (local.entity == NIL) { local.entity = "unknown" }
+    if (local.entity == NIL) { local.entity = "unknown" }
 
-            local.json = waitthread global/tracker_common.scr::build_base_json "explosion"
-    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "damage" local.damage)
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.attacker "attacker"
+    local.data = waitthread global/tracker_common.scr::init_event "explosion"
+    local.data["damage"] = local.damage
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_door_open local.door local.activator:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_door_open | Door: " local.door " | Activator: " local.activator
     if (local.door == NIL) { local.door = "unknown" }
 
-        local.json = waitthread global/tracker_common.scr::build_base_json "door_open"
-    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "entity" local.door)
-    local.json = waitthread global/tracker_common.scr::add_player_json_fields local.json local.activator "player"
+    local.data = waitthread global/tracker_common.scr::init_event "door_open"
+    local.data["entity"] = local.door
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.activator "player"
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end
 
 on_door_close local.door:
     waitthread global/tracker_common.scr::debug_log_var "EVENT: on_door_close | Door: " local.door
     if (local.door == NIL) { local.door = "unknown" }
 
-        local.json = waitthread global/tracker_common.scr::build_base_json "door_close"
-    local.json = local.json + (waitthread global/tracker_common.scr::build_json_field "entity" local.door)
+    local.data = waitthread global/tracker_common.scr::init_event "door_close"
+    local.data["entity"] = local.door
 
-    thread global/tracker_common.scr::queue_event local.json
+    thread global/tracker_common.scr::queue_event local.data
 end

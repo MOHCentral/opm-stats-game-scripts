@@ -8,4 +8,9 @@ main:
     endarray
        
     println (local.headers[2][2]) // Output the server token header value super_secret_token
+
+
+    local.testArray["test"] = "yey this worked"
+    println (local.testArray["test"]) // Output the value from the test array: value
 end
+

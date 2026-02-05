@@ -25,7 +25,7 @@ init:
     // ========================================================================
     // SERVER EVENTS (3 events)
     // ========================================================================
-    event_subscribe "server_console_command" wrapper_server_console_command
+    // event_subscribe "server_console_command" wrapper_server_console_command
 
     // ========================================================================
     // MAP EVENTS (8 events)
@@ -43,8 +43,8 @@ init:
     // WORLD EVENTS (3 events)
     // ========================================================================
     event_subscribe "door_open" wrapper_door_open
-    event_subscribe "door_close" wrapper_door_close
-    event_subscribe "explosion" wrapper_explosion
+    // event_subscribe "door_close" wrapper_door_close
+    // event_subscribe "explosion" wrapper_explosion
 
     // ========================================================================
     // AI/ACTOR EVENTS (7 events)
@@ -53,9 +53,9 @@ init:
     event_subscribe "actor_killed" wrapper_actor_killed
     event_subscribe "bot_spawn" wrapper_bot_spawn
     event_subscribe "bot_killed" wrapper_bot_killed
-    event_subscribe "bot_roam" wrapper_bot_roam
-    event_subscribe "bot_curious" wrapper_bot_curious
-    event_subscribe "bot_attack" wrapper_bot_attack
+    // event_subscribe "bot_roam" wrapper_bot_roam
+    // event_subscribe "bot_curious" wrapper_bot_curious
+    // event_subscribe "bot_attack" wrapper_bot_attack
 
     dprintln "Server Event Subscriptions Complete (32 events)."
 end
