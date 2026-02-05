@@ -20,7 +20,6 @@ init:
     event_subscribe "intermission_start" wrapper_intermission_start
     event_subscribe "warmup_start" wrapper_warmup_start
     event_subscribe "warmup_end" wrapper_warmup_end
-    event_subscribe "objective_update" wrapper_objective_update
 
     // ========================================================================
     // SERVER EVENTS (3 events)
@@ -53,9 +52,6 @@ init:
     event_subscribe "actor_killed" wrapper_actor_killed
     event_subscribe "bot_spawn" wrapper_bot_spawn
     event_subscribe "bot_killed" wrapper_bot_killed
-    // event_subscribe "bot_roam" wrapper_bot_roam
-    // event_subscribe "bot_curious" wrapper_bot_curious
-    // event_subscribe "bot_attack" wrapper_bot_attack
 
     dprintln "Server Event Subscriptions Complete (32 events)."
 end
@@ -105,10 +101,6 @@ wrapper_warmup_end local.map_name:
     thread global/tracker_gameflow_ext.scr::on_warmup_end local.map_name
 end
 
-wrapper_objective_update local.objective_index local.new_status:
-    thread global/tracker_gameflow_ext.scr::on_objective_update local.objective_index local.new_status
-end
-
 // Server wrappers
 wrapper_server_console_command local.command_string:
     thread global/tracker_gameflow_ext.scr::on_server_console_command local.command_string
@@ -152,10 +144,6 @@ wrapper_door_open local.activator:
     thread global/tracker_world_ext.scr::on_door_open self local.activator
 end
 
-wrapper_door_close:
-    thread global/tracker_world_ext.scr::on_door_close self
-end
-
 wrapper_explosion local.attacker local.damage:
     thread global/tracker_world_ext.scr::on_explosion self local.attacker local.damage
 end
@@ -178,15 +166,4 @@ wrapper_bot_killed local.attacker:
     dprintln ("wrapper_bot_killed | attacker=" + local.attacker + " | type=" + typeof local.attacker)
     thread global/tracker_bot_ext.scr::on_bot_killed self local.attacker
 end
-
-wrapper_bot_roam:
-    thread global/tracker_bot_ext.scr::on_bot_roam self
-end
-
-wrapper_bot_curious:
-    thread global/tracker_bot_ext.scr::on_bot_curious self
-end
-
-wrapper_bot_attack:
-    thread global/tracker_bot_ext.scr::on_bot_attack self
-end
+ 

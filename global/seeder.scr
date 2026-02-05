@@ -758,8 +758,7 @@ simulate_vehicle_events local.players:
     waitthread call_vehicle_exit local.player local.veh
 
     if (randomint 20 == 0) {
-        waitthread call_vehicle_collision local.player local.veh
-        waitthread call_vehicle_death local.player local.player
+        waitthread call_vehicle_crash local.veh local.player
     }
 
     local.veh remove
@@ -1316,13 +1315,8 @@ call_vehicle_exit local.player local.vehicle_entity:
     level.seed_total_events++
 end
 
-call_vehicle_death local.player local.attacker:
-    thread global/tracker_vehicle_ext.scr::on_vehicle_death local.player local.attacker
-    level.seed_total_events++
-end
-
-call_vehicle_collision local.player local.other_entity:
-    thread global/tracker_vehicle_ext.scr::on_vehicle_collision local.player local.other_entity
+call_vehicle_crash local.vehicle_entity local.other_entity:
+    thread global/tracker_vehicle_ext.scr::on_vehicle_crash local.vehicle_entity local.other_entity
     level.seed_total_events++
 end
 

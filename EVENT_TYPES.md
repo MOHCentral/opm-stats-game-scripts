@@ -1,6 +1,6 @@
 # OpenMOHAA Event Types Reference
 
-> **Generated at:** 2026-02-02T21:53:10.463236
+> **Generated at:** 2026-02-05T10:35:52.150009
 > 
 > **Source of Truth:** `opm-stats-api/web/static/openapi.yaml`
 > 
@@ -20,7 +20,6 @@ When sending events via `build_base_payload`, use these exact type names.
 | `game_end` | Game Flow |  |
 | `match_start` | Match |  |
 | `match_end` | Match |  |
-| `match_outcome` | Match |  |
 | `round_start` | Round |  |
 | `round_end` | Round |  |
 | `warmup_start` | Warmup |  |
@@ -73,15 +72,10 @@ When sending events via `build_base_payload`, use these exact type names.
 | `armor_pickup` | Item |  |
 | `vehicle_enter` | Vehicle |  |
 | `vehicle_exit` | Vehicle |  |
-| `vehicle_death` | Vehicle |  |
 | `vehicle_crash` | Vehicle |  |
 | `vehicle_change` | Vehicle |  |
 | `turret_enter` | Turret |  |
 | `turret_exit` | Turret |  |
-| `server_init` | Server |  |
-| `server_start` | Server |  |
-| `server_shutdown` | Server |  |
-| `server_spawned` | Server |  |
 | `server_console_command` | Server |  |
 | `heartbeat` | Misc |  |
 | `map_init` | Map |  |
@@ -93,7 +87,6 @@ When sending events via `build_base_payload`, use these exact type names.
 | `map_change_start` | Map |  |
 | `map_restart` | Map |  |
 | `team_join` | Team |  |
-| `team_change` | Team |  |
 | `team_win` | Team |  |
 | `vote_start` | Vote |  |
 | `vote_passed` | Vote |  |
@@ -119,7 +112,7 @@ When sending events via `build_base_payload`, use these exact type names.
 | `teamkill_kick` | Other |  |
 | `player_auth` | Player |  |
 | `accuracy_summary` | Other |  |
-| `identity_claim` | Other |  |
+| `match_outcome` | Match |  |
 
 ## Aliases
 
