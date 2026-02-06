@@ -53,10 +53,10 @@ on_player_kill local.attacker local.damage local.inflictor local.position local.
     local.data = waitthread global/tracker_common.scr::init_event "player_kill"
     local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "victim"
-    local.data["weapon"] = local.weapon_name
-    local.data["damage"] = local.damage
-    local.data["hitlocation"] = waitthread global/tracker_common.scr::hitloc_to_string local.location
-    local.data["mod"] = waitthread global/tracker_common.scr::mod_to_string local.meansofdeath
+    local.data["weapon"] = (string local.weapon_name)
+    local.data["damage"] = (float local.damage)
+    local.data["hitloc"] = (string (waitthread global/tracker_common.scr::hitloc_to_string local.location))
+    local.data["mod"] = (string (waitthread global/tracker_common.scr::mod_to_string local.meansofdeath))
 
     thread global/tracker_common.scr::queue_event local.data
     thread global/tracker_common.scr::flush_queue
@@ -75,10 +75,10 @@ on_player_damage local.attacker local.damage local.inflictor local.position loca
     local.data = waitthread global/tracker_common.scr::init_event "damage"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "victim"
     local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
-    local.data["weapon"] = local.weapon_name
-    local.data["damage"] = local.damage
-    local.data["mod"] = waitthread global/tracker_common.scr::mod_to_string local.meansofdeath
-    local.data["hitlocation"] = waitthread global/tracker_common.scr::hitloc_to_string local.location
+    local.data["weapon"] = (string local.weapon_name)
+    local.data["damage"] = (float local.damage)
+    local.data["mod"] = (string (waitthread global/tracker_common.scr::mod_to_string local.meansofdeath))
+    local.data["hitloc"] = (string (waitthread global/tracker_common.scr::hitloc_to_string local.location))
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -116,8 +116,8 @@ on_weapon_fire local.weapon_name local.ammo_remaining:
 
     local.data = waitthread global/tracker_common.scr::init_event "weapon_fire"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["weapon"] = local.weapon_name
-    local.data["ammo_remaining"] = local.ammo_remaining
+    local.data["weapon"] = (string local.weapon_name)
+    local.data["ammo_remaining"] = (int local.ammo_remaining)
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -131,7 +131,7 @@ on_weapon_hit local.target local.location:
     local.data = waitthread global/tracker_common.scr::init_event "weapon_hit"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
     local.data = waitthread global/tracker_common.scr::add_player local.data local.target "target"
-    local.data["hitloc"] = local.location
+    local.data["hitloc"] = (string local.location)
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -142,7 +142,7 @@ on_weapon_reload_done local.weapon_name:
 
     local.data = waitthread global/tracker_common.scr::init_event "weapon_reload_done"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["weapon"] = local.weapon_name
+    local.data["weapon"] = (string local.weapon_name)
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -153,8 +153,8 @@ on_weapon_change local.old_weapon local.new_weapon local.client_num:
 
     local.data = waitthread global/tracker_common.scr::init_event "weapon_change"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["old_weapon"] = local.old_weapon
-    local.data["new_weapon"] = local.new_weapon
+    local.data["old_weapon"] = (string local.old_weapon)
+    local.data["new_weapon"] = (string local.new_weapon)
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -165,7 +165,7 @@ on_weapon_no_ammo local.weapon_name:
 
     local.data = waitthread global/tracker_common.scr::init_event "weapon_no_ammo"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["weapon"] = local.weapon_name
+    local.data["weapon"] = (string local.weapon_name)
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -176,7 +176,7 @@ on_weapon_holster local.weapon_name:
 
     local.data = waitthread global/tracker_common.scr::init_event "weapon_holster"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["weapon"] = local.weapon_name
+    local.data["weapon"] = (string local.weapon_name)
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -187,7 +187,7 @@ on_weapon_raise local.weapon_name:
 
     local.data = waitthread global/tracker_common.scr::init_event "weapon_raise"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["weapon"] = local.weapon_name
+    local.data["weapon"] = (string local.weapon_name)
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -198,7 +198,7 @@ on_weapon_drop local.weapon_entity:
 
     local.data = waitthread global/tracker_common.scr::init_event "weapon_drop"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["weapon"] = local.weapon_name
+    local.data["weapon"] = (string local.weapon_name)
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -212,7 +212,7 @@ on_grenade_throw local.projectile_entity:
 
     local.data = waitthread global/tracker_common.scr::init_event "grenade_throw"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["projectile"] = local.proj_name
+    local.data["projectile"] = (string local.proj_name)
     thread global/tracker_common.scr::queue_event local.data
 end
 
@@ -222,6 +222,6 @@ on_grenade_explode local.grenade_entity:
 
     local.data = waitthread global/tracker_common.scr::init_event "grenade_explode"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["projectile"] = local.proj_name
+    local.data["projectile"] = (string local.proj_name)
     thread global/tracker_common.scr::queue_event local.data
 end

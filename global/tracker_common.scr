@@ -209,20 +209,21 @@ get_entity_name local.entity:
 end
 
 // Creates base event data array with common fields
+// NOTE: Explicit (string ...) casts ensure make_json quotes strings correctly
 init_event local.event_type:
-    local.data["type"] = local.event_type
+    local.data["type"] = (string local.event_type)
     
     local.match_id = game.match_id
     if (local.match_id == NIL || local.match_id == "") {
         local.match_id = "no_match"
     }
-    local.data["match_id"] = local.match_id
+    local.data["match_id"] = (string local.match_id)
     
     if (game.session_id != NIL && game.session_id != "") {
-        local.data["session_id"] = game.session_id
+        local.data["session_id"] = (string game.session_id)
     }
     
-    local.data["timestamp"] = level.time
+    local.data["timestamp"] = (float level.time)
 end local.data
 
 // Adds player fields to event data array
@@ -241,35 +242,35 @@ add_player local.data local.player local.prefix:
         local.guid = "unauth_" + (getclientnum local.player)
     }
     
-    local.data[local.prefix + "_name"] = local.name
-    local.data[local.prefix + "_guid"] = local.guid
+    local.data[local.prefix + "_name"] = (string local.name)
+    local.data[local.prefix + "_guid"] = (string local.guid)
     
     if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
-        local.data[local.prefix + "_smf_id"] = local.player.smf_member_id
+        local.data[local.prefix + "_smf_id"] = (int local.player.smf_member_id)
     }
     
     if (local.player.team != NIL && local.player.team != "") {
-        local.data[local.prefix + "_team"] = local.player.team
+        local.data[local.prefix + "_team"] = (string local.player.team)
     }
     
     if (local.player.origin != NIL) {
         local.pos = local.player.origin
-        local.data[local.prefix + "_x"] = local.pos[0]
-        local.data[local.prefix + "_y"] = local.pos[1]
-        local.data[local.prefix + "_z"] = local.pos[2]
+        local.data[local.prefix + "_x"] = (float local.pos[0])
+        local.data[local.prefix + "_y"] = (float local.pos[1])
+        local.data[local.prefix + "_z"] = (float local.pos[2])
     }
     
     if (local.player.angles != NIL) {
         local.ang = local.player.angles
-        local.data[local.prefix + "_pitch"] = local.ang[0]
-        local.data[local.prefix + "_yaw"] = local.ang[1]
+        local.data[local.prefix + "_pitch"] = (float local.ang[0])
+        local.data[local.prefix + "_yaw"] = (float local.ang[1])
     }
     
     local.stance = "stand"
     if (local.player.tracker_stance != NIL) {
         local.stance = local.player.tracker_stance
     }
-    local.data[local.prefix + "_stance"] = local.stance
+    local.data[local.prefix + "_stance"] = (string local.stance)
 end local.data
 
 // Adds player fields (compact version - no position/angles)
@@ -288,15 +289,15 @@ add_player_compact local.data local.player local.prefix:
         local.guid = "unauth_" + (getclientnum local.player)
     }
     
-    local.data[local.prefix + "_name"] = local.name
-    local.data[local.prefix + "_guid"] = local.guid
+    local.data[local.prefix + "_name"] = (string local.name)
+    local.data[local.prefix + "_guid"] = (string local.guid)
     
     if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
-        local.data[local.prefix + "_smf_id"] = local.player.smf_member_id
+        local.data[local.prefix + "_smf_id"] = (int local.player.smf_member_id)
     }
     
     if (local.player.team != NIL && local.player.team != "") {
-        local.data[local.prefix + "_team"] = local.player.team
+        local.data[local.prefix + "_team"] = (string local.player.team)
     }
 end local.data
 
@@ -363,8 +364,8 @@ flush_queue:
     if (local.token == NIL) { local.token = "" }
 
     local.headers = makearray
-    "Content-Type"     "application/json"    
-    "X-Server-Token"   local.token
+        "Content-Type"     "application/json"    
+        "X-Server-Token"   local.token
     endarray
  
     if (game.tracker_debug) {

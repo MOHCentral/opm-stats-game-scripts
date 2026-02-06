@@ -271,10 +271,10 @@ heartbeat_loop:
     if (local.pcount == NIL) { local.pcount = 0 }
 
     local.data = waitthread global/tracker_common.scr::init_event "heartbeat"
-    local.data["round_number"] = local.round
-    local.data["allies_score"] = local.allies
-    local.data["axis_score"] = local.axis
-    local.data["player_count"] = local.pcount
+    local.data["round_number"] = (int local.round)
+    local.data["allies_score"] = (int local.allies)
+    local.data["axis_score"] = (int local.axis)
+    local.data["player_count"] = (int local.pcount)
 
     thread global/tracker_common.scr::queue_event local.data
     thread heartbeat_loop
@@ -354,8 +354,8 @@ end
 send_player_auth_event local.player:
     local.data = waitthread global/tracker_common.scr::init_event "player_auth"
     local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    local.data["smf_member_id"] = local.player.smf_member_id
-    local.data["smf_member_name"] = local.player.smf_member_name
+    local.data["smf_member_id"] = (int local.player.smf_member_id)
+    local.data["smf_member_name"] = (string local.player.smf_member_name)
 
     thread global/tracker_common.scr::queue_event local.data
 end
