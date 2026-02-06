@@ -1,0 +1,162 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Movement Module
+// Handles all movement-related events: spawn, jump, crouch, prone, distance
+// ============================================================================
+
+init:
+    dprintln "Initializing Movement Event Subscriptions..."
+
+    event_subscribe "player_spawned" on_player_spawn
+    event_subscribe "player_jump" on_player_jump
+    event_subscribe "player_crouch" on_player_crouch
+    event_subscribe "player_stand" on_player_stand
+    // NOTE: player_prone does NOT exist in engine
+    // event_subscribe "player_prone" on_player_prone
+    event_subscribe "player_distance" on_player_distance
+    event_subscribe "ladder_mount" on_ladder_mount
+    event_subscribe "ladder_dismount" on_ladder_dismount
+
+    dprintln "Movement Event Subscriptions Complete (7 events)."
+end
+
+// ============================================================================
+// SPAWN EVENTS
+// ============================================================================
+
+on_player_spawn:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_spawn | Player: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    
+    self.tracker_stance = "stand"
+    local.data = waitthread global/tracker_common.scr::init_event "player_spawn"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_respawn local.player:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_respawn | Player: " local.player
+    if (local.player == NIL) { end }
+    if (typeof local.player != "listener") { end }
+    
+    local.player.tracker_stance = "stand"
+    local.data = waitthread global/tracker_common.scr::init_event "player_respawn"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// STANCE EVENTS
+// ============================================================================
+
+// player_jump: self=player, params: jump_height(float)
+on_player_jump local.jump_height:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_jump | Player: " self " | Height: " local.jump_height
+    if (self == NIL) { end }
+    if (!self) { end }
+    if (local.jump_height == NIL) { local.jump_height = 0 }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "jump"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["jump_height"] = local.jump_height
+    
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_land local.height:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_land | Player: " self " | Height: " local.height
+    if (self == NIL) { end }
+    if (!self) { end }
+    if (local.height == NIL) { local.height = 0 }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "land"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["fall_height"] = local.height
+    
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_crouch:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_crouch | Player: " self
+    if (self == NIL) { end }
+    if (!self) { end }
+    self.tracker_stance = "crouch"
+    
+    local.data = waitthread global/tracker_common.scr::init_event "crouch"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_prone:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_prone | Player: " self
+    if (self == NIL) { end }
+    if (!self) { end }
+    self.tracker_stance = "prone"
+    
+    local.data = waitthread global/tracker_common.scr::init_event "prone"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_stand:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_stand | Player: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    
+    self.tracker_stance = "stand"
+    local.data = waitthread global/tracker_common.scr::init_event "player_stand"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// DISTANCE EVENTS
+// ============================================================================
+
+// player_distance: self=player, params: total_distance(float) delta_distance(float)
+// Fires every 100 units walked
+on_player_distance local.total_distance local.delta_distance:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_distance | Player: " self " | Total: " local.total_distance " | Delta: " local.delta_distance
+    if (self == NIL) { end }
+    if (!self) { end }
+    if (local.total_distance == NIL) { local.total_distance = 0 }
+    if (local.delta_distance == NIL) { local.delta_distance = 0 }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "distance"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["total_distance"] = local.total_distance
+    local.data["delta_distance"] = local.delta_distance
+    
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// LADDER EVENTS
+// ============================================================================
+
+on_ladder_mount local.ladder_entity:
+    exec global/tracker_common.scr::debug_log "EVENT: on_ladder_mount | Player: " self
+    if (self == NIL) { end }
+    if (!self) { end }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "ladder_mount"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_ladder_dismount local.ladder_entity:
+    exec global/tracker_common.scr::debug_log "EVENT: on_ladder_dismount | Player: " self
+    if (self == NIL) { end }
+    if (!self) { end }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "ladder_dismount"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
+end

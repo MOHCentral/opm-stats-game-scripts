@@ -46,7 +46,7 @@ safestr local.val:
     }
 end ("" + local.val) 
 
-debug_log_var local.a1 local.a2 local.a3 local.a4 local.a5 local.a6 local.a7 local.a8 local.a9 local.a10 local.a11 local.a12 local.a13 local.a14 local.a15 local.a16:
+debug_log local.a1 local.a2 local.a3 local.a4 local.a5 local.a6 local.a7 local.a8 local.a9 local.a10 local.a11 local.a12 local.a13 local.a14 local.a15 local.a16:
     if (game.tracker_debug) {
         local.msg = ""
         if (local.a1 != NIL) { local.msg += (waitthread safestr local.a1) }
@@ -193,18 +193,16 @@ get_entity_name local.entity:
     // If it's already a string, return it
     if (typeof local.entity == "string") { end local.entity }
     
-    // If it's a listener/entity, try to get a name property
-    if (typeof local.entity == "listener") {
-        if (local.entity.targetname != NIL && local.entity.targetname != "") {
-            end local.entity.targetname
-        }
-        if (local.entity.classname != NIL && local.entity.classname != "") {
-            end local.entity.classname
-        }
-        if (local.entity.model != NIL && local.entity.model != "") {
-            end local.entity.model
-        }
-        end "entity"
+    if (local.entity.targetname != NIL && local.entity.targetname != "") {
+        end local.entity.targetname
+    }
+
+    if (local.entity.classname != NIL && local.entity.classname != "") {
+        end local.entity.classname
+    }
+
+    if (local.entity.model != NIL && local.entity.model != "") {
+        end local.entity.model
     }
     
     end ("" + local.entity)
@@ -341,10 +339,12 @@ end
 
 flush_queue:
     if (game.event_queue == NIL || game.event_queue == "" || game.event_queue == "[") {
+        dprintln "Flush Queue: No events to flush."
         end
     }
             
     if (game.batch_size == 0) {
+        dprintln "Flush Queue: Batch size is 0, nothing to flush."
         end
     }
             
@@ -425,12 +425,88 @@ build_base_payload local.event_type:
 
 end local.payload
 
-debug_log local.message:
-    if (game.tracker_debug) {
-        local.safe_msg = waitthread safestr local.message
-        dprintln ("[" + gettime + "] [OPM] " + local.safe_msg)
-    }
-end
+// ============================================================================
+// ENUM LOOKUPS (from OpenMOHAA source: bg_public.h, q_shared.h)
+// ============================================================================
+
+// meansOfDeath_t → string name
+mod_to_string local.mod:
+    if (local.mod == NIL) { end "unknown" }
+    if (local.mod == 0)  { end "none" }
+    if (local.mod == 1)  { end "suicide" }
+    if (local.mod == 2)  { end "crush" }
+    if (local.mod == 3)  { end "crush_every_frame" }
+    if (local.mod == 4)  { end "telefrag" }
+    if (local.mod == 5)  { end "lava" }
+    if (local.mod == 6)  { end "slime" }
+    if (local.mod == 7)  { end "falling" }
+    if (local.mod == 8)  { end "last_self_inflicted" }
+    if (local.mod == 9)  { end "explosion" }
+    if (local.mod == 10) { end "explodewall" }
+    if (local.mod == 11) { end "electric" }
+    if (local.mod == 12) { end "electricwater" }
+    if (local.mod == 13) { end "thrownobject" }
+    if (local.mod == 14) { end "grenade" }
+    if (local.mod == 15) { end "beam" }
+    if (local.mod == 16) { end "rocket" }
+    if (local.mod == 17) { end "impact" }
+    if (local.mod == 18) { end "bullet" }
+    if (local.mod == 19) { end "fast_bullet" }
+    if (local.mod == 20) { end "vehicle" }
+    if (local.mod == 21) { end "fire" }
+    if (local.mod == 22) { end "flashbang" }
+    if (local.mod == 23) { end "on_fire" }
+    if (local.mod == 24) { end "gib" }
+    if (local.mod == 25) { end "impale" }
+    if (local.mod == 26) { end "bash" }
+    if (local.mod == 27) { end "shotgun" }
+    if (local.mod == 28) { end "aagun" }
+    if (local.mod == 29) { end "landmine" }
+end "unknown"
+
+// hitloc_t → string name
+hitloc_to_string local.loc:
+    if (local.loc == NIL)  { end "unknown" }
+    if (local.loc == -2)   { end "miss" }
+    if (local.loc == -1)   { end "general" }
+    if (local.loc == 0)    { end "head" }
+    if (local.loc == 1)    { end "helmet" }
+    if (local.loc == 2)    { end "neck" }
+    if (local.loc == 3)    { end "torso_upper" }
+    if (local.loc == 4)    { end "torso_mid" }
+    if (local.loc == 5)    { end "torso_lower" }
+    if (local.loc == 6)    { end "pelvis" }
+    if (local.loc == 7)    { end "r_arm_upper" }
+    if (local.loc == 8)    { end "l_arm_upper" }
+    if (local.loc == 9)    { end "r_leg_upper" }
+    if (local.loc == 10)   { end "l_leg_upper" }
+    if (local.loc == 11)   { end "r_arm_lower" }
+    if (local.loc == 12)   { end "l_arm_lower" }
+    if (local.loc == 13)   { end "r_leg_lower" }
+    if (local.loc == 14)   { end "l_leg_lower" }
+    if (local.loc == 15)   { end "r_hand" }
+    if (local.loc == 16)   { end "l_hand" }
+    if (local.loc == 17)   { end "r_foot" }
+    if (local.loc == 18)   { end "l_foot" }
+end "unknown"
+
+// teamtype_t → string name (bg_public.h)
+team_to_string local.team:
+    if (local.team == NIL) { end "unknown" }
+    if (local.team == 0)   { end "none" }
+    if (local.team == 1)   { end "spectator" }
+    if (local.team == 2)   { end "freeforall" }
+    if (local.team == 3)   { end "allies" }
+    if (local.team == 4)   { end "axis" }
+end "unknown"
+
+// eController → string name (Entities.h, used by TOW objectives)
+controller_to_string local.ctrl:
+    if (local.ctrl == NIL) { end "unknown" }
+    if (local.ctrl == 0)   { end "axis" }
+    if (local.ctrl == 1)   { end "allies" }
+    if (local.ctrl == 2)   { end "draw" }
+end "unknown"
 
 // ============================================================================
 // STRING HELPERS

@@ -1,0 +1,54 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - World Module
+// Handles all world-related events: doors, explosions
+// ============================================================================
+
+init:
+    dprintln "Initializing World Event Subscriptions..."
+
+    event_subscribe "door_open" on_door_open
+    // event_subscribe "door_close" on_door_close
+    // event_subscribe "explosion" on_explosion
+
+    dprintln "World Event Subscriptions Complete (1 events)."
+end
+
+// ============================================================================
+// DOOR EVENTS
+// ============================================================================
+
+on_door_open local.activator:
+    exec global/tracker_common.scr::debug_log "EVENT: on_door_open | Door: " self " | Activator: " local.activator
+    if (self == NIL) { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "door_open"
+    local.data["entity"] = self
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.activator "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_door_close:
+    exec global/tracker_common.scr::debug_log "EVENT: on_door_close | Door: " self
+    if (self == NIL) { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "door_close"
+    local.data["entity"] = self
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// EXPLOSION EVENTS
+// ============================================================================
+
+on_explosion local.attacker local.damage:
+    exec global/tracker_common.scr::debug_log "EVENT: on_explosion | Entity: " self " | Attacker: " local.attacker " | Damage: " local.damage
+    if (local.damage == NIL) { local.damage = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "explosion"
+    local.data["damage"] = local.damage
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+
+    thread global/tracker_common.scr::queue_event local.data
+end

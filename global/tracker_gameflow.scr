@@ -1,0 +1,336 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Game Flow Module
+// Handles all game-related events: game/round/map lifecycle, objectives
+// ============================================================================
+
+init:
+    dprintln "Initializing Game Flow Event Subscriptions..."
+
+    event_subscribe "game_init" on_game_init
+    event_subscribe "game_start" on_game_start
+    event_subscribe "game_end" on_game_end
+    event_subscribe "round_start" on_round_start
+    event_subscribe "round_end" on_round_end
+    event_subscribe "team_win" on_team_win
+    event_subscribe "match_end" on_match_end
+    event_subscribe "intermission_start" on_intermission_start
+    event_subscribe "warmup_start" on_warmup_start
+    event_subscribe "warmup_end" on_warmup_end
+    event_subscribe "map_init" on_map_init
+    event_subscribe "map_start" on_map_start
+    event_subscribe "map_shutdown" on_map_shutdown
+    event_subscribe "map_ready" on_map_ready
+    event_subscribe "map_load_start" on_map_load_start
+    event_subscribe "map_load_end" on_map_load_end
+    event_subscribe "map_change_start" on_map_change_start
+    event_subscribe "map_restart" on_map_restart
+
+    dprintln "Game Flow Event Subscriptions Complete (18 events)."
+end
+
+// ============================================================================
+// GAME EVENTS
+// ============================================================================
+
+on_game_init local.gametype:
+    exec global/tracker_common.scr::debug_log "EVENT: on_game_init | GameType: " local.gametype
+    if (local.gametype == NIL) { local.gametype = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "game_init"
+    local.data["gametype"] = local.gametype
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_game_start:
+    exec global/tracker_common.scr::debug_log ("EVENT: on_game_start")
+    local.data = waitthread global/tracker_common.scr::init_event "game_start"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_game_end:
+    exec global/tracker_common.scr::debug_log ("EVENT: on_game_end")
+    local.data = waitthread global/tracker_common.scr::init_event "game_end"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// ROUND EVENTS
+// ============================================================================
+
+on_round_start:
+    exec global/tracker_common.scr::debug_log "EVENT: on_round_start | Round: " game.round_number
+    local.round = game.round_number
+    if (local.round == NIL) { local.round = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "round_start"
+    local.data["round_number"] = local.round
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_round_end:
+    exec global/tracker_common.scr::debug_log "EVENT: on_round_end | Round: " game.round_number
+    local.round = game.round_number
+    if (local.round == NIL) { local.round = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "round_end"
+    local.data["round_number"] = local.round
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_team_win local.teamnum:
+    exec global/tracker_common.scr::debug_log "EVENT: on_team_win | Team: " local.teamnum
+    if (local.teamnum == NIL) { local.teamnum = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "team_win"
+    local.data["teamnum"] = waitthread global/tracker_common.scr::team_to_string local.teamnum
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_match_end local.map_name local.gametype local.winning_team:
+    exec global/tracker_common.scr::debug_log "EVENT: on_match_end | Map: " local.map_name " | GameType: " local.gametype " | Winner: " local.winning_team
+    if (local.map_name == NIL) { local.map_name = "unknown" }
+    if (local.gametype == NIL) { local.gametype = "unknown" }
+    if (local.winning_team == NIL) { local.winning_team = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "match_end"
+    local.data["map"] = local.map_name
+    local.data["gametype"] = local.gametype
+    local.data["winning_team"] = local.winning_team
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_intermission_start local.map_name local.gametype:
+    exec global/tracker_common.scr::debug_log "EVENT: on_intermission_start | Map: " local.map_name " | GameType: " local.gametype
+    if (local.map_name == NIL) { local.map_name = "unknown" }
+    if (local.gametype == NIL) { local.gametype = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "intermission_start"
+    local.data["map"] = local.map_name
+    local.data["gametype"] = local.gametype
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_warmup_start local.map_name:
+    exec global/tracker_common.scr::debug_log "EVENT: on_warmup_start | Map: " local.map_name
+    if (local.map_name == NIL) { local.map_name = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "warmup_start"
+    local.data["map"] = local.map_name
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_warmup_end local.map_name:
+    exec global/tracker_common.scr::debug_log "EVENT: on_warmup_end | Map: " local.map_name
+    if (local.map_name == NIL) { local.map_name = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "warmup_end"
+    local.data["map"] = local.map_name
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// MAP EVENTS
+// ============================================================================
+
+on_map_init:
+    exec global/tracker_common.scr::debug_log ("EVENT: on_map_init")
+    local.gametype = getcvar "g_gametype"
+    local.data = waitthread global/tracker_common.scr::init_event "map_init"
+    local.data["gametype"] = local.gametype
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_map_start:
+    dprintln "------------------------------------------------"
+    dprintln "OPM TRACKER: Map Start"
+    dprintln "------------------------------------------------"
+    
+    // Re-initialize map/round state
+    game.round_number = 1
+    game.match_start_time = gettime
+    
+    local.rnd = uuid_string 16
+    game.match_id = "match_" + local.rnd
+    
+    local.data = waitthread global/tracker_common.scr::init_event "map_start"
+    thread global/tracker_common.scr::queue_event local.data
+    
+    // Also send match_start event
+    thread send_match_start
+end
+
+on_map_shutdown:
+    dprintln "------------------------------------------------"
+    dprintln "OPM TRACKER: Map Shutdown"
+    dprintln "------------------------------------------------"
+    
+    local.data = waitthread global/tracker_common.scr::init_event "map_shutdown"
+    thread global/tracker_common.scr::queue_event local.data
+
+    // Final map-level flush
+    waitthread global/tracker_common.scr::flush_queue
+end
+
+on_map_ready local.map_name local.gametype:
+    exec global/tracker_common.scr::debug_log "EVENT: on_map_ready | Map: " local.map_name " | GameType: " local.gametype
+    if (local.map_name == NIL) { local.map_name = "unknown" }
+    if (local.gametype == NIL) { local.gametype = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "map_ready"
+    local.data["map"] = local.map_name
+    local.data["gametype"] = local.gametype
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_map_load_start local.map_name:
+    exec global/tracker_common.scr::debug_log "EVENT: on_map_load_start | Map: " local.map_name
+    if (local.map_name == NIL) { local.map_name = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "map_load_start"
+    local.data["map"] = local.map_name
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_map_load_end local.map_name local.gametype:
+    exec global/tracker_common.scr::debug_log "EVENT: on_map_load_end | Map: " local.map_name " | GameType: " local.gametype
+    if (local.map_name == NIL) { local.map_name = "unknown" }
+    if (local.gametype == NIL) { local.gametype = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "map_load_end"
+    local.data["map"] = local.map_name
+    local.data["gametype"] = local.gametype
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_map_change_start local.current_map local.next_map:
+    exec global/tracker_common.scr::debug_log "EVENT: on_map_change_start | Current: " local.current_map " | Next: " local.next_map
+    if (local.current_map == NIL) { local.current_map = "unknown" }
+    if (local.next_map == NIL) { local.next_map = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "map_change_start"
+    local.data["current_map"] = local.current_map
+    local.data["next_map"] = local.next_map
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_map_restart local.map_name:
+    exec global/tracker_common.scr::debug_log "EVENT: on_map_restart | Map: " local.map_name
+    if (local.map_name == NIL) { local.map_name = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "map_restart"
+    local.data["map"] = local.map_name
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// OBJECTIVE EVENTS
+// ============================================================================
+
+// objective_capture: self=TOW entity, params: controller_team(eController: 0=axis, 1=allies, 2=draw)
+on_objective_capture local.controller_team:
+    exec global/tracker_common.scr::debug_log "EVENT: on_objective_capture | Obj: " self " | Team: " local.controller_team
+    if (local.controller_team == NIL) { local.controller_team = 0 }
+    
+    local.obj_name = "unknown"
+    if (self != NIL && typeof self == "listener") {
+        if (self.targetname != NIL) {
+            local.obj_name = self.targetname
+        }
+    }
+
+    local.data = waitthread global/tracker_common.scr::init_event "objective_capture"
+    local.data["objective_name"] = local.obj_name
+    local.data["team"] = waitthread global/tracker_common.scr::controller_to_string local.controller_team
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_objective_update local.index local.status:
+    exec global/tracker_common.scr::debug_log "EVENT: on_objective_update | Index: " local.index " | Status: " local.status
+    if (local.index == NIL) { local.index = 0 }
+    if (local.status == NIL) { local.status = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "objective_update"
+    local.data["objective_index"] = local.index
+    local.data["objective_status"] = local.status
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// MATCH LIFECYCLE HELPERS
+// ============================================================================
+
+send_match_start:
+    local.data = waitthread global/tracker_common.scr::init_event "match_start"
+    local.data["map_name"] = game.map_name
+    local.data["gametype"] = (getcvar "g_gametype")
+    local.data["timelimit"] = (int (getcvar "timelimit"))
+    local.data["fraglimit"] = (int (getcvar "fraglimit"))
+    local.data["maxclients"] = (int (getcvar "sv_maxclients"))
+    
+    thread global/tracker_common.scr::queue_event local.data
+    dprintln ("MATCH START: " + game.match_id)
+end
+
+send_match_end local.winning_team local.allies_score local.axis_score:
+    if (local.winning_team == NIL) { local.winning_team = "unknown" }
+    if (local.allies_score == NIL) { local.allies_score = 0 }
+    if (local.axis_score == NIL) { local.axis_score = 0 }
+    local.round = game.round_number
+    local.map = game.map_name
+    local.duration = gettime - game.match_start_time
+    if (local.round == NIL) { local.round = 0 }
+    if (local.map == NIL) { local.map = "unknown" }
+    if (local.duration == NIL) { local.duration = 0 }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "match_end"
+    local.data["server_id"] = game.server_id
+    local.data["map_name"] = local.map
+    local.data["duration"] = local.duration
+    local.data["winning_team"] = local.winning_team
+    local.data["allies_score"] = local.allies_score
+    local.data["axis_score"] = local.axis_score
+    local.data["total_rounds"] = local.round
+    
+    thread global/tracker_common.scr::queue_event local.data
+    dprintln ("MATCH END: " + game.match_id + " Winner: " + local.winning_team)
+end
+
+send_round_start:
+    game.round_number = (game.round_number + 1)
+    if (game.round_number == NIL) { game.round_number = 1 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "round_start"
+    local.data["round_number"] = game.round_number
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+send_round_end local.winning_team:
+    local.round = game.round_number
+    if (local.round == NIL) { local.round = 0 }
+    if (local.winning_team == NIL) { local.winning_team = "unknown" }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "round_end"
+    local.data["round_number"] = local.round
+    local.data["winning_team"] = local.winning_team
+
+    thread global/tracker_common.scr::queue_event local.data
+end

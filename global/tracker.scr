@@ -1,5 +1,5 @@
 // ============================================================================
-// OpenMOHAA Telemetry Tracker v2.0
+// OpenMOHAA Telemetry Tracker v2.1
 // High-Throughput Event Collection for Mass Stats System
 // ============================================================================
 //
@@ -7,24 +7,37 @@
 // The API handles batching, worker pools, and database writes.
 //
 // Architecture:
-// - Events fire immediately via // curl_post (no client-side batching)
+// - Events fire immediately via curl_post (no client-side batching)
 // - URL-encoded payloads with rich metadata (positions, angles, timestamps)
 // - Server session/match context included in each event
 // - API returns 202 Accepted immediately (async processing)
+//
+// Module Organization:
+// - tracker.scr          - Entry point, config, console commands, auth
+// - tracker_common.scr   - Shared helpers, JSON building, HTTP transport
+// - tracker_combat.scr   - Combat events (kills, damage, weapons)
+// - tracker_movement.scr - Movement events (spawn, jump, stance)
+// - tracker_items.scr    - Item events (pickup, drop)
+// - tracker_gameflow.scr - Game/round/map lifecycle events
+// - tracker_client.scr   - Client events (connect, team, votes)
+// - tracker_world.scr    - World events (doors, explosions)
+// - tracker_bot.scr      - Bot/Actor AI events
+// - tracker_interaction.scr - Chat, use, spectate events
+// - tracker_vehicle.scr  - Vehicle/turret events
 //
 // ============================================================================
 // MAIN INITIALIZATION
 // ============================================================================
 
 main:
-// ========================================================================
-// CONFIGURATION - Must be inside a label to execute!
-// NOTE: Using game.* for cross-script sharing. level.* is script-local!
-// ========================================================================
+    // ========================================================================
+    // CONFIGURATION
+    // NOTE: Using game.* for cross-script sharing. level.* is script-local!
+    // ========================================================================
     game.api_base_url = "http://localhost:8084"
     game.api_events_endpoint = "/api/v1/ingest/events"
 
-    // Fetch Identity from CVars (Critical for Multi-Server)
+    // Fetch Identity from CVars
     game.server_token = getcvar "opm_server_token"
         
     // Check for "poisoned" config value
@@ -54,7 +67,7 @@ main:
     game.allies_score = 0
     game.axis_score = 0
 
-    // Debug - Default to CVar, fallback to 1
+    // Debug - Default to CVar, fallback to 0
     local.debug_cvar = getcvar "opm_tracker_debug"
     if (local.debug_cvar == "") {            
         game.tracker_debug = 0
@@ -63,21 +76,18 @@ main:
     }
 
     dprintln "=============================================="
-    dprintln "OpenMOHAA Telemetry Tracker v2.0 Initializing"
+    dprintln "OpenMOHAA Telemetry Tracker v2.1 Initializing"
     dprintln "=============================================="
     
-    // Generate robust session ID (ServerID + Time + Random)
+    // Generate session ID
     local.rnd = uuid_string 16
     game.session_id = "sess_" + local.rnd
     game.match_start_time = gettime
     game.map_name = getcvar "mapname"
     
-    local.sid_msg = "Session ID: " + game.session_id
-    dprintln local.sid_msg
-    local.map_msg = "Map: " + game.map_name
-    dprintln local.map_msg
-    local.api_msg = "API Endpoint: " + game.api_base_url + game.api_events_endpoint
-    dprintln local.api_msg
+    dprintln ("  Session ID: " + game.session_id)
+    dprintln ("  Map: " + game.map_name)
+    dprintln ("  API: " + game.api_base_url + game.api_events_endpoint)
     
     // Register console commands
     registercmd "login" cmd_login
@@ -88,20 +98,25 @@ main:
     registercmd "seed" seed_cmd_wrapper
 
     // ========================================================================
-    // EVENT SUBSCRIPTIONS
+    // MODULE INITIALIZATION
+    // Each module registers its own event subscriptions
     // ========================================================================
-    // Initialization logic is split into separate scripts for organization.
-        
-    thread global/tracker_init_player.scr::init
-    thread global/tracker_init_server.scr::init
 
-    // Life-Cycle Events (handled in tracker_init_server.scr now)
-    // server_process_start and server_process_quit are one-time only
+    thread global/tracker_combat.scr::init
+    // thread global/tracker_movement.scr::init
+    // thread global/tracker_items.scr::init
+    // thread global/tracker_gameflow.scr::init
+    // thread global/tracker_client.scr::init
+    // thread global/tracker_world.scr::init
+    thread global/tracker_bot.scr::init
+    // thread global/tracker_interaction.scr::init
+    // thread global/tracker_vehicle.scr::init
+
+    // Server process lifecycle (one-time only events)
     event_subscribe "server_process_start" on_server_process_start
     event_subscribe "server_process_quit"  on_server_process_quit
 
-    
-    dprintln "Subscribed to all 94 events."
+    dprintln "All modules initialized."
     
     // Start heartbeat loop (every 30 seconds)
     thread heartbeat_loop
@@ -112,8 +127,7 @@ main:
     // Start API flush loop (every 2 seconds)
     thread global/tracker_common.scr::flush_loop
         
-    // Check for auto-seed cvar (opm_seed)
-    // Usage: +set opm_seed 5 on command line to seed 5 matches on startup
+    // Check for auto-seed cvar
     local.seed_count = getcvar "opm_seed"
     if (local.seed_count != NIL && local.seed_count != "" && local.seed_count != "0") {
         dprintln ("AUTO-SEED: opm_seed cvar set to " + local.seed_count + ", starting seeder...")
@@ -125,22 +139,7 @@ end
 // ============================================================================
 // PLAYER HUD MANAGER 
 // ============================================================================
-// Note: HUD Draw implementation deferred until engine support confirmed.
-// Currently using ihuddraw and iprint for notifications.
-// ============================================================================
 
-player_hud_manager:
-// Empty placeholder - waiting for hud_draw documentation/examples
-// When implemented, this will:
-// 1. Track active players and their HUD elements
-// 2. Update kill/death counters on HUD
-// 3. Show achievement notifications
-// 4. Display session stats
-    end
-
-// ============================================================================
-// HUD NOTIFICATION SYSTEM
-// ============================================================================
 show_hud_notification local.player local.message local.r local.g local.b:
     if (!local.player) { end }
     if (local.message == NIL || local.message == "") { end }
@@ -149,7 +148,7 @@ show_hud_notification local.player local.message local.r local.g local.b:
     if (local.g == NIL) { local.g = 1.0 }
     if (local.b == NIL) { local.b = 1.0 }
 
-    local.index = 80 // HUD index 80 (safer range)
+    local.index = 80
     
     ihuddraw_virtualsize local.player local.index 1
     ihuddraw_align local.player local.index "center" "top"
@@ -159,19 +158,13 @@ show_hud_notification local.player local.message local.r local.g local.b:
     ihuddraw_timer local.player local.index 5.0 1.0
     ihuddraw_string local.player local.index local.message
 
-    // Fallback for players with HUD disabled/broken
     local.player iprint (">>> " + local.message)
 end
 
 // ============================================================================
 // CONSOLE COMMANDS
 // ============================================================================
-// These commands integrate with the SMF forum login token system.
-// Players generate tokens at the forum and use them in-game to link identities.
-// Once authenticated, the SMF member_id is used for all stat tracking.
-// ============================================================================
 
-// Wrapper for seed command (external script)
 seed_cmd_wrapper local.player local.args:
     thread global/seeder.scr::cmd_seed local.player local.args
 end
@@ -190,14 +183,10 @@ cmd_login local.player local.args:
     local.player iprint "Verifying login token..."
     dprintln ("Player " + local.player.netname + " attempting auth with SMF token")
     
-    // HUD Notification: Verifying
-    thread show_hud_notification local.player "Verifying Token..." 1.0 1.0 0.0 // Yellow
+    thread show_hud_notification local.player "Verifying Token..." 1.0 1.0 0.0
     
-    // Call SMF auth API endpoint
-    // This verifies the token and returns the SMF member_id
     local.url = game.api_base_url + "/api/v1/auth/verify"
 
-    // Build payload using make_json
     local.data["token"] = local.token
     local.data["player_guid"] = (getclientnum local.player)
     local.data["player_name"] = local.player.netname
@@ -205,9 +194,6 @@ cmd_login local.player local.args:
     local.data["server_ip"] = (getcvar "net_ip")
     local.data["server_port"] = (int (getcvar "net_port"))
     local.json = make_json local.data
-
-    // No longer storing global reference to avoid race conditions
-    // level.pending_auth_player = local.player  <-- REMOVED
 
     dprintln ("[OPM] POST auth verify: " + local.url + " DATA: " + local.json)
     curl_post local.url NIL local.json on_smf_auth_verify
@@ -219,10 +205,8 @@ cmd_logout local.player local.args:
         end
     }
     
-    // Send logout notification to SMF (JSON)
     local.url = game.api_base_url + "/api/v1/auth/smf-logout"
 
-    // Build payload using make_json
     local.data["forum_user_id"] = local.player.smf_member_id
     local.data["player_guid"] = (getclientnum local.player)
     local.json = make_json local.data
@@ -230,7 +214,6 @@ cmd_logout local.player local.args:
     dprintln ("[OPM] POST logout: " + local.url + " DATA: " + local.json)
     curl_post local.url NIL local.json on_smf_logout_response
             
-    // Clear local state immediately
     local.player.is_authenticated = 0
     local.player.smf_member_id = 0
     local.player.smf_member_name = NIL
@@ -238,13 +221,10 @@ cmd_logout local.player local.args:
     local.player iprint "You have been logged out."
     dprintln ("Player " + local.player.netname + " logged out locally")
     
-    // HUD Notification: Logged Out
-    thread show_hud_notification local.player "Logged Out" 0.7 0.7 0.7 // Grey
+    thread show_hud_notification local.player "Logged Out" 0.7 0.7 0.7
 end
 
 cmd_claim local.player local.args:
-// This is now handled through the SMF login system
-// Players link their identity by logging in with their forum token
     local.player iprint "Identity linking is now done through forum login."
     local.player iprint "Visit the forum and generate a login token, then use login <token>"
 end
@@ -252,12 +232,9 @@ end
 cmd_stats local.player local.args:
     local.player iprint "Fetching your stats..."
     
-    // Use SMF member_id if authenticated, otherwise search by Name
     if (local.player.is_authenticated && local.player.smf_member_id > 0) {
         local.url = game.api_base_url + "/api/v1/stats/member/" + local.player.smf_member_id
     } else {
-        // Fallback to name search for unauthenticated players
-        // Note: Names with spaces might need encoding if engine supports it, or use simple concatenation
         local.url = game.api_base_url + "/api/v1/stats/player/name/" + local.player.netname
     }
     
@@ -278,66 +255,8 @@ cmd_whoami local.player local.args:
 end
 
 // ============================================================================
-// MATCH LIFECYCLE EVENTS
+// LOOPS
 // ============================================================================
-
-send_match_start:
-    local.data = waitthread global/tracker_common.scr::init_event "match_start"
-    local.data["map_name"] = game.map_name
-    local.data["gametype"] = (getcvar "g_gametype")
-    local.data["timelimit"] = (int (getcvar "timelimit"))
-    local.data["fraglimit"] = (int (getcvar "fraglimit"))
-    local.data["maxclients"] = (int (getcvar "sv_maxclients"))
-    
-    thread global/tracker_common.scr::queue_event local.data
-    dprintln ("MATCH START: " + game.match_id)
-end
-
-send_match_end local.winning_team local.allies_score local.axis_score:
-    if (local.winning_team == NIL) { local.winning_team = "unknown" }
-    if (local.allies_score == NIL) { local.allies_score = 0 }
-    if (local.axis_score == NIL) { local.axis_score = 0 }
-    local.round = game.round_number
-    local.map = game.map_name
-    local.duration = gettime - game.match_start_time
-    if (local.round == NIL) { local.round = 0 }
-    if (local.map == NIL) { local.map = "unknown" }
-    if (local.duration == NIL) { local.duration = 0 }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "match_end"
-    local.data["server_id"] = game.server_id
-    local.data["map_name"] = local.map
-    local.data["duration"] = local.duration
-    local.data["winning_team"] = local.winning_team
-    local.data["allies_score"] = local.allies_score
-    local.data["axis_score"] = local.axis_score
-    local.data["total_rounds"] = local.round
-    
-    thread global/tracker_common.scr::queue_event local.data
-    dprintln ("MATCH END: " + game.match_id + " Winner: " + local.winning_team)
-end
-
-send_round_start:
-    game.round_number = (game.round_number + 1)
-    if (game.round_number == NIL) { game.round_number = 1 }
-
-    local.data = waitthread global/tracker_common.scr::init_event "round_start"
-    local.data["round_number"] = game.round_number
-
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-send_round_end local.winning_team:
-    local.round = game.round_number
-    if (local.round == NIL) { local.round = 0 }
-    if (local.winning_team == NIL) { local.winning_team = "unknown" }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "round_end"
-    local.data["round_number"] = local.round
-    local.data["winning_team"] = local.winning_team
-
-    thread global/tracker_common.scr::queue_event local.data
-end
 
 heartbeat_loop:
     wait 30
@@ -372,242 +291,8 @@ debug_sync_loop:
 end
 
 // ============================================================================
-// COMBAT EVENT HANDLERS
+// HTTP CALLBACKS
 // ============================================================================
-// MOVED TO: global/tracker_combat_ext.scr
-// ============================================================================
-
-// ============================================================================
-// MOVEMENT EVENT HANDLERS
-// ============================================================================
-
-on_player_jump local.player:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_jump | Player: " local.player
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "jump"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-on_player_land local.player local.height:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_land | Player: " local.player " | Height: " local.height
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    if (local.height == NIL) { local.height = 0 }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "land"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    local.data["fall_height"] = local.height
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-on_player_crouch local.player:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_crouch | Player: " local.player
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    local.player.tracker_stance = "crouch"
-    
-    local.data = waitthread global/tracker_common.scr::init_event "crouch"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-on_player_prone local.player:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_prone | Player: " local.player
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    local.player.tracker_stance = "prone"
-    
-    local.data = waitthread global/tracker_common.scr::init_event "prone"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-on_player_distance local.player local.walked local.sprinted local.swam local.driven:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_distance | Player: " local.player " | Walked: " local.walked " | Sprinted: " local.sprinted
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    if (local.walked == NIL) { local.walked = 0 }
-    if (local.sprinted == NIL) { local.sprinted = 0 }
-    if (local.swam == NIL) { local.swam = 0 }
-    if (local.driven == NIL) { local.driven = 0 }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "distance"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    local.data["walked"] = local.walked
-    local.data["sprinted"] = local.sprinted
-    local.data["swam"] = local.swam
-    local.data["driven"] = local.driven
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-on_player_movement local.type local.time:
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    if (local.player.tracker_stance == NIL) { local.player.tracker_stance = "stand" }
-    
-    if (local.player.tracker_stance == "stand") {
-        local.sprinted = local.time
-        if (local.sprinted == NIL) { local.sprinted = 0 }
-        local.swam = 0.0
-        local.driven = 0.0
-    } else if (local.player.tracker_stance == "swim") {
-            local.swam = local.time
-            if (local.swam == NIL) { local.swam = 0 }
-            local.sprinted = 0.0
-            local.driven = 0.0
-        } else if (local.player.tracker_stance == "drive") {
-                local.driven = local.time
-                if (local.driven == NIL) { local.driven = 0 }
-                local.sprinted = 0.0
-                local.swam = 0.0
-            } else {
-                local.sprinted = 0.0
-                local.swam = 0.0
-                local.driven = 0.0
-            }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "player_movement"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    local.data["sprinted"] = local.sprinted
-    local.data["swam"] = local.swam
-    local.data["driven"] = local.driven
-
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-// ============================================================================
-// INTERACTION EVENT HANDLERS
-// ============================================================================
-
-on_ladder_mount local.player local.ladder:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_ladder_mount | Player: " local.player
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "ladder_mount"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-on_ladder_dismount local.player local.ladder:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_ladder_dismount | Player: " local.player
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "ladder_dismount"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-// MOVED TO: global/tracker_items_ext.scr
-
-on_player_use local.player local.entity:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_player_use | Player: " local.player " | Entity: " local.entity
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    if (local.entity == NIL) { local.entity = "unknown" }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "use"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    local.data["entity"] = local.entity
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-// ============================================================================
-// SESSION EVENT HANDLERS
-// ============================================================================
-
-on_client_connect local.clientnum:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_client_connect | ClientNum: " local.clientnum
-    if (local.clientnum == NIL) { local.clientnum = -1 }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "connect"
-    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    local.data["client_num"] = local.clientnum
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-on_client_disconnect local.player:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_client_disconnect | Player: " local.player
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "disconnect"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-on_client_begin local.player:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_client_begin | Player: " local.player
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    // Initialize session-based counters
-    local.player.shots_fired = 0
-    local.player.shots_hit = 0
-        
-    // Initialize stance
-    local.player.tracker_stance = "stand"
-
-    local.data = waitthread global/tracker_common.scr::init_event "client_begin"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-
-    thread global/tracker_common.scr::queue_event local.data
-    
-    // Start per-player accuracy summary thread
-    thread player_accuracy_loop local.player
-end
-
-player_accuracy_loop local.player:
-    while (local.player) {
-        wait 10 // Every 10 seconds send summary
-        
-        if (!local.player) { end }
-
-        if (local.player.shots_fired > 0) {
-            local.data = waitthread global/tracker_common.scr::init_event "accuracy_summary"
-            local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-            local.data["fired"] = local.player.shots_fired
-            local.data["hits"] = local.player.shots_hit
-            
-            thread global/tracker_common.scr::queue_event local.data
-        }
-    }
-end
-
-on_team_join local.player local.old_team local.new_team:
-    waitthread global/tracker_common.scr::debug_log_var "EVENT: on_team_join | Player: " local.player " | NewTeam: " local.new_team
-    if (local.player == NIL) { end }
-    if (!local.player) { end }
-    if (local.old_team == NIL) { local.old_team = "unknown" }
-    if (local.new_team == NIL) { local.new_team = "unknown" }
-    
-    local.data = waitthread global/tracker_common.scr::init_event "team_join"
-    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    local.data["old_team"] = local.old_team
-    local.data["new_team"] = local.new_team
-
-    thread global/tracker_common.scr::queue_event local.data
-end
-
-// on_player_say is handled in tracker_interaction_ext.scr
-
-// ============================================================================
-// HTTP TRANSPORT LAYER
-// ============================================================================
-
 
 on_http_callback local.success local.response local.http_code:
     if (game.tracker_debug) {
@@ -622,33 +307,14 @@ end
 // ============================================================================
 // SMF AUTHENTICATION CALLBACKS
 // ============================================================================
-// These handle responses from the SMF login token verification system.
-// On success, we store the SMF member_id on the player for use in all events.
-// ============================================================================
 
 on_smf_auth_verify local.success local.response local.http_code:
     dprintln ("SMF Auth response: " + local.response)
     if (local.success && local.http_code == 200) {
-        // Parse JSON response to get member_id and member_name
-        // Response format: {"valid":true,"forum_user_id":123,"member_name":"PlayerName","player_guid":"0","message":"..."}
-        dprintln ("SMF Auth response: " + local.response)
-        
-        // 1. EXTRACT DATA
-        // New Keys: forum_user_id, member_name, player_guid
         local.member_id = waitthread global/tracker_common.scr::json_get_int local.response "forum_user_id"
         local.member_name = waitthread global/tracker_common.scr::json_get_string local.response "member_name"
-            
-        // Extract the GUID (clientnum) correctly based on JSON format (it might be int or string)
-        // In cmd_login we sent clientnum as "player_guid". API echoes it back.
-        // It might come back as string "0", need to handle that.
         local.target_clientnum = waitthread global/tracker_common.scr::json_get_int local.response "player_guid"
-        if (local.target_clientnum == NIL) {
-            // Try getting as string and casting if safe? 
-            // json_get_int usually handles numeric strings.
-            // Fallback check
-        }
 
-        // 2. FIND PLAYER BY CLIENTNUM
         local.player = NIL
         for (local.i = 1; local.i <= $player.size; local.i++) {
             if ((getclientnum $player[local.i]) == local.target_clientnum) {
@@ -657,42 +323,30 @@ on_smf_auth_verify local.success local.response local.http_code:
             }
         }
 
-        // If player not found (disconnected?), abort
         if (!local.player) {
             dprintln ("SMF Auth: Player with clientnum " + local.target_clientnum + " not found (disconnected?)")
             end
         }
         
         if (local.member_id > 0) {
-            // SUCCESS - Store SMF identity on player
             local.player.is_authenticated = 1
             local.player.smf_member_id = local.member_id
             local.player.smf_member_name = local.member_name
-            // Use the token they just sent (we don't have it here in callback unless echoed, 
-            // but we actually store it in pending_auth_token on player earlier... 
-            // Wait, simply reading it from player is fine now that we found the RIGHT player)
             local.player.auth_token = local.player.pending_auth_token
             
             local.player iprint ("Welcome, " + local.member_name + "! You are now logged in.")
             local.player iprint "Your stats will be tracked to your forum account."
             dprintln ("SMF Auth SUCCESS: " + local.player.netname + " -> member_id=" + local.member_id)
             
-            // HUD Notification: Success
-            thread show_hud_notification local.player ("Welcome " + local.member_name + "!") 0.0 1.0 0.0 // Green
-            
-            // Send login event to API with SMF member_id
+            thread show_hud_notification local.player ("Welcome " + local.member_name + "!") 0.0 1.0 0.0
             thread send_player_auth_event local.player
         } else {
             local.player.is_authenticated = 0
             local.player iprint "Login failed: Could not verify token."
             dprintln ("SMF Auth FAIL: No member_id in response")
-            // HUD Notification: Fail
-            thread show_hud_notification local.player "Login Failed: Invalid Response" 1.0 0.0 0.0 // Red
+            thread show_hud_notification local.player "Login Failed: Invalid Response" 1.0 0.0 0.0
         }
     } else {
-        // For failures, we can't notify the specific player easily without the GUID echoed in error response.
-        // If the API returns JSON even on error with GUID, we could parse it.
-        // Assuming generic fail for now or we could parse response if it follows same structure.
         dprintln ("SMF Auth FAIL: " + local.http_code + " - " + local.response)
     }
 end
@@ -707,7 +361,6 @@ send_player_auth_event local.player:
 end
 
 on_auth_verify local.success local.response local.http_code:
-// Legacy callback - redirect to SMF auth
     if (local.success && local.http_code == 200) {
         dprintln ("Legacy auth verified: " + local.response)
         self iprint "Authentication successful!"
@@ -728,9 +381,6 @@ on_claim_response local.success local.response local.http_code:
 end
 
 on_stats_response local.success local.response local.http_code:
-// We need to find the player again because callbacks are context-less in this engine build
-// Actually, we should have the player entity passed or recovered.
-// For now, if we can't find the player, we just log to console.
     if (local.success) {
         dprintln ("Stats: " + local.response)
     } else {
@@ -738,64 +388,29 @@ on_stats_response local.success local.response local.http_code:
     }
 end
 
+on_smf_logout_response local.success local.response local.http_code:
+    if (local.success) {
+        dprintln ("Logout acknowledged by server")
+    } else {
+        dprintln ("Logout notification failed (player still logged out locally)")
+    }
+end
+
 // ============================================================================
-// ENGINE LIFE-CYCLE HANDLERS (New OPM Spec)
+// SERVER PROCESS LIFECYCLE
 // ============================================================================
 
 on_server_process_start:
     dprintln "------------------------------------------------"
     dprintln "OPM TRACKER: Server Process Start"
     dprintln "------------------------------------------------"
-    // Handle registration once per process
     thread global/register.scr::check_registration
 end
 
 on_server_process_quit:
+    thread global/tracker_common.scr::flush_queue
     dprintln "------------------------------------------------"
     dprintln "OPM TRACKER: Server Process Quit"
     dprintln "------------------------------------------------"
-    // Final emergency flush
-    waitthread global/tracker_common.scr::flush_queue
 end
 
-on_map_init:
-    if (game.tracker_debug) {
-        dprintln "OPM TRACKER: Map Init"
-    }
-    thread global/tracker_gameflow_ext.scr::on_map_init
-end
-
-on_map_start:
-    dprintln "------------------------------------------------"
-    dprintln "OPM TRACKER: Map Start"
-    dprintln "------------------------------------------------"
-    // Re-initialize map/round state
-    game.round_number = 1
-    game.match_start_time = gettime
-    
-    local.rnd = uuid_string 16
-    game.match_id = "match_" + local.rnd
-    
-    // Call extension and send match_start telemetry
-    thread global/tracker_gameflow_ext.scr::on_map_start
-    thread send_match_start
-end
-
-on_map_ready:
-    if (game.tracker_debug) {
-        dprintln "OPM TRACKER: Map Ready (Entities Spawned)"
-    }
-    thread global/tracker_gameflow_ext.scr::on_map_ready (getcvar "mapname") (getcvar "g_gametype")
-end
-
-on_map_shutdown:
-    dprintln "------------------------------------------------"
-    dprintln "OPM TRACKER: Map Shutdown"
-    dprintln "------------------------------------------------"
-    
-    // Call extension
-    thread global/tracker_gameflow_ext.scr::on_map_shutdown
-
-    // Final map-level flush
-    waitthread global/tracker_common.scr::flush_queue
-end

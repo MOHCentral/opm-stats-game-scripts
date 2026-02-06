@@ -1,0 +1,162 @@
+// ============================================================================
+// Custom Spawn Point Configuration System
+// ============================================================================
+// Provides configurable spawn point overrides for specific maps.
+// Add new maps by creating a setup_spawns_<mapname> thread.
+// ============================================================================
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+level.spawns_debug = 0  // Set to 1 for verbose logging
+
+// Supported spawn classnames for removal
+level.spawn_classnames = makeArray
+    "info_player_allied"
+    "info_player_axis"
+    "info_player_deathmatch"
+endArray
+
+// ============================================================================
+// MAIN ENTRY POINT
+// ============================================================================
+main:
+    if (level.spawns_configured == 1)
+    {
+        end
+    }
+
+    local.mapname = getcvar "mapname"
+    local.setup_thread = waitthread get_map_setup_thread local.mapname
+    
+    if (local.setup_thread != NIL)
+    {
+        level.spawns_configured = 1
+        conprintf ("Custom spawns: Configuring " + local.mapname + "\n")
+        waitthread local.setup_thread
+    }
+    
+    level waittill spawn
+end
+
+// ============================================================================
+// MAP REGISTRY - Add new maps here
+// ============================================================================
+get_map_setup_thread local.mapname:
+    switch (local.mapname)
+    {
+        case "dm/mohdm6":
+            end setup_spawns_mohdm6
+    }
+end NIL
+
+// ============================================================================
+// SPAWN MANAGEMENT UTILITIES
+// ============================================================================
+
+// Remove all existing spawn points of specified classnames
+clear_spawns:
+    local.total_removed = 0
+    
+    for (local.i = 1; local.i <= level.spawn_classnames.size; local.i++)
+    {
+        local.classname = level.spawn_classnames[local.i]
+        local.removed = waitthread remove_spawns_by_class local.classname
+        local.total_removed += local.removed
+    }
+    
+    if (level.spawns_debug)
+    {
+        conprintf ("Custom spawns: Removed " + local.total_removed + " original spawn points\n")
+    }
+    
+    wait 0.5
+end local.total_removed
+
+// Remove all spawns of a specific classname
+remove_spawns_by_class local.classname:
+    local.spawns = getentarray local.classname "classname"
+    local.count = local.spawns.size
+    
+    for (local.i = 1; local.i <= local.spawns.size; local.i++)
+    {
+        if (local.spawns[local.i] != NIL)
+        {
+            local.spawns[local.i] delete
+        }
+    }
+end local.count
+
+// Create a spawn point with validation
+create_spawn local.classname local.origin local.yaw:
+    if (local.classname == NIL || local.origin == NIL)
+    {
+        conprintf "Custom spawns: ERROR - Invalid spawn parameters\n"
+        end NIL
+    }
+    
+    local.spawn = spawn local.classname
+    if (local.spawn == NIL)
+    {
+        conprintf ("Custom spawns: ERROR - Failed to spawn " + local.classname + "\n")
+        end NIL
+    }
+    
+    local.spawn.origin = local.origin
+    local.spawn.angles = ( 0 (local.yaw) 0 )
+    local.spawn enablespawn
+end local.spawn
+
+// ============================================================================
+// MAP: dm/mohdm6 - Stalingrad
+// ============================================================================
+setup_spawns_mohdm6:
+    waitthread clear_spawns
+    
+    local.allied_count = 0
+    local.axis_count = 0
+    
+    // ---- Allied Spawns (16) - Southwest quadrant ----
+    // Upper level
+    waitthread create_spawn "info_player_allied" ( -420 -845 288 ) 45      // NW platform
+    waitthread create_spawn "info_player_allied" ( -500 -848 292 ) 135     // Corner
+    waitthread create_spawn "info_player_allied" ( -888 -716 292 ) 315     // Side
+    waitthread create_spawn "info_player_allied" ( -484 -572 288 ) 0       // Central
+    waitthread create_spawn "info_player_allied" ( -724 -616 288 ) 45      // Intersection A
+    waitthread create_spawn "info_player_allied" ( -552 -616 288 ) 135     // Intersection B
+    waitthread create_spawn "info_player_allied" ( -60 -300 288 ) 270      // East
+    waitthread create_spawn "info_player_allied" ( -1152 8 512 ) 0         // Top level
+    // Lower level
+    waitthread create_spawn "info_player_allied" ( -964 -192 262 ) 225     // Corridor
+    waitthread create_spawn "info_player_allied" ( -484 -610 48 ) 0        // Central A
+    waitthread create_spawn "info_player_allied" ( -484 -530 48 ) 0        // Central B
+    waitthread create_spawn "info_player_allied" ( -400 -720 48 ) 0        // Hall
+    waitthread create_spawn "info_player_allied" ( -724 -616 48 ) 45       // Intersection A
+    waitthread create_spawn "info_player_allied" ( -552 -616 48 ) 135      // Intersection B
+    waitthread create_spawn "info_player_allied" ( -60 -300 44 ) 270       // East
+    waitthread create_spawn "info_player_allied" ( -1156 32 272 ) 315      // Mid west
+    local.allied_count = 16
+    
+    // ---- Axis Spawns (16) - Northeast quadrant ----
+    // Upper level
+    waitthread create_spawn "info_player_axis" ( 728 1080 524 ) 315        // Platform A
+    waitthread create_spawn "info_player_axis" ( 920 1080 524 ) 225        // Platform B
+    waitthread create_spawn "info_player_axis" ( 828 988 524 ) 270         // Platform C
+    waitthread create_spawn "info_player_axis" ( -312 896 528 ) 0          // Central A
+    waitthread create_spawn "info_player_axis" ( -312 984 528 ) 0          // Central B
+    waitthread create_spawn "info_player_axis" ( 248 1040 528 ) 0          // East A
+    waitthread create_spawn "info_player_axis" ( 248 944 528 ) 0           // East B
+    waitthread create_spawn "info_player_axis" ( 92 984 524 ) 270          // Mid connector
+    waitthread create_spawn "info_player_axis" ( 416 860 752 ) 270         // Top level
+    // Lower level
+    waitthread create_spawn "info_player_axis" ( 728 1080 44 ) 315         // Platform A
+    waitthread create_spawn "info_player_axis" ( 920 1080 44 ) 225         // Platform B
+    waitthread create_spawn "info_player_axis" ( 828 988 44 ) 270          // Platform C
+    waitthread create_spawn "info_player_axis" ( -312 960 48 ) 0           // Central A
+    waitthread create_spawn "info_player_axis" ( -312 896 48 ) 0           // Central B
+    waitthread create_spawn "info_player_axis" ( 244 1048 48 ) 0           // East A
+    waitthread create_spawn "info_player_axis" ( 244 972 48 ) 0            // East B
+    local.axis_count = 16
+    
+    conprintf ("Custom spawns: dm/mohdm6 configured (" + local.allied_count + " allied, " + local.axis_count + " axis)\n")
+end

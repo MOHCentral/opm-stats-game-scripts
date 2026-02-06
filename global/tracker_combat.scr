@@ -1,0 +1,227 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Combat Module
+// Handles all combat-related events: kills, damage, weapons, grenades
+// ============================================================================
+
+init:
+    dprintln ("Initializing Combat Event Subscriptions...")
+
+    event_subscribe "player_killed" on_player_kill
+    // event_subscribe "player_damaged" on_player_damage
+    // event_subscribe "weapon_fire" on_weapon_fire
+    // event_subscribe "weapon_hit" on_weapon_hit
+    // event_subscribe "weapon_reload_done" on_weapon_reload_done
+    // event_subscribe "weapon_change" on_weapon_change
+    // event_subscribe "weapon_no_ammo" on_weapon_no_ammo
+    // event_subscribe "weapon_holster" on_weapon_holster
+    // event_subscribe "weapon_raise" on_weapon_raise
+    // event_subscribe "weapon_drop" on_weapon_drop
+    // event_subscribe "grenade_throw" on_grenade_throw
+
+    dprintln ("Combat Event Subscriptions Complete (11 events).")
+end
+
+// ============================================================================
+// KILL/DEATH EVENTS
+// ============================================================================
+
+// player_killed: self=victim(Player)
+// Params: attacker(Entity) damage(float) inflictor(Entity) position(Vector)
+//         direction(Vector) normal(Vector) knockback(int) damageflags(int)
+//         meansofdeath(int) location(int)
+// Location (hitloc_t): -2=Miss -1=General 0=Head 1=Helmet 2=Neck
+//   3=TorsoUpper 4=TorsoMid 5=TorsoLower 6=Pelvis
+//   7=RArmUpper 8=LArmUpper 9=RLegUpper 10=LLegUpper
+//   11=RArmLower 12=LArmLower 13=RLegLower 14=LLegLower
+//   15=RHand 16=LHand 17=RFoot 18=LFoot
+// MOD (meansOfDeath_t): 0=None 1=Suicide 2=Crush ... 14=Grenade 18=Bullet ...
+on_player_kill local.attacker local.damage local.inflictor local.position local.direction local.normal local.knockback local.damageflags local.meansofdeath local.location:
+    if (self == NIL || typeof self != "listener") { end }
+    if (local.meansofdeath == NIL) { local.meansofdeath = 0 }
+    if (local.location == NIL) { local.location = -1 }
+    if (local.damage == NIL) { local.damage = 0 }
+
+    // Extract weapon name from inflictor entity
+    local.weapon_name = waitthread global/tracker_common.scr::get_entity_name local.inflictor
+
+    // Track accuracy
+    if (local.attacker != NIL && typeof local.attacker == "listener") {
+        if (local.attacker.shots_hit == NIL) { local.attacker.shots_hit = 0 }
+        local.attacker.shots_hit++
+    }
+
+    local.data = waitthread global/tracker_common.scr::init_event "player_kill"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "victim"
+    local.data["weapon"] = local.weapon_name
+    local.data["damage"] = local.damage
+    local.data["hitlocation"] = waitthread global/tracker_common.scr::hitloc_to_string local.location
+    local.data["mod"] = waitthread global/tracker_common.scr::mod_to_string local.meansofdeath
+
+    thread global/tracker_common.scr::queue_event local.data
+    thread global/tracker_common.scr::flush_queue
+end
+
+// player_damaged: self=victim(Player)
+// Same param signature as player_killed
+on_player_damage local.attacker local.damage local.inflictor local.position local.direction local.normal local.knockback local.damageflags local.meansofdeath local.location:
+    if (self == NIL || typeof self != "listener") { end }
+    if (local.damage == NIL) { local.damage = 0 }
+    if (local.meansofdeath == NIL) { local.meansofdeath = 0 }
+
+    // Extract weapon name from inflictor entity
+    local.weapon_name = waitthread global/tracker_common.scr::get_entity_name local.inflictor
+
+    local.data = waitthread global/tracker_common.scr::init_event "damage"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "victim"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+    local.data["weapon"] = local.weapon_name
+    local.data["damage"] = local.damage
+    local.data["mod"] = waitthread global/tracker_common.scr::mod_to_string local.meansofdeath
+    local.data["hitlocation"] = waitthread global/tracker_common.scr::hitloc_to_string local.location
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_suicide local.player:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_suicide | Player: " local.player
+    if (local.player == NIL || typeof local.player != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "player_suicide"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_teamkill local.killer local.victim:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_teamkill | Killer: " local.killer " | Victim: " local.victim
+    if (local.killer == NIL || typeof local.killer != "listener") { end }
+    if (local.victim == NIL || typeof local.victim != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "player_teamkill"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.killer "killer"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.victim "victim"
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// WEAPON FIRE/HIT EVENTS
+// ============================================================================
+
+on_weapon_fire local.weapon_name local.ammo_remaining:
+    if (self == NIL || typeof self != "listener") { end }
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+    if (local.ammo_remaining == NIL) { local.ammo_remaining = 0 }
+
+    if (self.shots_fired == NIL) { self.shots_fired = 0 }
+    self.shots_fired++
+
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_fire"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["weapon"] = local.weapon_name
+    local.data["ammo_remaining"] = local.ammo_remaining
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_weapon_hit local.target local.location:
+    if (self == NIL || typeof self != "listener") { end }
+    if (local.location == NIL) { local.location = "unknown" }
+
+    if (self.shots_hit == NIL) { self.shots_hit = 0 }
+    self.shots_hit++
+
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_hit"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.target "target"
+    local.data["hitloc"] = local.location
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_weapon_reload_done local.weapon_name:
+    if (self == NIL || typeof self != "listener") { end }
+    exec global/tracker_common.scr::debug_log "EVENT: on_weapon_reload_done | Owner: " self " | Weapon: " local.weapon_name
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_reload_done"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_weapon_change local.old_weapon local.new_weapon local.client_num:
+    if (self == NIL || typeof self != "listener") { end }
+    if (local.old_weapon == NIL) { local.old_weapon = "none" }
+    if (local.new_weapon == NIL) { local.new_weapon = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_change"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["old_weapon"] = local.old_weapon
+    local.data["new_weapon"] = local.new_weapon
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_weapon_no_ammo local.weapon_name:
+    if (self == NIL || typeof self != "listener") { end }
+    exec global/tracker_common.scr::debug_log "EVENT: on_weapon_no_ammo | Owner: " self " | Weapon: " local.weapon_name
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_no_ammo"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_weapon_holster local.weapon_name:
+    if (self == NIL || typeof self != "listener") { end }
+    exec global/tracker_common.scr::debug_log "EVENT: on_weapon_holster | Owner: " self " | Weapon: " local.weapon_name
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_holster"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_weapon_raise local.weapon_name:
+    if (self == NIL || typeof self != "listener") { end }
+    exec global/tracker_common.scr::debug_log "EVENT: on_weapon_raise | Owner: " self " | Weapon: " local.weapon_name
+    if (local.weapon_name == NIL) { local.weapon_name = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_raise"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_weapon_drop local.weapon_entity:
+    if (self == NIL || typeof self != "listener") { end }
+    local.weapon_name = waitthread global/tracker_common.scr::get_entity_name local.weapon_entity
+    exec global/tracker_common.scr::debug_log "EVENT: on_weapon_drop | Owner: " self " | Weapon: " local.weapon_name
+
+    local.data = waitthread global/tracker_common.scr::init_event "weapon_drop"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["weapon"] = local.weapon_name
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// GRENADE EVENTS
+// ============================================================================
+
+on_grenade_throw local.projectile_entity:
+    if (self == NIL || typeof self != "listener") { end }
+    local.proj_name = waitthread global/tracker_common.scr::get_entity_name local.projectile_entity
+
+    local.data = waitthread global/tracker_common.scr::init_event "grenade_throw"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["projectile"] = local.proj_name
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// grenade_explode: self=owner(Player), params: grenade_entity(Entity)
+on_grenade_explode local.grenade_entity:
+    local.proj_name = waitthread global/tracker_common.scr::get_entity_name local.grenade_entity
+
+    local.data = waitthread global/tracker_common.scr::init_event "grenade_explode"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["projectile"] = local.proj_name
+    thread global/tracker_common.scr::queue_event local.data
+end

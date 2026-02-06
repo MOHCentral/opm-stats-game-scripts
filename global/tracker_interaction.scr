@@ -1,0 +1,105 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Interaction Module
+// Handles all interaction events: chat, use objects, spectate
+// ============================================================================
+
+init:
+    dprintln "Initializing Interaction Event Subscriptions..."
+
+    event_subscribe "player_textMessage" on_player_say
+    // NOTE: player_use does NOT exist as an engine event
+    // event_subscribe "player_use" on_player_use
+
+    dprintln "Interaction Event Subscriptions Complete (1 event)."
+end
+
+// ============================================================================
+// CHAT EVENTS
+// ============================================================================
+
+// player_textMessage: self=player(sender), params: text(string) is_team(int: 0=all, 1=team)
+on_player_say local.text local.is_team:
+    exec global/tracker_common.scr::debug_log ("EVENT: on_player_say | Player: " + self + " | Message: " + local.text + " | Team: " + local.is_team)
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    if (local.text == NIL) { local.text = "" }
+    if (local.is_team == NIL) { local.is_team = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "chat"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["message"] = local.text
+    local.data["is_team"] = local.is_team
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// USE EVENTS
+// ============================================================================
+
+on_player_use local.entity:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_use | Player: " self " | Entity: " local.entity
+    if (self == NIL) { end }
+    if (!self) { end }
+    if (local.entity == NIL) { local.entity = "unknown" }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "use"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["entity"] = local.entity
+    
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_use_object_start local.object:
+    exec global/tracker_common.scr::debug_log ("EVENT: on_player_use_object_start | Player: " + self + " | Object: " + local.object)
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    if (local.object == NIL) { local.object = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "player_use_object_start"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["object"] = local.object
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_use_object_finish local.object:
+    exec global/tracker_common.scr::debug_log ("EVENT: on_player_use_object_finish | Player: " + self + " | Object: " + local.object)
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    if (local.object == NIL) { local.object = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "player_use_object_finish"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["object"] = local.object
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// SPECTATE EVENTS
+// ============================================================================
+
+on_player_spectate:
+    exec global/tracker_common.scr::debug_log ("EVENT: on_player_spectate | Player: " + self)
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "player_spectate"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_freeze local.frozen_state:
+    exec global/tracker_common.scr::debug_log ("EVENT: on_player_freeze | Player: " + self + " | State: " + local.frozen_state)
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    if (local.frozen_state == NIL) { local.frozen_state = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "player_freeze"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["frozen_state"] = local.frozen_state
+
+    thread global/tracker_common.scr::queue_event local.data
+end

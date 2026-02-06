@@ -1,0 +1,210 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Client Module
+// Handles all client-related events: connect, disconnect, team join, votes
+// ============================================================================
+
+init:
+    dprintln "Initializing Client Event Subscriptions..."
+
+    event_subscribe "player_connected" on_client_connect
+    event_subscribe "player_disconnecting" on_client_disconnect
+    // NOTE: client_begin does NOT exist in engine. Use player_spawned instead.
+    event_subscribe "player_spawned" on_client_begin
+    event_subscribe "team_join" on_team_join
+    event_subscribe "vote_start" on_vote_start
+    event_subscribe "vote_passed" on_vote_passed
+    event_subscribe "vote_failed" on_vote_failed
+
+    dprintln "Client Event Subscriptions Complete (7 events)."
+end
+
+// ============================================================================
+// CONNECTION EVENTS
+// ============================================================================
+
+// player_connected: self=player, params: (none)
+on_client_connect:
+    exec global/tracker_common.scr::debug_log "EVENT: on_client_connect | Player: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "connect"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_client_disconnect:
+    exec global/tracker_common.scr::debug_log "EVENT: on_client_disconnect | Player: " self
+    if (self == NIL) { end }
+    if (!self) { end }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "disconnect"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_client_begin:
+    exec global/tracker_common.scr::debug_log "EVENT: on_client_begin | Player: " self
+    if (self == NIL) { end }
+    if (!self) { end }
+    
+    // Initialize session-based counters
+    self.shots_fired = 0
+    self.shots_hit = 0
+    
+    // Initialize stance
+    self.tracker_stance = "stand"
+
+    local.data = waitthread global/tracker_common.scr::init_event "client_begin"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+    
+    // Start per-player accuracy summary thread
+    thread player_accuracy_loop self
+end
+
+player_accuracy_loop local.player:
+    while (local.player) {
+        wait 10 // Every 10 seconds send summary
+        
+        if (!local.player) { end }
+
+        if (local.player.shots_fired > 0) {
+            local.data = waitthread global/tracker_common.scr::init_event "accuracy_summary"
+            local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+            local.data["fired"] = local.player.shots_fired
+            local.data["hits"] = local.player.shots_hit
+            
+            thread global/tracker_common.scr::queue_event local.data
+        }
+    }
+end
+
+on_client_userinfo_changed:
+    exec global/tracker_common.scr::debug_log "EVENT: on_client_userinfo_changed | Player: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "client_userinfo_changed"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_player_inactivity_drop:
+    exec global/tracker_common.scr::debug_log "EVENT: on_player_inactivity_drop | Player: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "player_inactivity_drop"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// TEAM EVENTS
+// ============================================================================
+
+on_team_join local.old_team local.new_team:
+    exec global/tracker_common.scr::debug_log "EVENT: on_team_join | Player: " self " | NewTeam: " local.new_team
+    if (self == NIL) { end }
+    if (!self) { end }
+    if (local.old_team == NIL) { local.old_team = "unknown" }
+    if (local.new_team == NIL) { local.new_team = "unknown" }
+    
+    local.data = waitthread global/tracker_common.scr::init_event "team_join"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["old_team"] = local.old_team
+    local.data["new_team"] = local.new_team
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// VOTE EVENTS
+// ============================================================================
+
+on_vote_start local.vote_name local.vote_string:
+    exec global/tracker_common.scr::debug_log "EVENT: on_vote_start | Player: " self " | Vote: " local.vote_name " | Text: " local.vote_string
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    if (local.vote_name == NIL) { local.vote_name = "unknown" }
+    if (local.vote_string == NIL) { local.vote_string = "" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "vote_start"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["vote_name"] = local.vote_name
+    local.data["vote_string"] = local.vote_string
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_vote_passed local.vote_name local.vote_string local.yes_count local.no_count:
+    exec global/tracker_common.scr::debug_log "EVENT: on_vote_passed | Vote: " local.vote_name " | Text: " local.vote_string " | Yes: " local.yes_count " | No: " local.no_count
+    if (local.vote_name == NIL) { local.vote_name = "unknown" }
+    if (local.vote_string == NIL) { local.vote_string = "" }
+    if (local.yes_count == NIL) { local.yes_count = 0 }
+    if (local.no_count == NIL) { local.no_count = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "vote_passed"
+    local.data["vote_name"] = local.vote_name
+    local.data["vote_string"] = local.vote_string
+    local.data["yes_count"] = local.yes_count
+    local.data["no_count"] = local.no_count
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_vote_failed local.vote_name local.fail_reason local.yes_count local.no_count:
+    exec global/tracker_common.scr::debug_log "EVENT: on_vote_failed | Vote: " local.vote_name " | Reason: " local.fail_reason " | Yes: " local.yes_count " | No: " local.no_count
+    if (local.vote_name == NIL) { local.vote_name = "unknown" }
+    if (local.fail_reason == NIL) { local.fail_reason = "unknown" }
+    if (local.yes_count == NIL) { local.yes_count = 0 }
+    if (local.no_count == NIL) { local.no_count = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "vote_failed"
+    local.data["vote_name"] = local.vote_name
+    local.data["fail_reason"] = local.fail_reason
+    local.data["yes_count"] = local.yes_count
+    local.data["no_count"] = local.no_count
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// SCORE EVENTS
+// ============================================================================
+
+on_score_change local.player local.type local.delta local.total:
+    exec global/tracker_common.scr::debug_log "EVENT: on_score_change | Player: " local.player " | Type: " local.type " | Delta: " local.delta " | Total: " local.total
+    if (local.player == NIL) { end }
+    if (typeof local.player != "listener") { end }
+    if (local.type == NIL) { local.type = "unknown" }
+    if (local.delta == NIL) { local.delta = 0 }
+    if (local.total == NIL) { local.total = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "score_change"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["score_type"] = local.type
+    local.data["delta"] = local.delta
+    local.data["new_total"] = local.total
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_teamkill_kick local.player local.count:
+    exec global/tracker_common.scr::debug_log "EVENT: on_teamkill_kick | Player: " local.player " | Count: " local.count
+    if (local.player == NIL) { end }
+    if (typeof local.player != "listener") { end }
+    if (local.count == NIL) { local.count = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "teamkill_kick"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
+    local.data["count"] = local.count
+
+    thread global/tracker_common.scr::queue_event local.data
+end

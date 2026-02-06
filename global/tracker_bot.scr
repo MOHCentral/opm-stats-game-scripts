@@ -1,0 +1,103 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Bot/Actor Module
+// Handles all bot and actor AI-related events
+// ============================================================================
+
+init:
+    dprintln "Initializing Bot/Actor Event Subscriptions..."
+
+    // event_subscribe "actor_spawn" on_actor_spawn
+    // event_subscribe "actor_killed" on_actor_killed
+    // event_subscribe "bot_spawn" on_bot_spawn
+    // event_subscribe "bot_killed" on_bot_killed
+
+    dprintln "Bot/Actor Event Subscriptions Complete (4 events)."
+end
+
+// ============================================================================
+// ACTOR EVENTS
+// ============================================================================
+
+on_actor_spawn:
+    exec global/tracker_common.scr::debug_log "EVENT: on_actor_spawn | Actor: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "actor_spawn"
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_actor_killed local.attacker:
+    exec global/tracker_common.scr::debug_log "EVENT: on_actor_killed | Actor: " self " | Attacker: " local.attacker
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "actor_killed"
+    local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// BOT EVENTS
+// ============================================================================
+
+on_bot_spawn:
+    exec global/tracker_common.scr::debug_log "EVENT: on_bot_spawn | Bot: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "bot_spawn"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_bot_killed local.attacker:
+    exec global/tracker_common.scr::debug_log "EVENT: on_bot_killed | Bot: " self " | Attacker: " local.attacker
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "bot_killed"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "victim"
+    
+    // Attacker may be NIL, world, or invalid - only add if valid entity
+    if (local.attacker != NIL && typeof local.attacker == "listener") {
+        local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
+    }
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_bot_roam:
+    exec global/tracker_common.scr::debug_log "EVENT: on_bot_roam | Bot: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "bot_roam"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_bot_curious:
+    exec global/tracker_common.scr::debug_log "EVENT: on_bot_curious | Bot: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "bot_curious"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_bot_attack:
+    exec global/tracker_common.scr::debug_log "EVENT: on_bot_attack | Bot: " self
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    local.data = waitthread global/tracker_common.scr::init_event "bot_attack"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+
+    thread global/tracker_common.scr::queue_event local.data
+end

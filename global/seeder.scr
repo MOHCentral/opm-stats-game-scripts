@@ -288,7 +288,7 @@ create_fake_player_roster:
         local.list[local.i].shots_fired = 0
         local.list[local.i].shots_hit = 0
         local.list[local.i].tracker_stance = "stand"
-        local.list[local.i].origin = '0 0 0'
+        local.list[local.i].origin = ( 0 0 0 )
         if (local.i <= 12) {
             local.list[local.i].dmteam = "allies"
         } else {
@@ -825,7 +825,7 @@ simulate_bot_events local.players:
         local.bot.netname = "bot_" + local.b
         local.bot.guid = "bot_guid_" + local.b
         local.bot.dmteam = "axis"
-        local.bot.origin = '0 0 0'
+        local.bot.origin = ( 0 0 0 )
 
         waitthread call_bot_spawn local.bot
         waitthread call_bot_roam local.bot
@@ -849,7 +849,7 @@ simulate_actor_events local.players:
     for (local.a = 1; local.a <= 3; local.a++) {
         local.actor = spawn info_notnull
         local.actor.netname = "actor_" + local.a
-        local.actor.origin = '0 0 0'
+        local.actor.origin = ( 0 0 0 )
 
         waitthread call_actor_spawn local.actor
 

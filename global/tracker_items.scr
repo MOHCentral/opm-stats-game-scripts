@@ -1,0 +1,104 @@
+// ============================================================================
+// OpenMOHAA Telemetry Tracker - Items Module
+// Handles all item-related events: pickup, drop, respawn
+// ============================================================================
+
+init:
+    dprintln "Initializing Items Event Subscriptions..."
+
+    event_subscribe "item_pickup" on_item_pickup
+    event_subscribe "item_drop" on_item_drop
+
+    dprintln "Items Event Subscriptions Complete (2 events)."
+end
+
+// ============================================================================
+// ITEM PICKUP/DROP EVENTS
+// ============================================================================
+
+on_item_pickup local.item_name local.amount:
+    exec global/tracker_common.scr::debug_log "EVENT: on_item_pickup | Player: " self " | Item: " local.item_name " | Count: " local.amount
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    local.item_str = waitthread global/tracker_common.scr::get_entity_name local.item_name
+    if (local.amount == NIL) { local.amount = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "item_pickup"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["item_name"] = local.item_str
+    local.data["count"] = local.amount
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+on_item_drop local.item_name:
+    exec global/tracker_common.scr::debug_log "EVENT: on_item_drop | Player: " self " | Item: " local.item_name
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    local.item_str = waitthread global/tracker_common.scr::get_entity_name local.item_name
+
+    local.data = waitthread global/tracker_common.scr::init_event "item_drop"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["item_name"] = local.item_str
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ============================================================================
+// SPECIALIZED PICKUP EVENTS
+// ============================================================================
+
+// health_pickup: self=player, params: heal_amount(int)
+on_health_pickup local.heal_amount:
+    exec global/tracker_common.scr::debug_log "EVENT: on_health_pickup | Player: " self " | Amount: " local.heal_amount
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    if (local.heal_amount == NIL) { local.heal_amount = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "health_pickup"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["count"] = local.heal_amount
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// ammo_pickup: self=player, params: ammo_name(string) amount(int)
+on_ammo_pickup local.ammo_name local.amount:
+    exec global/tracker_common.scr::debug_log "EVENT: on_ammo_pickup | Player: " self " | Item: " local.ammo_name " | Amt: " local.amount
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    if (local.ammo_name == NIL) { local.ammo_name = "unknown" }
+    if (local.amount == NIL) { local.amount = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "ammo_pickup"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["item_name"] = local.ammo_name
+    local.data["count"] = local.amount
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// armor_pickup: self=player/sentient, params: armor_amount(int)
+on_armor_pickup local.armor_amount:
+    exec global/tracker_common.scr::debug_log "EVENT: on_armor_pickup | Player: " self " | Amount: " local.armor_amount
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+    if (local.armor_amount == NIL) { local.armor_amount = 0 }
+
+    local.data = waitthread global/tracker_common.scr::init_event "armor_pickup"
+    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["count"] = local.armor_amount
+
+    thread global/tracker_common.scr::queue_event local.data
+end
+
+// item_respawn: self=item entity, params: item_name(string)
+on_item_respawn local.item_name:
+    exec global/tracker_common.scr::debug_log "EVENT: on_item_respawn | Entity: " self " | Item: " local.item_name
+    if (local.item_name == NIL) { local.item_name = "unknown" }
+
+    local.data = waitthread global/tracker_common.scr::init_event "item_respawn"
+    local.data["item_name"] = local.item_name
+
+    thread global/tracker_common.scr::queue_event local.data
+end
