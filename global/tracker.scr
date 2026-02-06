@@ -116,6 +116,17 @@ main:
     event_subscribe "server_process_start" on_server_process_start
     event_subscribe "server_process_quit"  on_server_process_quit
 
+    // ========================================================================
+    // AUTO-AUTH: If opm_auto_login_token is set, auto-authenticate on spawn
+    // Set this cvar in your server config:
+    //   set opm_auto_login_token "MOH-XXXX"
+    // ========================================================================
+    game.auto_login_token = getcvar "opm_auto_login_token"
+    if (game.auto_login_token != NIL && game.auto_login_token != "") {
+        dprintln ("AUTO-AUTH: Token configured, will auto-authenticate players on spawn")
+        event_subscribe "player_spawned" on_player_auto_auth
+    }
+
     dprintln "All modules initialized."
     
     // Start heartbeat loop (every 30 seconds)
@@ -188,11 +199,11 @@ cmd_login local.player local.args:
     local.url = game.api_base_url + "/api/v1/auth/verify"
 
     local.data["token"] = local.token
-    local.data["player_guid"] = (getclientnum local.player)
+    local.data["player_guid"] = (string (getclientnum local.player))
     local.data["player_name"] = local.player.netname
     local.data["server_id"] = game.server_id
     local.data["server_ip"] = (getcvar "net_ip")
-    local.data["server_port"] = (int (getcvar "net_port"))
+    local.data["server_port"] = (string (getcvar "net_port"))
     local.json = make_json local.data
 
     dprintln ("[OPM] POST auth verify: " + local.url + " DATA: " + local.json)
@@ -207,8 +218,8 @@ cmd_logout local.player local.args:
     
     local.url = game.api_base_url + "/api/v1/auth/smf-logout"
 
-    local.data["forum_user_id"] = local.player.smf_member_id
-    local.data["player_guid"] = (getclientnum local.player)
+    local.data["forum_user_id"] = (string local.player.smf_member_id)
+    local.data["player_guid"] = (string (getclientnum local.player))
     local.json = make_json local.data
             
     dprintln ("[OPM] POST logout: " + local.url + " DATA: " + local.json)
@@ -271,10 +282,10 @@ heartbeat_loop:
     if (local.pcount == NIL) { local.pcount = 0 }
 
     local.data = waitthread global/tracker_common.scr::init_event "heartbeat"
-    local.data["round_number"] = (int local.round)
-    local.data["allies_score"] = (int local.allies)
-    local.data["axis_score"] = (int local.axis)
-    local.data["player_count"] = (int local.pcount)
+    local.data["round_number"] = (string local.round)
+    local.data["allies_score"] = (string local.allies)
+    local.data["axis_score"] = (string local.axis)
+    local.data["player_count"] = (string local.pcount)
 
     thread global/tracker_common.scr::queue_event local.data
     thread heartbeat_loop
@@ -288,6 +299,42 @@ debug_sync_loop:
             game.tracker_debug = (int local.debug_val)
         }
     }
+end
+
+// ============================================================================
+// AUTO-AUTH HANDLER
+// Fires on player_spawned when opm_auto_login_token cvar is set.
+// Authenticates the player via the API using the stored token.
+// ============================================================================
+
+on_player_auto_auth:
+    if (self == NIL) { end }
+    if (typeof self != "listener") { end }
+
+    // Already authenticated — skip
+    if (self.is_authenticated == 1) { end }
+
+    // Already attempted and waiting for response — skip
+    if (self.auto_auth_pending == 1) { end }
+
+    // Re-read cvar in case it was cleared at runtime
+    local.token = getcvar "opm_auto_login_token"
+    if (local.token == "" || local.token == NIL) { end }
+
+    self.auto_auth_pending = 1
+    dprintln ("AUTO-AUTH: Attempting login for " + self.netname + " (client " + (getclientnum self) + ")")
+
+    local.url = game.api_base_url + "/api/v1/auth/verify"
+
+    local.data["token"] = local.token
+    local.data["player_guid"] = (string (getclientnum self))
+    local.data["player_name"] = self.netname
+    local.data["server_id"] = game.server_id
+    local.data["server_ip"] = (getcvar "net_ip")
+    local.data["server_port"] = (string (getcvar "net_port"))
+    local.json = make_json local.data
+
+    curl_post local.url NIL local.json on_smf_auth_verify
 end
 
 // ============================================================================
@@ -327,6 +374,9 @@ on_smf_auth_verify local.success local.response local.http_code:
             dprintln ("SMF Auth: Player with clientnum " + local.target_clientnum + " not found (disconnected?)")
             end
         }
+
+        // Clear auto-auth pending flag
+        local.player.auto_auth_pending = 0
         
         if (local.member_id > 0) {
             local.player.is_authenticated = 1
@@ -354,7 +404,7 @@ end
 send_player_auth_event local.player:
     local.data = waitthread global/tracker_common.scr::init_event "player_auth"
     local.data = waitthread global/tracker_common.scr::add_player local.data local.player "player"
-    local.data["smf_member_id"] = (int local.player.smf_member_id)
+    local.data["smf_member_id"] = (string local.player.smf_member_id)
     local.data["smf_member_name"] = (string local.player.smf_member_name)
 
     thread global/tracker_common.scr::queue_event local.data

@@ -49,7 +49,7 @@ register_server:
     // Build payload using make_json
     local.data["name"] = local.name
     local.data["ip_address"] = local.ip
-    local.data["port"] = (int local.port)
+    local.data["port"] = (string local.port)
     local.json = make_json local.data
     
     local.headers = makearray

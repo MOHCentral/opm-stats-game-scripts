@@ -223,7 +223,7 @@ init_event local.event_type:
         local.data["session_id"] = (string game.session_id)
     }
     
-    local.data["timestamp"] = (float level.time)
+    local.data["timestamp"] = (string level.time)
 end local.data
 
 // Adds player fields to event data array
@@ -246,7 +246,7 @@ add_player local.data local.player local.prefix:
     local.data[local.prefix + "_guid"] = (string local.guid)
     
     if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
-        local.data[local.prefix + "_smf_id"] = (int local.player.smf_member_id)
+        local.data[local.prefix + "_smf_id"] = (string local.player.smf_member_id)
     }
     
     if (local.player.team != NIL && local.player.team != "") {
@@ -255,15 +255,15 @@ add_player local.data local.player local.prefix:
     
     if (local.player.origin != NIL) {
         local.pos = local.player.origin
-        local.data[local.prefix + "_x"] = (float local.pos[0])
-        local.data[local.prefix + "_y"] = (float local.pos[1])
-        local.data[local.prefix + "_z"] = (float local.pos[2])
+        local.data[local.prefix + "_x"] = (string local.pos[0])
+        local.data[local.prefix + "_y"] = (string local.pos[1])
+        local.data[local.prefix + "_z"] = (string local.pos[2])
     }
     
     if (local.player.angles != NIL) {
         local.ang = local.player.angles
-        local.data[local.prefix + "_pitch"] = (float local.ang[0])
-        local.data[local.prefix + "_yaw"] = (float local.ang[1])
+        local.data[local.prefix + "_pitch"] = (string local.ang[0])
+        local.data[local.prefix + "_yaw"] = (string local.ang[1])
     }
     
     local.stance = "stand"
@@ -293,7 +293,7 @@ add_player_compact local.data local.player local.prefix:
     local.data[local.prefix + "_guid"] = (string local.guid)
     
     if (local.player.is_authenticated == 1 && local.player.smf_member_id != NIL) {
-        local.data[local.prefix + "_smf_id"] = (int local.player.smf_member_id)
+        local.data[local.prefix + "_smf_id"] = (string local.player.smf_member_id)
     }
     
     if (local.player.team != NIL && local.player.team != "") {
