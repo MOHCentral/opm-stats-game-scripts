@@ -50,6 +50,7 @@ on_player_kill local.attacker local.damage local.inflictor local.position local.
         local.attacker.shots_hit++
     }
 
+    // Build kill event
     local.data = waitthread global/tracker_common.scr::init_event "player_kill"
     local.data = waitthread global/tracker_common.scr::add_player local.data local.attacker "attacker"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "victim"
