@@ -7,11 +7,11 @@ init:
     dprintln ("Initializing Combat Event Subscriptions...")
 
     event_subscribe "player_killed" on_player_kill
+    event_subscribe "weapon_change" on_weapon_change
     // event_subscribe "player_damaged" on_player_damage
     // event_subscribe "weapon_fire" on_weapon_fire
     // event_subscribe "weapon_hit" on_weapon_hit
     // event_subscribe "weapon_reload_done" on_weapon_reload_done
-    // event_subscribe "weapon_change" on_weapon_change
     // event_subscribe "weapon_no_ammo" on_weapon_no_ammo
     // event_subscribe "weapon_holster" on_weapon_holster
     // event_subscribe "weapon_raise" on_weapon_raise
@@ -41,8 +41,20 @@ on_player_kill local.attacker local.damage local.inflictor local.position local.
     if (local.location == NIL) { local.location = -1 }
     if (local.damage == NIL) { local.damage = 0 }
 
-    // Extract weapon name from inflictor entity
-    local.weapon_name = waitthread global/tracker_common.scr::get_entity_name local.inflictor
+    // Resolve weapon name (prefer tracked weapon, then inflictor, then MOD fallback)
+    local.weapon_name = ""
+    if (local.attacker != NIL && typeof local.attacker == "listener" && local.attacker.tracker_weapon != NIL && local.attacker.tracker_weapon != "") {
+        local.weapon_name = local.attacker.tracker_weapon
+    }
+
+    if (local.weapon_name == "") {
+        local.weapon_name = waitthread global/tracker_common.scr::get_entity_name local.inflictor
+    }
+
+    local.mod_name = waitthread global/tracker_common.scr::mod_to_string local.meansofdeath
+    if (local.weapon_name == NIL || local.weapon_name == "" || local.weapon_name == "world" || local.weapon_name == "player" || local.weapon_name == "projectile" || local.weapon_name == "Explosion") {
+        local.weapon_name = local.mod_name
+    }
 
     // Track accuracy
     if (local.attacker != NIL && typeof local.attacker == "listener") {
@@ -70,8 +82,20 @@ on_player_damage local.attacker local.damage local.inflictor local.position loca
     if (local.damage == NIL) { local.damage = 0 }
     if (local.meansofdeath == NIL) { local.meansofdeath = 0 }
 
-    // Extract weapon name from inflictor entity
-    local.weapon_name = waitthread global/tracker_common.scr::get_entity_name local.inflictor
+    // Resolve weapon name (prefer tracked weapon, then inflictor, then MOD fallback)
+    local.weapon_name = ""
+    if (local.attacker != NIL && typeof local.attacker == "listener" && local.attacker.tracker_weapon != NIL && local.attacker.tracker_weapon != "") {
+        local.weapon_name = local.attacker.tracker_weapon
+    }
+
+    if (local.weapon_name == "") {
+        local.weapon_name = waitthread global/tracker_common.scr::get_entity_name local.inflictor
+    }
+
+    local.mod_name = waitthread global/tracker_common.scr::mod_to_string local.meansofdeath
+    if (local.weapon_name == NIL || local.weapon_name == "" || local.weapon_name == "world" || local.weapon_name == "player" || local.weapon_name == "projectile" || local.weapon_name == "Explosion") {
+        local.weapon_name = local.mod_name
+    }
 
     local.data = waitthread global/tracker_common.scr::init_event "damage"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "victim"
@@ -151,6 +175,9 @@ on_weapon_change local.old_weapon local.new_weapon local.client_num:
     if (self == NIL || typeof self != "listener") { end }
     if (local.old_weapon == NIL) { local.old_weapon = "none" }
     if (local.new_weapon == NIL) { local.new_weapon = "unknown" }
+
+    // Persist latest known weapon for kill attribution.
+    self.tracker_weapon = local.new_weapon
 
     local.data = waitthread global/tracker_common.scr::init_event "weapon_change"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"

@@ -400,9 +400,35 @@ on_http_callback local.success local.response local.http_code:
         }
     }
 
-    // Auto-recover from invalid token
+    // Auto-recover from invalid token by re-registering
     if (local.http_code == 401) {
-        dprintln "[OPM] Server token rejected." 
+        dprintln "[OPM] Server token rejected (401). Clearing credentials and re-registering..."
+
+        // Clear stale credentials
+        game.server_token = NIL
+        game.server_id = NIL
+        setcvar "opm_server_token" ""
+        setcvar "opm_server_id" ""
+        game.opm_registered = 0
+
+        // Cooldown: only attempt re-registration every 30 seconds
+        if (game.last_reregister_time == NIL) { game.last_reregister_time = 0.0 }
+
+        // Use numeric map-time, not gettime (string), for arithmetic.
+        local.now = level.time
+        if (local.now == NIL) { local.now = 0.0 }
+        local.last = game.last_reregister_time
+        if (local.last == NIL) { local.last = 0.0 }
+
+        local.now = (float local.now)
+        local.last = (float local.last)
+
+        if ((local.now - local.last) > 30.0) {
+            game.last_reregister_time = local.now
+            thread global/register.scr::register_server
+        } else {
+            dprintln "[OPM] Re-registration cooldown active (30s). Skipping."
+        }
     }
 end
 

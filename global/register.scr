@@ -56,7 +56,7 @@ register_server:
     "Content-Type" "application/json"
     endarray
 
-    dprintln ("[STUB] Would POST registration to: " + local.url)
+    dprintln ("[OPM] POST registration to: " + local.url)
     
     // curl_post calling convention: url, headers, body, callback
     curl_post local.url local.headers local.json on_register_response
@@ -77,6 +77,7 @@ on_register_response local.success local.response local.http_code:
             // Update game variables immediately
             game.server_id = local.id
             game.server_token = local.token
+            game.opm_registered = 1
 
             dprintln ("OPM TRACKER: Assigned ID: " + local.id)
             dprintln "OPM TRACKER: Credentials saved in memory."

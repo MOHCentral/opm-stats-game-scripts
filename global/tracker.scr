@@ -103,7 +103,7 @@ main:
     // ========================================================================
 
     thread global/tracker_combat.scr::init
-    // thread global/tracker_movement.scr::init
+    thread global/tracker_movement.scr::init
     // thread global/tracker_items.scr::init
     // thread global/tracker_gameflow.scr::init
     // thread global/tracker_client.scr::init

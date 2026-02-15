@@ -9,9 +9,7 @@ init:
     event_subscribe "player_spawned" on_player_spawn
     event_subscribe "player_jump" on_player_jump
     event_subscribe "player_crouch" on_player_crouch
-    event_subscribe "player_stand" on_player_stand
-    // NOTE: player_prone does NOT exist in engine
-    // event_subscribe "player_prone" on_player_prone
+    // event_subscribe "player_stand" on_player_stand
     event_subscribe "player_distance" on_player_distance
     event_subscribe "ladder_mount" on_ladder_mount
     event_subscribe "ladder_dismount" on_ladder_dismount
