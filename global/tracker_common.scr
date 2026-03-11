@@ -340,12 +340,12 @@ end
 
 flush_queue:
     if (game.event_queue == NIL || game.event_queue == "" || game.event_queue == "[") {
-        dprintln "Flush Queue: No events to flush."
+        // dprintln "Flush Queue: No events to flush."
         end
     }
             
     if (game.batch_size == 0) {
-        dprintln "Flush Queue: Batch size is 0, nothing to flush."
+        // dprintln "Flush Queue: Batch size is 0, nothing to flush."
         end
     }
             

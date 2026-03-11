@@ -129,8 +129,8 @@ main:
 
     dprintln "All modules initialized."
     
-    // Start heartbeat loop (every 30 seconds)
-    thread heartbeat_loop
+    // Heartbeat loop temporarily disabled
+    // thread heartbeat_loop
         
     // Start debug CVar sync loop
     thread debug_sync_loop
@@ -270,6 +270,8 @@ end
 // ============================================================================
 
 heartbeat_loop:
+    end
+
     wait 30
 
     local.round = game.round_number
@@ -307,7 +309,8 @@ end
 // Authenticates the player via the API using the stored token.
 // ============================================================================
 
-on_player_auto_auth:
+on_player_auto_auth: 
+    self stufftext "say hi"
     if (self == NIL) { end }
     if (typeof self != "listener") { end }
 

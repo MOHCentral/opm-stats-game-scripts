@@ -1,6 +1,6 @@
 // ============================================================================
 // OpenMOHAA Telemetry Tracker - Movement Module
-// Handles all movement-related events: spawn, jump, crouch, prone, distance
+// Handles all movement-related events: spawn, jump, crouch, distance
 // ============================================================================
 
 init:
@@ -88,18 +88,6 @@ on_player_crouch:
     thread global/tracker_common.scr::queue_event local.data
 end
 
-on_player_prone:
-    exec global/tracker_common.scr::debug_log "EVENT: on_player_prone | Player: " self
-    if (self == NIL) { end }
-    if (!self) { end }
-    self.tracker_stance = "prone"
-    
-    local.data = waitthread global/tracker_common.scr::init_event "prone"
-    local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
-    
-    thread global/tracker_common.scr::queue_event local.data
-end
-
 on_player_stand:
     exec global/tracker_common.scr::debug_log "EVENT: on_player_stand | Player: " self
     if (self == NIL) { end }
@@ -127,6 +115,8 @@ on_player_distance local.total_distance local.delta_distance:
     
     local.data = waitthread global/tracker_common.scr::init_event "distance"
     local.data = waitthread global/tracker_common.scr::add_player local.data self "player"
+    local.data["distance"] = local.total_distance
+    local.data["walked"] = local.delta_distance
     local.data["total_distance"] = local.total_distance
     local.data["delta_distance"] = local.delta_distance
     

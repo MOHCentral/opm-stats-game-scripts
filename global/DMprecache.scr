@@ -1,0 +1,4 @@
+main: 
+	wait 3
+	exec global/AlienXweather.scr
+end

@@ -40,7 +40,6 @@ main:
     event_subscribe "player_jump" event_player_jump
     event_subscribe "player_land" event_player_land
     event_subscribe "player_crouch" event_player_crouch
-    event_subscribe "player_prone" event_player_prone
     event_subscribe "player_stand" event_player_stand
     event_subscribe "player_distance" event_player_distance
     event_subscribe "ladder_mount" event_ladder_mount
@@ -269,10 +268,6 @@ end
 
 event_player_crouch:
     dprintln ("EVENT: player_crouch | Self: " + self)
-end
-
-event_player_prone:
-    dprintln ("EVENT: player_prone | Self: " + self)
 end
 
 event_player_stand:

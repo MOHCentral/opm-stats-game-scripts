@@ -715,8 +715,6 @@ simulate_movement local.player:
     if (local.stance == 0) {
         waitthread call_player_crouch local.player
     } else if (local.stance == 1) {
-        waitthread call_player_prone local.player
-    } else if (local.stance == 2) {
         waitthread call_player_stand local.player
     }
 
@@ -1214,11 +1212,6 @@ end
 
 call_player_crouch local.player:
     thread global/tracker.scr::on_player_crouch local.player
-    level.seed_total_events++
-end
-
-call_player_prone local.player:
-    thread global/tracker.scr::on_player_prone local.player
     level.seed_total_events++
 end
 
