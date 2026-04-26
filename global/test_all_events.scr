@@ -61,14 +61,6 @@ main:
     event_subscribe "ammo_pickup" event_ammo_pickup
     event_subscribe "armor_pickup" event_armor_pickup
 
-    /* Vehicle/Turret Events */
-    event_subscribe "vehicle_enter" event_vehicle_enter
-    event_subscribe "vehicle_exit" event_vehicle_exit
-    event_subscribe "vehicle_death" event_vehicle_death
-    event_subscribe "vehicle_collision" event_vehicle_collision
-    event_subscribe "turret_enter" event_turret_enter
-    event_subscribe "turret_exit" event_turret_exit
-
     /* Server Events */
     event_subscribe "server_console_command" event_server_console_command
     event_subscribe "server_process_start" event_server_process_start
@@ -332,30 +324,6 @@ end
 
 event_armor_pickup local.armor_amount:
     dprintln ("EVENT: armor_pickup | Self: " + self + " | Amt: " + local.armor_amount)
-end
-
-event_vehicle_enter local.vehicle_entity:
-    dprintln ("EVENT: vehicle_enter | Self: " + self + " | Veh: " + local.vehicle_entity)
-end
-
-event_vehicle_exit local.vehicle_entity:
-    dprintln ("EVENT: vehicle_exit | Self: " + self + " | Veh: " + local.vehicle_entity)
-end
-
-event_vehicle_death local.attacker:
-    dprintln ("EVENT: vehicle_death | Self: " + self + " | Atk: " + local.attacker)
-end
-
-event_vehicle_collision local.other_entity:
-    dprintln ("EVENT: vehicle_collision | Self: " + self + " | Other: " + local.other_entity)
-end
-
-event_turret_enter local.turret_entity:
-    dprintln ("EVENT: turret_enter | Self: " + self + " | Tur: " + local.turret_entity)
-end
-
-event_turret_exit local.turret_entity:
-    dprintln ("EVENT: turret_exit | Self: " + self + " | Tur: " + local.turret_entity)
 end
 
 event_server_console_command local.command_string:

@@ -1,6 +1,6 @@
 # OpenMOHAA Event Types Reference
 
-> **Generated at:** 2026-02-05T10:35:52.150009
+> **Generated at:** 2026-04-14T17:34:10.658224
 > 
 > **Source of Truth:** `opm-stats-api/web/static/openapi.yaml`
 > 
@@ -50,7 +50,6 @@ When sending events via `build_base_payload`, use these exact type names.
 | `jump` | Movement |  |
 | `land` | Movement |  |
 | `crouch` | Movement |  |
-| `prone` | Movement |  |
 | `player_stand` | Player |  |
 | `player_spawn` | Player |  |
 | `player_respawn` | Player |  |
@@ -70,12 +69,6 @@ When sending events via `build_base_payload`, use these exact type names.
 | `health_pickup` | Item |  |
 | `ammo_pickup` | Item |  |
 | `armor_pickup` | Item |  |
-| `vehicle_enter` | Vehicle |  |
-| `vehicle_exit` | Vehicle |  |
-| `vehicle_crash` | Vehicle |  |
-| `vehicle_change` | Vehicle |  |
-| `turret_enter` | Turret |  |
-| `turret_exit` | Turret |  |
 | `server_console_command` | Server |  |
 | `heartbeat` | Misc |  |
 | `map_init` | Map |  |

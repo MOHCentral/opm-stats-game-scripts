@@ -1,20 +1,21 @@
 // ============================================================================
-// OpenMOHAA Telemetry Tracker v2.1
+// OpenMOHAA Telemetry Tracker v3.0
 // High-Throughput Event Collection for Mass Stats System
 // ============================================================================
 //
-// This tracker sends atomic events directly to the API.
+// This tracker sends atomic events to the API via MQTT (primary) or HTTP (fallback).
 // The API handles batching, worker pools, and database writes.
 //
 // Architecture:
-// - Events fire immediately via curl_post (no client-side batching)
-// - URL-encoded payloads with rich metadata (positions, angles, timestamps)
+// - MQTT publish to openmohaa/events/{server_id} (primary, low-latency)
+// - HTTP fallback via curl_post when MQTT is unavailable
+// - Events batched as JSON arrays, flushed every 2 seconds
 // - Server session/match context included in each event
 // - API returns 202 Accepted immediately (async processing)
 //
 // Module Organization:
 // - tracker.scr          - Entry point, config, console commands, auth
-// - tracker_common.scr   - Shared helpers, JSON building, HTTP transport
+// - tracker_common.scr   - Shared helpers, JSON building, MQTT/HTTP transport
 // - tracker_combat.scr   - Combat events (kills, damage, weapons)
 // - tracker_movement.scr - Movement events (spawn, jump, stance)
 // - tracker_items.scr    - Item events (pickup, drop)
@@ -23,7 +24,6 @@
 // - tracker_world.scr    - World events (doors, explosions)
 // - tracker_bot.scr      - Bot/Actor AI events
 // - tracker_interaction.scr - Chat, use, spectate events
-// - tracker_vehicle.scr  - Vehicle/turret events
 //
 // ============================================================================
 // MAIN INITIALIZATION
@@ -75,8 +75,38 @@ main:
         game.tracker_debug = (int local.debug_cvar)
     }
 
+    // ========================================================================
+    // MQTT CONFIGURATION
+    // CVars: opm_mqtt_host, opm_mqtt_port, opm_mqtt_username, opm_mqtt_password
+    // Defaults to localhost:1883 with no auth (local docker broker)
+    // ========================================================================
+    game.use_mqtt = 1
+    game.mqtt_connected = 0
+    game.mqtt_topic_prefix = "openmohaa"
+
+    game.mqtt_host = getcvar "opm_mqtt_host"
+    if (game.mqtt_host == NIL || game.mqtt_host == "") {
+        game.mqtt_host = "127.0.0.1"
+    }
+    game.mqtt_port = getcvar "opm_mqtt_port"
+    if (game.mqtt_port == NIL || game.mqtt_port == "") {
+        game.mqtt_port = 1883
+    } else {
+        game.mqtt_port = (int game.mqtt_port)
+    }
+    game.mqtt_username = getcvar "opm_mqtt_username"
+    if (game.mqtt_username == NIL) { game.mqtt_username = "" }
+    game.mqtt_password = getcvar "opm_mqtt_password"
+    if (game.mqtt_password == NIL) { game.mqtt_password = "" }
+
+    // Disable MQTT if explicitly turned off via cvar
+    local.mqtt_enabled = getcvar "opm_mqtt_enabled"
+    if (local.mqtt_enabled == "0") {
+        game.use_mqtt = 0
+    }
+
     dprintln "=============================================="
-    dprintln "OpenMOHAA Telemetry Tracker v2.1 Initializing"
+    dprintln "OpenMOHAA Telemetry Tracker v3.0 Initializing"
     dprintln "=============================================="
     
     // Generate session ID
@@ -88,6 +118,11 @@ main:
     dprintln ("  Session ID: " + game.session_id)
     dprintln ("  Map: " + game.map_name)
     dprintln ("  API: " + game.api_base_url + game.api_events_endpoint)
+    if (game.use_mqtt) {
+        dprintln ("  MQTT: " + game.mqtt_host + ":" + game.mqtt_port)
+    } else {
+        dprintln "  MQTT: disabled (HTTP only)"
+    }
     
     // Register console commands
     registercmd "login" cmd_login
@@ -110,7 +145,6 @@ main:
     // thread global/tracker_world.scr::init
     thread global/tracker_bot.scr::init
     // thread global/tracker_interaction.scr::init
-    // thread global/tracker_vehicle.scr::init
 
     // Server process lifecycle (one-time only events)
     event_subscribe "server_process_start" on_server_process_start
@@ -128,7 +162,27 @@ main:
     }
 
     dprintln "All modules initialized."
-    
+
+    // ========================================================================
+    // MQTT CONNECTION
+    // Connect to MQTT broker for low-latency telemetry transport
+    // mqtt_connect host port client_id callback [username] [password] [keepalive]
+    // ========================================================================
+    if (game.use_mqtt == 1) {
+        local.client_id = "opm-game-" + game.server_id
+        if (game.server_id == NIL || game.server_id == "") {
+            local.client_id = "opm-game-unknown"
+        }
+
+        dprintln ("[OPM] MQTT: Connecting to " + game.mqtt_host + ":" + game.mqtt_port + " as " + local.client_id)
+
+        if (game.mqtt_username != "" && game.mqtt_password != "") {
+            mqtt_connect game.mqtt_host game.mqtt_port local.client_id "global/tracker_common.scr::on_mqtt_connected" game.mqtt_username game.mqtt_password 60
+        } else {
+            mqtt_connect game.mqtt_host game.mqtt_port local.client_id "global/tracker_common.scr::on_mqtt_connected"
+        }
+    }
+
     // Heartbeat loop temporarily disabled
     // thread heartbeat_loop
         
@@ -462,6 +516,11 @@ end
 
 on_server_process_quit:
     thread global/tracker_common.scr::flush_queue
+    // Disconnect MQTT cleanly
+    if (game.use_mqtt == 1 && game.mqtt_connected == 1) {
+        dprintln "[OPM] MQTT: Disconnecting..."
+        mqtt_disconnect "global/tracker_common.scr::on_mqtt_disconnected"
+    }
     dprintln "------------------------------------------------"
     dprintln "OPM TRACKER: Server Process Quit"
     dprintln "------------------------------------------------"

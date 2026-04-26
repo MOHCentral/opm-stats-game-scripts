@@ -94,26 +94,6 @@ init_data:
     level.gametype_count = 6
 
     // ========================================================================
-    // VEHICLE DATABASE
-    // ========================================================================
-    level.vehicles[1] = "Jeep"
-    level.vehicles[2] = "Kubelwagen"
-    level.vehicles[3] = "Tiger_Tank"
-    level.vehicles[4] = "Sherman_Tank"
-    level.vehicles[5] = "Halftrack"
-    level.vehicles[6] = "Flak88"
-    level.vehicle_count = 6
-
-    // ========================================================================
-    // TURRET DATABASE
-    // ========================================================================
-    level.turrets[1] = "MG42_Nest"
-    level.turrets[2] = "MG42_Jeep"
-    level.turrets[3] = "Flak88_Gun"
-    level.turrets[4] = "30cal_Nest"
-    level.turret_count = 4
-
-    // ========================================================================
     // ITEM DATABASE
     // ========================================================================
     level.items[1] = "MedKit"
@@ -139,8 +119,7 @@ init_data:
     level.mods[9]  = "MOD_TELEFRAG"
     level.mods[10] = "MOD_FALLING"
     level.mods[11] = "MOD_EXPLOSION"
-    level.mods[12] = "MOD_VEHICLE"
-    level.mod_count = 12
+    level.mod_count = 11
 
     // ========================================================================
     // PLAYER ROSTER - 24 varied players
@@ -441,11 +420,6 @@ simulate_round local.players local.round_num local.gametype:
             }
         }
         
-        // Vehicle events (20% chance)
-        if (randomint 100 < 20) {
-            waitthread simulate_vehicle_events local.players
-        }
-        
         // World events (30% chance)
         if (randomint 100 < 30) {
             waitthread simulate_world_events local.players
@@ -601,9 +575,8 @@ simulate_combat local.players:
     // ROADKILL (5%)
     // ========================================================================
     else if (local.type == 13) {
-        local.veh = level.vehicles[1 + (randomint level.vehicle_count)]
-        waitthread call_player_roadkill local.attacker local.victim local.veh
-        waitthread call_player_death local.victim local.veh
+        waitthread call_player_roadkill local.attacker local.victim "world"
+        waitthread call_player_death local.victim "crush"
         local.attacker.kills++
         local.victim.deaths++
         waitthread call_player_respawn local.victim
@@ -734,33 +707,6 @@ simulate_movement local.player:
             waitthread call_player_use_object_finish local.player "HealthCabinet"
         }
     }
-end
-
-// ============================================================================
-// SIMULATE VEHICLE EVENTS
-// ============================================================================
-simulate_vehicle_events local.players:
-    local.p_size = local.players.size
-    if (local.p_size == NIL || local.p_size < 1) { end }
-    local.player = local.players[1 + (randomint local.p_size)]
-
-    local.veh = spawn info_notnull
-    local.veh.targetname = "Jeep"
-    local.turret = spawn info_notnull
-    local.turret.targetname = "MG42_Jeep"
-
-    waitthread call_vehicle_enter local.player local.veh
-    waitthread call_turret_enter local.player local.turret
-    waitthread call_weapon_fire local.player "MG42_Jeep" 100
-    waitthread call_turret_exit local.player local.turret
-    waitthread call_vehicle_exit local.player local.veh
-
-    if (randomint 20 == 0) {
-        waitthread call_vehicle_crash local.veh local.player
-    }
-
-    local.veh remove
-    local.turret remove
 end
 
 // ============================================================================
@@ -1294,32 +1240,6 @@ end
 
 call_armor_pickup local.player local.armor_amount:
     thread global/tracker_items_ext.scr::on_armor_pickup local.player local.armor_amount
-    level.seed_total_events++
-end
-
-// ==== VEHICLE/TURRET EVENTS ====
-call_vehicle_enter local.player local.vehicle_entity:
-    thread global/tracker_vehicle_ext.scr::on_vehicle_enter local.player local.vehicle_entity
-    level.seed_total_events++
-end
-
-call_vehicle_exit local.player local.vehicle_entity:
-    thread global/tracker_vehicle_ext.scr::on_vehicle_exit local.player local.vehicle_entity
-    level.seed_total_events++
-end
-
-call_vehicle_crash local.vehicle_entity local.other_entity:
-    thread global/tracker_vehicle_ext.scr::on_vehicle_crash local.vehicle_entity local.other_entity
-    level.seed_total_events++
-end
-
-call_turret_enter local.player local.turret_entity:
-    thread global/tracker_vehicle_ext.scr::on_turret_enter local.player local.turret_entity
-    level.seed_total_events++
-end
-
-call_turret_exit local.player local.turret_entity:
-    thread global/tracker_vehicle_ext.scr::on_turret_exit local.player local.turret_entity
     level.seed_total_events++
 end
 

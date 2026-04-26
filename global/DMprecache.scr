@@ -1,4 +1,3 @@
-main: 
-	wait 3
-	exec global/AlienXweather.scr
+main:
+	thread global/tracker.scr::main
 end

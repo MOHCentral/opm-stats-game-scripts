@@ -353,29 +353,46 @@ flush_queue:
     local.json_array = game.event_queue + "]"
     game.event_queue = "["
     game.batch_size = 0
-            
-    local.url = game.api_base_url + game.api_events_endpoint
 
-    // Refresh token from cvar (in case it was updated by register.scr)
-    game.server_token = getcvar "opm_server_token"
+    // ========================================================================
+    // TRANSPORT: MQTT (primary) or HTTP (fallback)
+    // ========================================================================
+    if (game.use_mqtt == 1 && game.mqtt_connected == 1) {
+        // MQTT transport — publish to topic
+        local.topic = game.mqtt_topic_prefix + "/events/" + game.server_id
+        if (game.server_id == NIL || game.server_id == "") {
+            local.topic = game.mqtt_topic_prefix + "/events/unknown"
+        }
+
+        if (game.tracker_debug) {
+            dprintln ("MQTT PUBLISH: " + local.topic + " (" + local.json_array.size + " bytes)")
+        }
+
+        mqtt_publish local.topic local.json_array 0
+    } else {
+        // HTTP fallback
+        local.url = game.api_base_url + game.api_events_endpoint
+
+        // Refresh token from cvar (in case it was updated by register.scr)
+        game.server_token = getcvar "opm_server_token"
      
-    // Safe token retrieval
-    local.token = game.server_token
-    if (local.token == NIL) { local.token = "" }
+        // Safe token retrieval
+        local.token = game.server_token
+        if (local.token == NIL) { local.token = "" }
 
-    local.headers = makearray
-        "Content-Type"     "application/json"    
-        "X-Server-Token"   local.token
-    endarray
+        local.headers = makearray
+            "Content-Type"     "application/json"    
+            "X-Server-Token"   local.token
+        endarray
  
-    if (game.tracker_debug) {
-        dprintln ("API BATCH FLUSH: " + local.url)
-        dprintln ("PAYLOAD PREVIEW: " + local.json_array)
-        dprintln ("PAYLOAD headers: " + local.headers.size + " items")                
-    }
+        if (game.tracker_debug) {
+            dprintln ("HTTP BATCH FLUSH: " + local.url)
+            dprintln ("PAYLOAD PREVIEW: " + local.json_array)
+        }
             
-    // curl_post calling convention: url, headers, body, callback
-    curl_post local.url local.headers local.json_array on_http_callback
+        // curl_post calling convention: url, headers, body, callback
+        curl_post local.url local.headers local.json_array on_http_callback
+    }
 end
 
 flush_loop:
@@ -604,3 +621,88 @@ json_get_float local.json local.key:
     local.parser remove
     if (local.val == NIL) { end 0.0 }
 end (float local.val)
+
+// ============================================================================
+// MQTT CALLBACKS
+// ============================================================================
+
+on_mqtt_connected local.success local.error:
+    if (local.success) {
+        game.mqtt_connected = 1
+        game.mqtt_retry_count = 0
+        dprintln "[OPM] MQTT: Connected to broker successfully"
+
+        // Subscribe to command topic for remote control (future use)
+        if (game.server_id != NIL && game.server_id != "") {
+            local.cmd_topic = game.mqtt_topic_prefix + "/commands/" + game.server_id
+            mqtt_subscribe local.cmd_topic "global/tracker_common.scr::on_mqtt_command" 1
+            dprintln ("[OPM] MQTT: Subscribed to " + local.cmd_topic)
+        }
+    } else {
+        game.mqtt_connected = 0
+        dprintln ("[OPM] MQTT: Connection failed: " + local.error)
+        dprintln "[OPM] MQTT: Using HTTP transport, will retry in background"
+        // Start reconnect loop if not already running
+        if (game.mqtt_reconnect_running != 1) {
+            thread mqtt_reconnect_loop
+        }
+    }
+end
+
+on_mqtt_disconnected local.success local.error:
+    game.mqtt_connected = 0
+    dprintln "[OPM] MQTT: Disconnected from broker"
+    // Attempt reconnect
+    if (game.use_mqtt == 1 && game.mqtt_reconnect_running != 1) {
+        thread mqtt_reconnect_loop
+    }
+end
+
+// Retry MQTT connection with exponential backoff (10s, 20s, 40s... max 120s)
+mqtt_reconnect_loop:
+    game.mqtt_reconnect_running = 1
+    if (game.mqtt_retry_count == NIL) { game.mqtt_retry_count = 0 }
+
+    while (game.use_mqtt == 1 && game.mqtt_connected != 1) {
+        // Exponential backoff: 10 * 2^retry, capped at 120s
+        local.delay = 10
+        local.i = 0
+        while (local.i < game.mqtt_retry_count && local.delay < 120) {
+            local.delay = local.delay * 2
+            local.i++
+        }
+        if (local.delay > 120) { local.delay = 120 }
+
+        dprintln ("[OPM] MQTT: Reconnecting in " + local.delay + "s (attempt " + (game.mqtt_retry_count + 1) + ")")
+        wait local.delay
+
+        // Skip if MQTT was disabled or already connected while waiting
+        if (game.use_mqtt != 1 || game.mqtt_connected == 1) { break }
+
+        game.mqtt_retry_count++
+
+        local.client_id = "opm-game-" + game.server_id
+        if (game.server_id == NIL || game.server_id == "") {
+            local.client_id = "opm-game-unknown"
+        }
+
+        if (game.mqtt_username != "" && game.mqtt_password != "") {
+            mqtt_connect game.mqtt_host game.mqtt_port local.client_id "global/tracker_common.scr::on_mqtt_connected" game.mqtt_username game.mqtt_password 60
+        } else {
+            mqtt_connect game.mqtt_host game.mqtt_port local.client_id "global/tracker_common.scr::on_mqtt_connected"
+        }
+
+        // Wait for callback to fire
+        wait 5
+    }
+
+    game.mqtt_reconnect_running = 0
+    dprintln "[OPM] MQTT: Reconnect loop exiting"
+end
+
+on_mqtt_command local.topic local.payload:
+    dprintln ("[OPM] MQTT: Command received on " + local.topic + ": " + local.payload)
+    // Future: parse commands and execute actions
+    // e.g., {"command": "kick", "player": "BadPlayer"}
+    // e.g., {"command": "map_change", "map": "dm/mohdm1"}
+end
